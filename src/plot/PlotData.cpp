@@ -41,6 +41,7 @@ void PlotData::addData(float x, float y) {
 
     if (data.size() && x < data.lastX()) {
         GCS_APP_LOG_WARN("PlotData: Received unordered data for plot data {}, clearing data.", style.name);
+        // TODO: Figure out how to make clear() thread-safe without causing a deadlock
         clear();
     }
 
@@ -64,11 +65,16 @@ void PlotData::addData(float x, float y) {
  * @brief Clears the raw and the compressed data.
  */
 void PlotData::clear() {
+    // TODO - Uncomment this later
+    // std::lock_guard<std::mutex> lock(mtx);
+
     data.clear();
     compressedData.clear();
 }
 
 void PlotData::addListener(PlotDataUpdateListener* listener) {
+    std::lock_guard<std::mutex> lock(mtx);
+
     listeners.push_back(listener);
     listener->onSubscribe(this);
 }
@@ -123,6 +129,9 @@ float PlotData::recentAverageValue(size_t durationMs) const {
  * @returns The name of the plot data.
  */
 const char* PlotData::getName() const {
+    // TODO - Uncomment this later
+    // std::lock_guard<std::mutex> lock(mtx);
+
     return style.name;
 }
 
