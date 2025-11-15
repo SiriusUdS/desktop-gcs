@@ -29,7 +29,7 @@ public:
     };
 
 public:
-    PlotData(const char* n, ImVec4 c); // TODO: Just call this name and color, unnecessary single letter variables
+    PlotData(const char* name, ImVec4 color);
     void addData(float x, float y);
     void clear();
     void addListener(PlotDataUpdateListener* listener);
@@ -39,12 +39,15 @@ public:
     LockedView makeLockedView() const;
 
 private:
+    void clearImpl();
     void dropOldData(size_t amount);
 
     static constexpr size_t MAX_ORIGINAL_DATA_SIZE = 100'000;
     static constexpr size_t DATA_AMOUNT_TO_DROP_IF_MAX_REACHED = 10'000;
     static constexpr size_t MAX_COMPRESSED_DATA_SIZE = 20'000;
     static constexpr size_t TARGET_COMPRESSED_DATA_SIZE = 10'000;
+
+    static constexpr float DEFAULT_PLOT_LINE_THICKNESS = 2;
 
     PlotRawData data;
     PlotRawData compressedData;

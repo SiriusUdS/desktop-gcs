@@ -25,10 +25,10 @@ const PlotStyle& PlotData::LockedView::getStyle() const {
 
 /**
  * @brief Constructs a plot data from a name and a color of the plot data line
- * @param n Name of the plot data
- * @param c Color of the plot data line
+ * @param name Name of the plot data
+ * @param color Color of the plot data line
  */
-PlotData::PlotData(const char* n, ImVec4 c) : style{n, c, 2} { // TODO: Put this "2" in a constant somewhere
+PlotData::PlotData(const char* name, ImVec4 color) : style{name, color, DEFAULT_PLOT_LINE_THICKNESS} {
 }
 
 /**
@@ -41,8 +41,7 @@ void PlotData::addData(float x, float y) {
 
     if (data.size() && x < data.lastX()) {
         GCS_APP_LOG_WARN("PlotData: Received unordered data for plot data {}, clearing data.", style.name);
-        // TODO: Figure out how to make clear() thread-safe without causing a deadlock
-        clear();
+        clearImpl();
     }
 
     data.add(x, y);
@@ -62,14 +61,12 @@ void PlotData::addData(float x, float y) {
 }
 
 /**
- * @brief Clears the raw and the compressed data.
+ * @brief Clears the raw and compressed data.
  */
 void PlotData::clear() {
-    // TODO - Uncomment this later
-    // std::lock_guard<std::mutex> lock(mtx);
+    std::lock_guard<std::mutex> lock(mtx);
 
-    data.clear();
-    compressedData.clear();
+    clearImpl();
 }
 
 void PlotData::addListener(PlotDataUpdateListener* listener) {
@@ -129,14 +126,25 @@ float PlotData::recentAverageValue(size_t durationMs) const {
  * @returns The name of the plot data.
  */
 const char* PlotData::getName() const {
-    // TODO - Uncomment this later
-    // std::lock_guard<std::mutex> lock(mtx);
+    std::lock_guard<std::mutex> lock(mtx);
 
     return style.name;
 }
 
 PlotData::LockedView PlotData::makeLockedView() const {
     return LockedView(mtx, data, compressedData, style);
+}
+
+/**
+ * @brief Internal unlocked implementation of clear().
+ *
+ * This function must be called only when the object's mutex is already held.
+ * Public methods call clear() (which locks), while internal methods should call
+ * clearImpl() to avoid self-deadlock from re-locking the same mutex.
+ */
+void PlotData::clearImpl() {
+    data.clear();
+    compressedData.clear();
 }
 
 /**
