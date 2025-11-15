@@ -3,7 +3,7 @@
 #include "FontConfig.h"
 #include "IniConfig.h"
 #include "SensorPlotData.h"
-#include "Utils.h"
+#include "StringUtils.h"
 
 #include <imgui.h>
 #include <implot.h>
@@ -23,10 +23,10 @@ PlotWindow::PlotWindow(const char* name, const char* xLabel, const char* yLabel,
     showCompressedDataIniId = std::string(name) + "_plot_window_show_compressed_data";
     showAvgValuesId = std::string(name) + "_plot_window_show_avg_values";
     dataTypeIniId = std::string(name) + "_plot_window_data_type";
-    Utils::convertStringToIniId(autofitIniId);
-    Utils::convertStringToIniId(showCompressedDataIniId);
-    Utils::convertStringToIniId(showAvgValuesId);
-    Utils::convertStringToIniId(dataTypeIniId);
+    StringUtils::convertStringToIniId(autofitIniId);
+    StringUtils::convertStringToIniId(showCompressedDataIniId);
+    StringUtils::convertStringToIniId(showAvgValuesId);
+    StringUtils::convertStringToIniId(dataTypeIniId);
 }
 
 /**

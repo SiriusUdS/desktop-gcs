@@ -1,5 +1,7 @@
 #include "WindowsComPortDiscovery.h"
 
+#include "StringUtils.h"
+
 void WindowsComPortDiscovery::getAvailableComPorts(std::vector<std::string>& comPortVec) {
     static constexpr size_t WIN_REG_VAL_BUF_SIZE = 256;
 
@@ -14,24 +16,8 @@ void WindowsComPortDiscovery::getAvailableComPorts(std::vector<std::string>& com
             if (RegEnumValue(hKey, index++, valueName, &valueNameSize, nullptr, &type, (LPBYTE) comPort, &comPortSize) != ERROR_SUCCESS) {
                 break;
             }
-
-            comPortVec.push_back(wcharToString(comPort));
+            comPortVec.push_back(StringUtils::wcharToString(comPort));
         }
         RegCloseKey(hKey);
     }
-}
-
-std::string WindowsComPortDiscovery::wcharToString(const WCHAR* wstr) {
-    if (wstr == nullptr)
-        return {};
-
-    // Get the length of the resulting string
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
-    if (size_needed == 0)
-        return {};
-
-    std::vector<char> buffer(size_needed);
-    WideCharToMultiByte(CP_UTF8, 0, wstr, -1, buffer.data(), size_needed, nullptr, nullptr);
-
-    return std::string(buffer.data());
 }
