@@ -2,7 +2,7 @@
 #define TEMPERATURESENSOR_H
 
 namespace TemperatureSensor {
-float adcToTemperature(float adcValue);
+float adcToTemperature_C(float adcValue);
 } // namespace TemperatureSensor
 
 #endif // TEMPERATURESENSOR_H

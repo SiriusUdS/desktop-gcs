@@ -2,7 +2,7 @@
 #define LOADCELL_H
 
 namespace LoadCell {
-float adcToForce(float adcValue, size_t loadCellIndex);
+float adcToWeight_lb(float adcValue, size_t loadCellIndex);
 } // namespace LoadCell
 
 #endif // LOADCELL_H

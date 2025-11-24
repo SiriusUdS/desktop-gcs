@@ -12,7 +12,7 @@ typedef struct {
     float resistance;  ///< Resistance in ohms
 } RT_Point;
 
-float TemperatureSensor::adcToTemperature(float adcValue) {
+float TemperatureSensor::adcToTemperature_C(float adcValue) {
     static constexpr float MIN_VALID_ADC = 10;
     static constexpr float MAX_VALID_ADC = 4090;
     static constexpr float CONTROL_RESISTANCE = 10'000;

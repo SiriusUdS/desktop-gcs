@@ -26,7 +26,7 @@ constexpr PressureTransducerParams PRESSURE_TRANSDUCER_PARAMS_TABLE[PRESSURE_TRA
 // clang-format on
 } // namespace PressureTransducer
 
-float PressureTransducer::adcToPressure(float adcValue, uint16_t sensorIndex) {
+float PressureTransducer::adcToPressure_psi(float adcValue, uint16_t sensorIndex) {
     const PressureTransducerParams& params = PRESSURE_TRANSDUCER_PARAMS_TABLE[sensorIndex];
     const float pressure_psi =
       static_cast<float>(params.functionRateOfChange * adcValue) - static_cast<float>(params.functionOffset - params.additiveFactor);

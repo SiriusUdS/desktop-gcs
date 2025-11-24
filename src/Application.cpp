@@ -4,7 +4,6 @@
 #include <WinSock2.h>
 // clang-format on
 
-// TODO: do we need all these.?
 #include "BoardsWindow.h"
 #include "ControlsWindow.h"
 #include "FontConfig.h"

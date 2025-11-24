@@ -38,10 +38,9 @@ size_t packetSize{};
 uint8_t packetBuf[SerialConfig::MAX_PACKET_SIZE];
 
 // TODO: Think about declaring these arrays in their respective functions instead of declaring them globally to improve code clarity
-// TODO: Add units to these array variable names
-float thermistorValues[GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD]{};
-float pressureSensorValues[GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD]{};
-float loadCellValues[GSDataCenter::LOAD_CELL_AMOUNT]{};
+float thermistorValues_C[GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD]{};
+float pressureSensorValues_psi[GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD]{};
+float loadCellValues_lb[GSDataCenter::LOAD_CELL_AMOUNT]{};
 } // namespace PacketProcessing
 
 void PacketProcessing::processIncomingPackets() {
@@ -131,10 +130,14 @@ bool PacketProcessing::processEngineTelemetryPacket() {
     computeThermistorValues(thermistorAdcValues, ENGINE_BOARD_ID);
     computePressureSensorValues(pressureSensorAdcValues, ENGINE_BOARD_ID);
 
-    addPlotData(GSDataCenter::Thermistor_Motor_PlotData, thermistorAdcValues, thermistorValues, GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD, timestamp);
+    addPlotData(GSDataCenter::Thermistor_Motor_PlotData,
+                thermistorAdcValues,
+                thermistorValues_C,
+                GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD,
+                timestamp);
     addPlotData(GSDataCenter::PressureSensor_Motor_PlotData,
                 pressureSensorAdcValues,
-                pressureSensorValues,
+                pressureSensorValues_psi,
                 GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD,
                 timestamp);
 
@@ -142,7 +145,7 @@ bool PacketProcessing::processEngineTelemetryPacket() {
     SerialTask::engineTelemetryPacketRateMonitor.trackPacket();
     SerialTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
 
-    PacketCSVLogging::logEngineTelemetryPacket(timestamp, thermistorAdcValues, thermistorValues, pressureSensorAdcValues, pressureSensorValues);
+    PacketCSVLogging::logEngineTelemetryPacket(timestamp, thermistorAdcValues, thermistorValues_C, pressureSensorAdcValues, pressureSensorValues_psi);
     return true;
 }
 
@@ -170,15 +173,15 @@ bool PacketProcessing::processFillingStationTelemetryPacket() {
 
     addPlotData(GSDataCenter::Thermistor_FillingStation_PlotData,
                 thermistorAdcValues,
-                thermistorValues,
+                thermistorValues_C,
                 GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD,
                 timestamp);
     addPlotData(GSDataCenter::PressureSensor_FillingStation_PlotData,
                 pressureSensorAdcValues,
-                pressureSensorValues,
+                pressureSensorValues_psi,
                 GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD,
                 timestamp);
-    addPlotData(GSDataCenter::LoadCell_FillingStation_PlotData, loadCellAdcValues, loadCellValues, GSDataCenter::LOAD_CELL_AMOUNT, timestamp);
+    addPlotData(GSDataCenter::LoadCell_FillingStation_PlotData, loadCellAdcValues, loadCellValues_lb, GSDataCenter::LOAD_CELL_AMOUNT, timestamp);
 
     SerialTask::packetRateMonitor.trackPacket();
     SerialTask::fillingStationTelemetryPacketRateMonitor.trackPacket();
@@ -186,11 +189,11 @@ bool PacketProcessing::processFillingStationTelemetryPacket() {
 
     PacketCSVLogging::logFillingStationTelemetryPacket(timestamp,
                                                        thermistorAdcValues,
-                                                       thermistorValues,
+                                                       thermistorValues_C,
                                                        pressureSensorAdcValues,
-                                                       pressureSensorValues,
+                                                       pressureSensorValues_psi,
                                                        loadCellAdcValues,
-                                                       loadCellValues);
+                                                       loadCellValues_lb);
     return true;
 }
 
@@ -309,13 +312,13 @@ bool PacketProcessing::processFillingStationStatusPacket() {
 void PacketProcessing::computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId) {
     for (size_t i = 0; i < GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD; i++) {
         float adcValue = static_cast<float>(thermistorAdcValues[i]);
-        thermistorValues[i] = TemperatureSensor::adcToTemperature(adcValue);
+        thermistorValues_C[i] = TemperatureSensor::adcToTemperature_C(adcValue);
     }
 
     if (boardId == ENGINE_BOARD_ID) {
         constexpr size_t tankThermistorValueIdx = 2;
         // TODO: This is temp
-        GSDataCenter::tankTemperature_C = thermistorValues[tankThermistorValueIdx];
+        GSDataCenter::tankTemperature_C = thermistorValues_C[tankThermistorValueIdx];
     }
 }
 
@@ -325,19 +328,19 @@ void PacketProcessing::computePressureSensorValues(uint16_t pressureSensorAdcVal
     for (size_t i = 0; i < GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD; i++) {
         float adcValue = static_cast<float>(pressureSensorAdcValues[i]);
         uint16_t sensorIndex = static_cast<uint16_t>(i + indexOffset);
-        pressureSensorValues[i] = PressureTransducer::adcToPressure(adcValue, sensorIndex);
+        pressureSensorValues_psi[i] = PressureTransducer::adcToPressure_psi(adcValue, sensorIndex);
     }
 
     if (boardId == ENGINE_BOARD_ID) {
         constexpr size_t pressureSensorValueIdx = 0; // TODO: Is this the good index?
-        GSDataCenter::tankPressure_psi = pressureSensorValues[pressureSensorValueIdx];
+        GSDataCenter::tankPressure_psi = pressureSensorValues_psi[pressureSensorValueIdx];
     }
 }
 
 void PacketProcessing::computeLoadCellValues(uint16_t loadCellAdcValues[GSDataCenter::LOAD_CELL_AMOUNT]) {
     for (size_t i = 0; i < GSDataCenter::LOAD_CELL_AMOUNT; i++) {
         float adcValue = static_cast<float>(loadCellAdcValues[i]);
-        loadCellValues[i] = LoadCell::adcToForce(adcValue, 0); // TODO: Change this index later?
+        loadCellValues_lb[i] = LoadCell::adcToWeight_lb(adcValue, 0); // TODO: Change this index later?
     }
 
     // TODO: This is temp .?

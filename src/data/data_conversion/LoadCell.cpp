@@ -24,7 +24,7 @@ constexpr size_t LOAD_CELL_AMOUNT = 4;
 // clang-format on
 } // namespace LoadCell
 
-float LoadCell::adcToForce(float adcValue, size_t loadCellIndex) {
+float LoadCell::adcToWeight_lb(float adcValue, size_t loadCellIndex) {
     // TODO: This is a temp hotfix for LC25
     // const LoadCellParams& params = LOAD_CELL_PARAMS_TABLE[loadCellIndex];
     // const float force_N =
