@@ -48,5 +48,5 @@ void ValvesWindow::renderValveStateRow(const char* label, ValveData& data) {
                                       : "Pressed"); // TODO: This is a temp hotfix for LC25, on and off are switched temporarily because elec
 
     ImGui::TableSetColumnIndex(4);
-    ImGui::Text("%d", data.positionOpened_pct);
+    ImGui::Text("%d", data.positionOpened_pct.load());
 }

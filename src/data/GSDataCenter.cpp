@@ -47,26 +47,26 @@ ValveData fillValveData;
 ValveData dumpValveData;
 std::vector<ValveData*> valveDataVec({&fillValveData, &dumpValveData});
 
-uint8_t motorBoardState{};
-uint8_t fillingStationBoardState{};
-uint8_t gsControlBoardState{};
+std::atomic<uint8_t> motorBoardState{};
+std::atomic<uint8_t> fillingStationBoardState{};
+std::atomic<uint8_t> gsControlBoardState{};
 
-uint16_t motorBoardStorageErrorStatus;
-uint16_t fillingStationBoardStorageErrorStatus;
+std::atomic<uint16_t> motorBoardStorageErrorStatus;
+std::atomic<uint16_t> fillingStationBoardStorageErrorStatus;
 
-uint32_t igniteTimestamp_ms{};
-uint32_t launchTimestamp_ms{};
+std::atomic<uint32_t> igniteTimestamp_ms{};
+std::atomic<uint32_t> launchTimestamp_ms{};
 
-uint32_t lastReceivedCommandCodeMotorBoard{};
-uint32_t lastReceivedCommandCodeFillingStationBoard{};
-uint32_t lastBoardSentCommandCode;
+std::atomic<uint32_t> lastReceivedCommandCodeMotorBoard{};
+std::atomic<uint32_t> lastReceivedCommandCodeFillingStationBoard{};
+std::atomic<uint32_t> lastBoardSentCommandCode;
 
-uint32_t timeSinceLastCommandMotorBoard_ms{};
-uint32_t timeSinceLastCommandFillingStationBoard_ms{};
-uint32_t lastReceivedGSCommandTimestamp_ms{};
-uint32_t lastSentCommandTimestamp_ms{};
+std::atomic<uint32_t> timeSinceLastCommandMotorBoard_ms{};
+std::atomic<uint32_t> timeSinceLastCommandFillingStationBoard_ms{};
+std::atomic<uint32_t> lastReceivedGSCommandTimestamp_ms{};
+std::atomic<uint32_t> lastSentCommandTimestamp_ms{};
 
-float tankTemperature_C{};
-float tankPressure_psi{};
-float tankLoadCell_lb{};
+std::atomic<float> tankTemperature_C{};
+std::atomic<float> tankPressure_psi{};
+std::atomic<float> tankLoadCell_lb{};
 } // namespace GSDataCenter

@@ -1,6 +1,7 @@
 #ifndef GSDATACENTER_H
 #define GSDATACENTER_H
 
+#include <atomic>
 #include <vector>
 
 class PlotData;
@@ -38,29 +39,29 @@ extern ValveData fillValveData;
 extern ValveData dumpValveData;
 extern std::vector<ValveData*> valveDataVec;
 
-extern uint8_t motorBoardState;
-extern uint8_t fillingStationBoardState;
-extern uint8_t gsControlBoardState;
+extern std::atomic<uint8_t> motorBoardState;
+extern std::atomic<uint8_t> fillingStationBoardState;
+extern std::atomic<uint8_t> gsControlBoardState;
 
-extern uint16_t motorBoardStorageErrorStatus;
-extern uint16_t fillingStationBoardStorageErrorStatus;
+extern std::atomic<uint16_t> motorBoardStorageErrorStatus;
+extern std::atomic<uint16_t> fillingStationBoardStorageErrorStatus;
 
-extern uint32_t igniteTimestamp_ms;
-extern uint32_t launchTimestamp_ms;
+extern std::atomic<uint32_t> igniteTimestamp_ms;
+extern std::atomic<uint32_t> launchTimestamp_ms;
 
-extern uint32_t lastReceivedCommandCodeMotorBoard;
-extern uint32_t lastReceivedCommandCodeFillingStationBoard;
-extern uint32_t lastBoardSentCommandCode;
+extern std::atomic<uint32_t> lastReceivedCommandCodeMotorBoard;
+extern std::atomic<uint32_t> lastReceivedCommandCodeFillingStationBoard;
+extern std::atomic<uint32_t> lastBoardSentCommandCode;
 
-extern uint32_t timeSinceLastCommandMotorBoard_ms;
-extern uint32_t timeSinceLastCommandFillingStationBoard_ms;
-extern uint32_t lastReceivedGSCommandTimestamp_ms;
-extern uint32_t lastSentCommandTimestamp_ms;
+extern std::atomic<uint32_t> timeSinceLastCommandMotorBoard_ms;
+extern std::atomic<uint32_t> timeSinceLastCommandFillingStationBoard_ms;
+extern std::atomic<uint32_t> lastReceivedGSCommandTimestamp_ms;
+extern std::atomic<uint32_t> lastSentCommandTimestamp_ms;
 
 // TODO: These are temporary
-extern float tankTemperature_C;
-extern float tankPressure_psi;
-extern float tankLoadCell_lb;
+extern std::atomic<float> tankTemperature_C;
+extern std::atomic<float> tankPressure_psi;
+extern std::atomic<float> tankLoadCell_lb;
 } // namespace GSDataCenter
 
 #endif // GSDATACENTER_H

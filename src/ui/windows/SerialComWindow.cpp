@@ -157,8 +157,8 @@ void SerialComWindow::render() {
         ImGui::Text("Launch steps");
         ImGui::PopFont();
 
-        ImGui::Text("Ignite timestamp (ms): %d", GSDataCenter::igniteTimestamp_ms);
-        ImGui::Text("Launch timestamp (ms): %d", GSDataCenter::launchTimestamp_ms);
+        ImGui::Text("Ignite timestamp (ms): %d", GSDataCenter::igniteTimestamp_ms.load());
+        ImGui::Text("Launch timestamp (ms): %d", GSDataCenter::launchTimestamp_ms.load());
 
         ImGui::Separator();
 
@@ -171,8 +171,9 @@ void SerialComWindow::render() {
 
         ImGui::Text("Last command GS sent to boards: %s", lastBoardSentCommandName.c_str());
 
-        ImGui::Text("Time since last command received by motor board (ms): %d", GSDataCenter::timeSinceLastCommandMotorBoard_ms);
-        ImGui::Text("Time since last command received by filling station board (ms): %d", GSDataCenter::timeSinceLastCommandFillingStationBoard_ms);
+        ImGui::Text("Time since last command received by motor board (ms): %d", GSDataCenter::timeSinceLastCommandMotorBoard_ms.load());
+        ImGui::Text("Time since last command received by filling station board (ms): %d",
+                    GSDataCenter::timeSinceLastCommandFillingStationBoard_ms.load());
 
         // ImGui::Text("Last command sent to GS timestamp (ms): %d", GSDataCenter::lastReceivedGSCommandTimestamp_ms);
         // ImGui::Text("Last GCS command received timestamp (ms): %d", GSDataCenter::lastSentCommandTimestamp_ms);

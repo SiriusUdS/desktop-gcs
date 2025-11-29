@@ -54,9 +54,9 @@ void TankMassWindow::render() {
         const std::string phaseStr = GSDataCenter::tankPressure_psi > vaporPressure_psi ? "Liquid" : "Gas";
 
         ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Temp Tank (C): %f", GSDataCenter::tankTemperature_C);
-        ImGui::Text("PT Tank (psi): %f", GSDataCenter::tankPressure_psi);
-        ImGui::Text("LC Tank (lb): %f", GSDataCenter::tankLoadCell_lb);
+        ImGui::Text("Temp Tank (C): %f", GSDataCenter::tankTemperature_C.load());
+        ImGui::Text("PT Tank (psi): %f", GSDataCenter::tankPressure_psi.load());
+        ImGui::Text("LC Tank (lb): %f", GSDataCenter::tankLoadCell_lb.load());
         ImGui::Text("Phase: %s", phaseStr.c_str());
 
         ImGui::TableSetColumnIndex(1);
