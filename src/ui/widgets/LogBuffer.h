@@ -13,6 +13,7 @@ public:
     void updateVisibleLogs();
 
 private:
+    void implUpdateVisibleLogs();
     bool isLogVisible(const char* lineStart, const char* lineEnd, spdlog::level::level_enum level);
 
     const ImGuiTextFilter& filter;

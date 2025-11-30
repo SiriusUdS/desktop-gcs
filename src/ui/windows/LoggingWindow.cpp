@@ -11,9 +11,6 @@
 #include <mutex>
 
 namespace LoggingWindow {
-void renderLogs();
-void clear();
-
 constexpr const char* GCS_INI_LOG_WINDOW_AUTO_SCROLL = "log_window_auto_scroll";
 constexpr const char* GCS_INI_LOG_WINDOW_SHOW_DEBUG = "log_window_show_debug";
 constexpr const char* GCS_INI_LOG_WINDOW_SHOW_INFO = "log_window_show_info";
@@ -23,7 +20,6 @@ constexpr const char* GCS_INI_LOG_WINDOW_SHOW_ERROR = "log_window_show_error";
 bool showInfo{true}, showWarn{true}, showError{true}, showTrace{true}, showDebug{true};
 ImGuiTextFilter filter;
 LogBuffer logBuffer(filter, showDebug, showInfo, showWarn, showError);
-std::mutex mtx;
 } // namespace LoggingWindow
 
 void LoggingWindow::render() {
@@ -44,7 +40,7 @@ void LoggingWindow::render() {
     }
     ImGui::SameLine();
     if (ImGui::Button("Clear")) {
-        clear();
+        logBuffer.clear();
     }
     ImGui::SameLine();
     if (filter.Draw("Filter", -100.0f)) {
@@ -54,7 +50,7 @@ void LoggingWindow::render() {
     ImGui::Separator();
 
     if (ImGui::BeginChild("scrolling", ImVec2(0, 0), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar)) {
-        renderLogs();
+        logBuffer.render();
     }
     ImGui::EndChild();
 }
@@ -84,16 +80,5 @@ void LoggingWindow::saveState(mINI::INIStructure& ini) {
 }
 
 void LoggingWindow::addLog(const char* str, const char* strEnd, spdlog::level::level_enum type) {
-    std::lock_guard<std::mutex> lock(mtx);
     logBuffer.addLog(str, strEnd, type);
-}
-
-void LoggingWindow::renderLogs() {
-    std::lock_guard<std::mutex> lock(mtx);
-    logBuffer.render();
-}
-
-void LoggingWindow::clear() {
-    std::lock_guard<std::mutex> lock(mtx);
-    logBuffer.clear();
 }

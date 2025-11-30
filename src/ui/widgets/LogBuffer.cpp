@@ -6,6 +6,8 @@ LogBuffer::LogBuffer(const ImGuiTextFilter& filter, const bool& showDebug, const
 }
 
 void LogBuffer::addLog(const char* str, const char* strEnd, spdlog::level::level_enum level) {
+    std::lock_guard<std::mutex> lock(mtx);
+
     int oldSize = buf.size();
     buf.append(str, strEnd);
     const char* lineStart = buf.begin() + oldSize;
@@ -27,6 +29,8 @@ void LogBuffer::addLog(const char* str, const char* strEnd, spdlog::level::level
 }
 
 void LogBuffer::render() {
+    std::lock_guard<std::mutex> lock(mtx);
+
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
     const char* bufBegin = buf.begin();
     const char* bufEnd = buf.end();
@@ -64,14 +68,22 @@ void LogBuffer::render() {
 }
 
 void LogBuffer::clear() {
+    std::lock_guard<std::mutex> lock(mtx);
+
     buf.clear();
     lineOffsets.clear();
     lineOffsets.push_back(0);
     logLevels.clear();
-    updateVisibleLogs();
+    implUpdateVisibleLogs();
 }
 
 void LogBuffer::updateVisibleLogs() {
+    std::lock_guard<std::mutex> lock(mtx);
+
+    implUpdateVisibleLogs();
+}
+
+void LogBuffer::implUpdateVisibleLogs() {
     visibleLines.clear();
 
     const char* bufBegin = buf.begin();
