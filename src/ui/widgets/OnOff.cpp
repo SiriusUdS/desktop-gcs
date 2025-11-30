@@ -1,6 +1,6 @@
 #include "OnOff.h"
 
-#include "UIConfig.h"
+#include "ThemedColors.h"
 
 #include <imgui.h>
 #include <string>
@@ -8,7 +8,7 @@
 void OnOff(bool isOn, const char* id) {
     std::string label = isOn ? "ON###" : "OFF###";
     label += id;
-    ImVec4 color = isOn ? UIConfig::GREEN_BUTTON_COLOR : UIConfig::RED_BUTTON_COLOR;
+    ImVec4 color = isOn ? ThemedColors::GREEN_BUTTON.resolve() : ThemedColors::RED_BUTTON.resolve();
 
     ImGui::PushStyleColor(ImGuiCol_Button, color);
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color);

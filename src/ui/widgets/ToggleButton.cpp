@@ -3,7 +3,7 @@
 #include "WidgetUtils.h"
 
 bool ToggleButton(const char* label, bool* state, ImVec4 baseColor) {
-    float brightnessFactor = *state ? 1.0f : 0.6f;
+    float brightnessFactor = *state ? 1.0f : 0.7f;
     ImVec4 mainColor = AdjustColor(baseColor, brightnessFactor);
     ImVec4 hoverColor = AdjustColor(mainColor, 1.1f);
     ImVec4 activeColor = AdjustColor(mainColor, 0.9f);

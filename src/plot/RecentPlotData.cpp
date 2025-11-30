@@ -1,22 +1,21 @@
 #include "RecentPlotData.h"
 
 #include "PlotData.h"
+#include "ThemedColor.h"
 
 #include <implot.h>
 
-RecentPlotData::RecentPlotData(const PlotData& plotData, size_t windowX) : plotData(plotData), windowX(windowX), start(0) {
+RecentPlotData::RecentPlotData(const PlotData& plotData, size_t windowX) : plotData(plotData), windowX(windowX), color(plotData.getColor()) {
 }
 
-void RecentPlotData::setColor(ImVec4 color) {
-    shouldOverrideColor = true;
-    colorOverride = color;
+RecentPlotData::RecentPlotData(const PlotData& plotData, size_t windowX, const ThemedColor& colorOverride)
+    : plotData(plotData), windowX(windowX), color(colorOverride) {
 }
 
 void RecentPlotData::plot(bool showCompressedData) {
     PlotData::LockedView view = plotData.makeLockedView();
     const PlotRawData& data = showCompressedData ? view.getCompressedData() : view.getData();
     const PlotStyle& style = view.getStyle();
-    const ImVec4& color = shouldOverrideColor ? colorOverride : style.color;
     const size_t size = data.size();
 
     if (start >= size) {
@@ -36,6 +35,6 @@ void RecentPlotData::plot(bool showCompressedData) {
     }
 
     const size_t visibleCount = size - start;
-    ImPlot::SetNextLineStyle(color, style.weight);
+    ImPlot::SetNextLineStyle(color.resolve(), style.weight);
     ImPlot::PlotLine(style.name, data.getRawX() + start, data.getRawY() + start, static_cast<int>(visibleCount));
 }

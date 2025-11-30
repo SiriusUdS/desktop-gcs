@@ -3,7 +3,6 @@
 #include "GSDataCenter.h"
 #include "OnOff.h"
 #include "SwitchData.h"
-#include "UIConfig.h"
 
 #include <imgui.h>
 #include <string>
@@ -26,7 +25,5 @@ void SwitchesWindow::renderSwitch(SwitchData& data, const char* name) {
     ImGui::AlignTextToFramePadding();
     ImGui::Text("%s", name);
     ImGui::SameLine(260);
-    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
     OnOff(data.isOn, name);
-    ImGui::PopStyleColor();
 }

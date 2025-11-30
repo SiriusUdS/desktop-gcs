@@ -2,8 +2,6 @@
 
 #include "FontConfig.h"
 #include "GSDataCenter.h"
-#include "OnOff.h"
-#include "UIConfig.h"
 #include "ValveData.h"
 
 #include <imgui.h>

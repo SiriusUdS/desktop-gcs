@@ -7,6 +7,7 @@
 #include <mutex>
 
 class PlotDataUpdateListener;
+struct ThemedColor;
 
 /**
  * @class PlotData
@@ -29,13 +30,14 @@ public:
     };
 
 public:
-    PlotData(const char* name, ImVec4 color);
+    PlotData(const char* name, const ThemedColor& color);
     void addData(float x, float y);
     void clear();
     void addListener(PlotDataUpdateListener* listener);
     void plot(bool showCompressedData) const;
     float recentAverageValue(size_t durationMs) const;
     const char* getName() const;
+    const ThemedColor& getColor() const;
     LockedView makeLockedView() const;
 
 private:
@@ -47,7 +49,7 @@ private:
     static constexpr size_t MAX_COMPRESSED_DATA_SIZE = 20'000;
     static constexpr size_t TARGET_COMPRESSED_DATA_SIZE = 10'000;
 
-    static constexpr float DEFAULT_PLOT_LINE_THICKNESS = 2;
+    static constexpr float DEFAULT_PLOT_LINE_THICKNESS = 4;
 
     PlotRawData data;
     PlotRawData compressedData;

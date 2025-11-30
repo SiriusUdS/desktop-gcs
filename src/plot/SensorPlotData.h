@@ -4,6 +4,7 @@
 #include "PlotData.h"
 
 class PlotDataUpdateListener;
+struct ThemedColor;
 
 /**
  * @class SensorPlotData
@@ -11,7 +12,7 @@ class PlotDataUpdateListener;
  */
 class SensorPlotData {
 public:
-    SensorPlotData(const char* name, ImVec4 color);
+    SensorPlotData(const char* name, const ThemedColor& color);
     void addData(float adc, float value, float timestamp);
     void clear();
     void addListenerValue(PlotDataUpdateListener* listener);

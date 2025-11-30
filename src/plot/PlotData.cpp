@@ -1,9 +1,9 @@
 #include "PlotData.h"
 
 #include "Logging.h"
-#include "PlotColors.h"
 #include "PlotDataCompression.h"
 #include "PlotDataUpdateListener.h"
+#include "ThemedColor.h"
 
 #include <implot.h>
 
@@ -28,7 +28,7 @@ const PlotStyle& PlotData::LockedView::getStyle() const {
  * @param name Name of the plot data
  * @param color Color of the plot data line
  */
-PlotData::PlotData(const char* name, ImVec4 color) : style{name, color, DEFAULT_PLOT_LINE_THICKNESS} {
+PlotData::PlotData(const char* name, const ThemedColor& color) : style{name, color, DEFAULT_PLOT_LINE_THICKNESS} {
 }
 
 /**
@@ -83,7 +83,7 @@ void PlotData::addListener(PlotDataUpdateListener* listener) {
 void PlotData::plot(bool showCompressedData) const {
     std::lock_guard<std::mutex> lock(mtx);
 
-    ImPlot::SetNextLineStyle(style.color, style.weight);
+    ImPlot::SetNextLineStyle(style.color.resolve(), style.weight);
     const PlotRawData& dataToPlot = showCompressedData ? compressedData : data;
     ImPlot::PlotLine(style.name, dataToPlot.getRawX(), dataToPlot.getRawY(), static_cast<int>(dataToPlot.size()));
 }
@@ -129,6 +129,16 @@ const char* PlotData::getName() const {
     std::lock_guard<std::mutex> lock(mtx);
 
     return style.name;
+}
+
+/**
+ * @brief Returns the color of the plot line.
+ * @returns The color of the plot line.
+ */
+const ThemedColor& PlotData::getColor() const {
+    std::lock_guard<std::mutex> lock(mtx);
+
+    return style.color;
 }
 
 PlotData::LockedView PlotData::makeLockedView() const {

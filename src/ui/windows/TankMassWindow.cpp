@@ -1,9 +1,9 @@
 #include "TankMassWindow.h"
 
 #include "GSDataCenter.h"
-#include "PlotColors.h"
 #include "RecentPlotData.h"
 #include "SensorPlotData.h"
+#include "ThemedColors.h"
 #include "VaporPressure.h"
 
 #include <imgui.h>
@@ -22,19 +22,19 @@ const std::string TANK_MASS_PLOT_TITLE = getRecentPlotTitle("Tank Mass", RECENT_
 // TODO: Replace these indexes with constants
 RecentPlotData recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
 RecentPlotData recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
-RecentPlotData recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
-RecentPlotData recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
-RecentPlotData recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData[2].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
+RecentPlotData recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(),
+                                         RECENT_TIME_WINDOW_SEC * 1000,
+                                         ThemedColors::GREEN_PLOT_LINE};
+RecentPlotData recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData[1].getValuePlotData(),
+                                         RECENT_TIME_WINDOW_SEC * 1000,
+                                         ThemedColors::YELLOW_PLOT_LINE};
+RecentPlotData recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData[2].getValuePlotData(),
+                                     RECENT_TIME_WINDOW_SEC * 1000,
+                                     ThemedColors::BLUE_PLOT_LINE};
 RecentPlotData recentEngineThrust{GSDataCenter::LoadCell_FillingStation_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
 RecentPlotData recentTankMass{GSDataCenter::NOSTankMass_PlotData, RECENT_TIME_WINDOW_SEC * 1000};
 RecentPlotData recentTankLoadCell{GSDataCenter::LoadCell_FillingStation_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
 } // namespace TankMassWindow
-
-void TankMassWindow::init() {
-    recentFillPressureSensor1.setColor(PlotColors::GREEN);
-    recentFillPressureSensor2.setColor(PlotColors::YELLOW);
-    recentTankTemperature.setColor(PlotColors::BLUE);
-}
 
 void TankMassWindow::render() {
     constexpr double TEMP_VALUE = 1.0;

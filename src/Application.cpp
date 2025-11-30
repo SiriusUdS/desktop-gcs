@@ -23,6 +23,7 @@
 #include "TankMassCalculatorWindow.h"
 #include "TankMassPlotDataUpdater.h"
 #include "TankMassWindow.h"
+#include "UITheme.h"
 #include "ValvesWindow.h"
 
 #include <imgui.h>
@@ -62,7 +63,6 @@ void Application::init() {
 
     MapWindow::init();
     NOSPhaseDiagramWindow::init();
-    TankMassWindow::init();
     PacketCSVLogging::init();
 
     LoggingWindow::loadState(iniStructure);
@@ -80,6 +80,7 @@ void Application::init() {
 }
 
 void Application::preNewFrame() {
+    UITheme::update();
 }
 
 void Application::shutdown() {

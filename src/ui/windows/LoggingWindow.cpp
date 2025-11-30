@@ -4,8 +4,8 @@
 #include "IniConfig.h"
 #include "LogBuffer.h"
 #include "Logging.h"
+#include "ThemedColors.h"
 #include "ToggleButton.h"
-#include "UIConfig.h"
 
 #include <ini.h>
 #include <mutex>
@@ -27,23 +27,21 @@ std::mutex mtx;
 } // namespace LoggingWindow
 
 void LoggingWindow::render() {
-    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
-    if (ToggleButton(ICON_FA_BUG " Debug", &showDebug, UIConfig::BLUE_BUTTON_COLOR)) {
+    if (ToggleButton(ICON_FA_BUG " Debug", &showDebug, ThemedColors::BLUE_BUTTON.resolve())) {
         logBuffer.updateVisibleLogs();
     }
     ImGui::SameLine();
-    if (ToggleButton(ICON_FA_INFO_CIRCLE " Info", &showInfo, UIConfig::GREEN_BUTTON_COLOR)) {
+    if (ToggleButton(ICON_FA_INFO_CIRCLE " Info", &showInfo, ThemedColors::GREEN_BUTTON.resolve())) {
         logBuffer.updateVisibleLogs();
     }
     ImGui::SameLine();
-    if (ToggleButton(ICON_FA_EXCLAMATION_TRIANGLE " Warn", &showWarn, UIConfig::YELLOW_BUTTON_COLOR)) {
+    if (ToggleButton(ICON_FA_EXCLAMATION_TRIANGLE " Warn", &showWarn, ThemedColors::YELLOW_BUTTON.resolve())) {
         logBuffer.updateVisibleLogs();
     }
     ImGui::SameLine();
-    if (ToggleButton(ICON_FA_BOMB " Error", &showError, UIConfig::RED_BUTTON_COLOR)) {
+    if (ToggleButton(ICON_FA_BOMB " Error", &showError, ThemedColors::RED_BUTTON.resolve())) {
         logBuffer.updateVisibleLogs();
     }
-    ImGui::PopStyleColor();
     ImGui::SameLine();
     if (ImGui::Button("Clear")) {
         clear();

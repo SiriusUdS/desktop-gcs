@@ -3,7 +3,7 @@
 /**
  * @brief Constructor for SensorPlotData.
  */
-SensorPlotData::SensorPlotData(const char* name, ImVec4 color) : adcPlotData(name, color), valuePlotData(name, color) {
+SensorPlotData::SensorPlotData(const char* name, const ThemedColor& color) : adcPlotData(name, color), valuePlotData(name, color) {
 }
 
 /**

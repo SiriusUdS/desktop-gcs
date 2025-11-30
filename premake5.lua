@@ -25,6 +25,7 @@ workspace "sirius-gcs"
         "src/params",
         "src/plot",
         "src/utils",
+        "src/ui/theme",
         "src/ui/widgets",
         "src/ui/windows",
         "external/ceSerial",

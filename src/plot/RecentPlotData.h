@@ -4,19 +4,19 @@
 #include <imgui.h>
 
 class PlotData;
+struct ThemedColor;
 
 class RecentPlotData {
 public:
     RecentPlotData(const PlotData& plotData, size_t windowX);
-    void setColor(ImVec4 color);
+    RecentPlotData(const PlotData& plotData, size_t windowX, const ThemedColor& colorOverride);
     void plot(bool showCompressedData);
 
 private:
     const PlotData& plotData;
     size_t windowX;
-    size_t start;
-    bool shouldOverrideColor{};
-    ImVec4 colorOverride{};
+    size_t start{};
+    const ThemedColor& color;
 };
 
 #endif // RECENTPLOTDATA_H
