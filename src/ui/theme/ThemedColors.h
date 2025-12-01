@@ -1,3 +1,6 @@
+#ifndef THEMEDCOLORS_H
+#define THEMEDCOLORS_H
+
 #include "ThemedColor.h"
 
 namespace ThemedColors {
@@ -15,3 +18,5 @@ const ThemedColor CYAN_PLOT_LINE{.lightTheme = {0, 145, 145}, .darkTheme = {60, 
 const ThemedColor PURPLE_PLOT_LINE{.lightTheme = {110, 55, 175}, .darkTheme = {170, 110, 255}};
 const ThemedColor GRAY_PLOT_LINE{.lightTheme = {120, 120, 120}, .darkTheme = {200, 200, 200}};
 } // namespace ThemedColors
+
+#endif // THEMEDCOLORS_H

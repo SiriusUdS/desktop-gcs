@@ -6,11 +6,11 @@
 const size_t TEST_PLOT_RAW_DATA_SIZE = 10;
 
 TEST_CASE("PlotDataCompression mean compression") {
-    PlotRawData data;
-    PlotRawData compressed;
+    std::vector<float> data;
+    std::vector<float> compressed;
 
     for (float i = 0; i < TEST_PLOT_RAW_DATA_SIZE; i++) {
-        data.add(i, i * 5);
+        data.push_back(i * 5);
     }
 
     SUBCASE("Should compress to correct size") {
@@ -43,9 +43,7 @@ TEST_CASE("PlotDataCompression mean compression") {
 
     SUBCASE("Should have correct values") {
         PlotDataCompression::meanCompression(data, compressed, 2);
-        CHECK(compressed.getXAt(0) == 2);
-        CHECK(compressed.getXAt(1) == 7);
-        CHECK(compressed.getYAt(0) == 10);
-        CHECK(compressed.getYAt(1) == 35);
+        CHECK(compressed.at(0) == 10);
+        CHECK(compressed.at(1) == 35);
     }
 }
