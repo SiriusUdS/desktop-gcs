@@ -10,12 +10,12 @@
 class TankMassPlotDataUpdater : public PlotDataUpdateListener {
 public:
     void onSubscribe(const PlotData* plotData) override;
-    void onAddData(const PlotData* plotData, float x, float y) override;
+    void onAddData(const PlotData* plotData, float timestamp, float value) override;
 
 private:
     struct PlotDataUpdate {
-        float x{};
-        float y{};
+        float timestamp{};
+        float value{};
         bool wasUpdated{};
         std::chrono::steady_clock::time_point lastUpdateTime{};
     };

@@ -3,7 +3,7 @@
 #include <doctest.h>
 
 TEST_CASE("PlotValues should add data correctly") {
-    PlotValues data;
+    PlotValues data(1);
     data.add(1);
     data.add(4);
     data.add(3);
@@ -16,7 +16,7 @@ TEST_CASE("PlotValues should add data correctly") {
 }
 
 TEST_CASE("PlotValues should clear values correctly") {
-    PlotValues data;
+    PlotValues data(1);
     data.add(1);
     data.add(4);
     data.add(3);
@@ -26,7 +26,7 @@ TEST_CASE("PlotValues should clear values correctly") {
 }
 
 TEST_CASE("PlotValues should erase old values correctly") {
-    PlotValues data;
+    PlotValues data(1);
     for (size_t i = 0; i < 10; i++) {
         data.add((float) i + 1);
     }
@@ -35,4 +35,15 @@ TEST_CASE("PlotValues should erase old values correctly") {
     CHECK(data.at(0) == 6);
     CHECK(data.at(1) == 7);
     CHECK(data.last() == 10);
+}
+
+TEST_CASE("PlotValues should compress correctly") {
+    PlotValues data(3);
+    for (size_t i = 0; i < 15; i++) {
+        data.add((float) i);
+    }
+    data.compress();
+
+    CHECK(data.size() == 15);
+    CHECK(data.compressedSize() == 3);
 }

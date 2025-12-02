@@ -5,6 +5,7 @@
 
 class PlotTimeline : public DataSeries {
 public:
+    PlotTimeline(size_t targetCompressionSize);
     void add(float timestamp) override;
     void clear() override;
 

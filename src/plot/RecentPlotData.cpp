@@ -13,28 +13,31 @@ RecentPlotData::RecentPlotData(const PlotData& plotData, size_t windowX, const T
 }
 
 void RecentPlotData::plot(bool showCompressedData) {
+    // TODO: showCompressedData currently does nothing
+
     PlotData::LockedView view = plotData.makeLockedView();
-    const PlotRawData& data = showCompressedData ? view.getCompressedData() : view.getData();
+    const PlotTimeline& timeline = view.getTimeline();
+    const PlotValues& values = view.getValues();
     const PlotStyle& style = view.getStyle();
-    const size_t size = data.size();
+    const size_t size = timeline.size();
 
     if (start >= size) {
         start = 0;
     }
 
     if (size > 0) {
-        const float minX = data.lastX() - windowX;
+        const float minX = values.last() - windowX;
 
-        while (start > 0 && data.getXAt(start - 1) > minX) {
+        while (start > 0 && values.at(start - 1) > minX) {
             start--;
         }
 
-        while (start < size && data.getXAt(start) < minX) {
+        while (start < size && values.at(start) < minX) {
             start++;
         }
     }
 
     const size_t visibleCount = size - start;
     ImPlot::SetNextLineStyle(color.resolve(), style.weight);
-    ImPlot::PlotLine(style.name, data.getRawX() + start, data.getRawY() + start, static_cast<int>(visibleCount));
+    ImPlot::PlotLine(style.name, timeline.data() + start, values.data() + start, static_cast<int>(visibleCount));
 }

@@ -5,6 +5,7 @@
 
 class PlotValues : public DataSeries {
 public:
+    PlotValues(size_t targetCompressionSize);
     void add(float value) override;
     void clear() override;
 };

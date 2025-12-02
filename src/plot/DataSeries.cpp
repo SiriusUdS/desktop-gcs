@@ -2,13 +2,24 @@
 
 #include "PlotDataCompression.h"
 
+DataSeries::DataSeries(size_t targetCompressionSize) : targetCompressionSize(targetCompressionSize) {
+}
+
+void DataSeries::compress() {
+    PlotDataCompression::meanCompression(values, compressedValues, targetCompressionSize);
+}
+
 void DataSeries::eraseOld(size_t count) {
     values.erase(values.begin(), values.begin() + count);
-    PlotDataCompression::meanCompression(values, compressedValues, TARGET_COMPRESSED_DATA_SIZE);
+    compress();
 }
 
 size_t DataSeries::size() const {
     return values.size();
+}
+
+size_t DataSeries::compressedSize() const {
+    return compressedValues.size();
 }
 
 float DataSeries::last() const {
@@ -21,4 +32,8 @@ float DataSeries::at(size_t index) const {
 
 const float* DataSeries::data() const {
     return values.data();
+}
+
+const float* DataSeries::compressedData() const {
+    return compressedValues.data();
 }

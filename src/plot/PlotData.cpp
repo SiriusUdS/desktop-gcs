@@ -1,22 +1,21 @@
 #include "PlotData.h"
 
 #include "Logging.h"
-#include "PlotDataCompression.h"
 #include "PlotDataUpdateListener.h"
 #include "ThemedColor.h"
 
 #include <implot.h>
 
-PlotData::LockedView::LockedView(std::mutex& mtx, const PlotRawData& data, const PlotRawData& compressedData, const PlotStyle& style)
-    : lock(mtx), data(data), compressedData(compressedData), style(style) {
+PlotData::LockedView::LockedView(std::mutex& mtx, const PlotTimeline& timeline, const PlotValues& values, const PlotStyle& style)
+    : lock(mtx), timeline(timeline), values(values), style(style) {
 }
 
-const PlotRawData& PlotData::LockedView::getData() const {
-    return data;
+const PlotTimeline& PlotData::LockedView::getTimeline() const {
+    return timeline;
 }
 
-const PlotRawData& PlotData::LockedView::getCompressedData() const {
-    return compressedData;
+const PlotValues& PlotData::LockedView::getValues() const {
+    return values;
 }
 
 const PlotStyle& PlotData::LockedView::getStyle() const {
@@ -28,35 +27,39 @@ const PlotStyle& PlotData::LockedView::getStyle() const {
  * @param name Name of the plot data
  * @param color Color of the plot data line
  */
-PlotData::PlotData(const char* name, const ThemedColor& color) : style{name, color, DEFAULT_PLOT_LINE_THICKNESS} {
+PlotData::PlotData(const char* name, const ThemedColor& color)
+    : style{name, color, DEFAULT_PLOT_LINE_THICKNESS}, timeline(TARGET_COMPRESSED_DATA_SIZE), values(TARGET_COMPRESSED_DATA_SIZE) {
 }
 
 /**
  * @brief Adds a single data point to the plot data.
- * @param x Where the data is placed on the X axis.
- * @param y Where the data is placed on the Y axis.
+ * @param timestamp Where the data is placed on the X axis.
+ * @param value Where the data is placed on the Y axis.
  */
-void PlotData::addData(float x, float y) {
+void PlotData::addData(float timestamp, float value) {
     std::lock_guard<std::mutex> lock(mtx);
 
-    if (data.size() && x < data.lastX()) {
+    if (timeline.size() && timestamp < timeline.last()) {
         GCS_APP_LOG_WARN("PlotData: Received unordered data for plot data {}, clearing data.", style.name);
-        clearImpl();
+        timeline.clear();
+        values.clear();
     }
 
-    data.add(x, y);
-    compressedData.add(x, y);
+    timeline.add(timestamp);
+    values.add(value);
 
     for (PlotDataUpdateListener* listener : listeners) {
-        listener->onAddData(this, x, y);
+        listener->onAddData(this, timestamp, value);
     }
 
-    if (data.size() > MAX_ORIGINAL_DATA_SIZE) {
-        dropOldData(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
+    if (values.size() > MAX_ORIGINAL_DATA_SIZE) {
+        timeline.eraseOld(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
+        values.eraseOld(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
     }
 
-    if (compressedData.size() > MAX_COMPRESSED_DATA_SIZE) {
-        PlotDataCompression::meanCompression(data, compressedData, TARGET_COMPRESSED_DATA_SIZE, style.name);
+    if (values.compressedSize() > MAX_COMPRESSED_DATA_SIZE) {
+        timeline.compress();
+        values.compress();
     }
 }
 
@@ -66,7 +69,8 @@ void PlotData::addData(float x, float y) {
 void PlotData::clear() {
     std::lock_guard<std::mutex> lock(mtx);
 
-    clearImpl();
+    timeline.clear();
+    values.clear();
 }
 
 void PlotData::addListener(PlotDataUpdateListener* listener) {
@@ -84,33 +88,36 @@ void PlotData::plot(bool showCompressedData) const {
     std::lock_guard<std::mutex> lock(mtx);
 
     ImPlot::SetNextLineStyle(style.color.resolve(), style.weight);
-    const PlotRawData& dataToPlot = showCompressedData ? compressedData : data;
-    ImPlot::PlotLine(style.name, dataToPlot.getRawX(), dataToPlot.getRawY(), static_cast<int>(dataToPlot.size()));
+    if (showCompressedData) {
+        ImPlot::PlotLine(style.name, timeline.compressedData(), values.compressedData(), static_cast<int>(values.compressedSize()));
+    } else {
+        ImPlot::PlotLine(style.name, timeline.data(), values.data(), static_cast<int>(values.size()));
+    }
 }
 
 /**
  * @brief Compute the average value of the data in the last x milliseconds.
- * @param durationMs The duration in milliseconds in which we measure the recent average value.
+ * @param duration_ms The duration in milliseconds in which we measure the recent average value.
  * @returns The recent average value.
  */
-float PlotData::recentAverageValue(size_t durationMs) const {
+float PlotData::recentAverageValue(size_t duration_ms) const {
     std::lock_guard<std::mutex> lock(mtx);
 
-    const size_t dataSize = data.size();
+    const size_t dataSize = values.size();
 
     if (dataSize == 0) {
         return 0.f;
     }
 
-    const float lastTimestamp = data.lastX();
+    const float lastTimestamp = timeline.last();
     float sum = 0.f;
     size_t count = 0;
 
     for (size_t i = dataSize; i-- > 0;) {
-        if ((lastTimestamp - data.getXAt(i)) > durationMs) {
+        if ((lastTimestamp - timeline.at(i)) > duration_ms) {
             break;
         }
-        sum += data.getYAt(i);
+        sum += values.at(i);
         count++;
     }
 
@@ -142,38 +149,5 @@ const ThemedColor& PlotData::getColor() const {
 }
 
 PlotData::LockedView PlotData::makeLockedView() const {
-    return LockedView(mtx, data, compressedData, style);
-}
-
-/**
- * @brief Internal unlocked implementation of clear().
- *
- * This function must be called only when the object's mutex is already held.
- * Public methods call clear() (which locks), while internal methods should call
- * clearImpl() to avoid self-deadlock from re-locking the same mutex.
- */
-void PlotData::clearImpl() {
-    data.clear();
-    compressedData.clear();
-}
-
-/**
- * @brief Drops a fixed amount of data points, starting from the oldest data.
- * @param amount Amount of data to drop.
- */
-void PlotData::dropOldData(size_t amount) {
-    size_t oldDataSize = data.size();
-
-    if (oldDataSize < amount) {
-        GCS_APP_LOG_DEBUG("PlotData: Dropping old data unnecessary for plot data {}, current size {} smaller than amount to drop {}.",
-                          style.name,
-                          oldDataSize,
-                          amount);
-        return;
-    }
-
-    data.eraseOld(amount);
-    PlotDataCompression::meanCompression(data, compressedData, TARGET_COMPRESSED_DATA_SIZE, style.name);
-
-    GCS_APP_LOG_DEBUG("PlotData: Plot data {} successfully dropped old data, went from size {} to {}.", style.name, oldDataSize, data.size());
+    return LockedView(mtx, timeline, values, style);
 }

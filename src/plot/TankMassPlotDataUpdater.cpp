@@ -10,7 +10,7 @@ void TankMassPlotDataUpdater::onSubscribe(const PlotData* plotData) {
     plotDataUpdateMap.emplace(plotData, PlotDataUpdate());
 }
 
-void TankMassPlotDataUpdater::onAddData(const PlotData* plotData, float x, float y) {
+void TankMassPlotDataUpdater::onAddData(const PlotData* plotData, float timestamp, float value) {
     std::lock_guard<std::mutex> lock(mtx);
 
     auto updatedSourceIt = plotDataUpdateMap.find(plotData);
@@ -19,8 +19,8 @@ void TankMassPlotDataUpdater::onAddData(const PlotData* plotData, float x, float
         return;
     }
     PlotDataUpdate& updatedSource = updatedSourceIt->second;
-    updatedSource.x = x;
-    updatedSource.y = y;
+    updatedSource.timestamp = timestamp;
+    updatedSource.value = value;
     updatedSource.wasUpdated = true;
     updatedSource.lastUpdateTime = std::chrono::steady_clock::now();
 
@@ -68,14 +68,14 @@ void TankMassPlotDataUpdater::onAddData(const PlotData* plotData, float x, float
     }
     const PlotDataUpdate& tankPressurePlotDataUpdate = tankPressurePlotDataUpdateIt->second;
 
-    const double tankTemperature_C = static_cast<double>(tankTempPlotDataUpdate.y);
-    const double tankPressure_psi = static_cast<double>(tankPressurePlotDataUpdate.y);
+    const double tankTemperature_C = static_cast<double>(tankTempPlotDataUpdate.value);
+    const double tankPressure_psi = static_cast<double>(tankPressurePlotDataUpdate.value);
     const float tankMass = TankMass::getNOSTankMass_lb(tankTemperature_C, tankPressure_psi);
 
     // Get latest timestamp for new tank mass data point
     float latestX = 0.0f;
     for (const auto& [_, update] : plotDataUpdateMap) {
-        latestX = std::max(latestX, update.x);
+        latestX = std::max(latestX, update.timestamp);
     }
 
     if (std::isnan(tankMass)) {

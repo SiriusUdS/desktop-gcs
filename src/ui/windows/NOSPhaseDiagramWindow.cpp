@@ -1,7 +1,8 @@
 #include "NOSPhaseDiagramWindow.h"
 
 #include "GSDataCenter.h"
-#include "PlotRawData.h"
+#include "PlotTimeline.h"
+#include "PlotValues.h"
 #include "VaporPressure.h"
 
 #include <cmath>
@@ -17,27 +18,31 @@ constexpr PT_Point criticalPoint{36.42f, 1050.7984099f};
 constexpr float minTempAntoineEquation_C = -10.f;
 constexpr float maxTempAntoineEquation_C = 40.f;
 
-PlotRawData vaporizationCurve;
+// TODO: No need for compression here
+PlotValues vaporizationCurveTemperatures(1);
+PlotValues vaporizationCurvePressures(1);
 ImVector<float> topLine;
 ImVector<float> bottomLine;
 } // namespace NOSPhaseDiagramWindow
 
 void NOSPhaseDiagramWindow::init() {
-    vaporizationCurve.clear();
+    vaporizationCurveTemperatures.clear();
+    vaporizationCurvePressures.clear();
     topLine.clear();
     bottomLine.clear();
 
     for (float temp_C = minTempAntoineEquation_C; temp_C <= maxTempAntoineEquation_C; temp_C += .1f) {
         const float pressure_psi = static_cast<float>(VaporPressure::vaporPressureNOS_psi(temp_C));
-        vaporizationCurve.add(temp_C, pressure_psi);
+        vaporizationCurveTemperatures.add(temp_C);
+        vaporizationCurvePressures.add(pressure_psi);
     }
 
-    topLine.resize(static_cast<int>(vaporizationCurve.size()));
+    topLine.resize(static_cast<int>(vaporizationCurveTemperatures.size()));
     for (int i = 0; i < topLine.size(); ++i) {
         topLine[i] = criticalPoint.y;
     }
 
-    bottomLine.resize(static_cast<int>(vaporizationCurve.size()));
+    bottomLine.resize(static_cast<int>(vaporizationCurveTemperatures.size()));
     for (int i = 0; i < bottomLine.size(); ++i) {
         bottomLine[i] = 0.0f;
     }
@@ -50,22 +55,25 @@ void NOSPhaseDiagramWindow::render() {
 
         ImPlot::PushStyleColor(ImPlotCol_Fill, IM_COL32(40, 120, 255, 80)); // Blue
         ImPlot::PlotShaded("Liquid phase",
-                           vaporizationCurve.getRawX(),
-                           vaporizationCurve.getRawY(),
+                           vaporizationCurveTemperatures.data(),
+                           vaporizationCurvePressures.data(),
                            topLine.begin(),
-                           static_cast<int>(vaporizationCurve.size()));
+                           static_cast<int>(vaporizationCurveTemperatures.size()));
         ImPlot::PopStyleColor();
 
         ImPlot::PushStyleColor(ImPlotCol_Fill, IM_COL32(255, 140, 40, 80)); // Orange
         ImPlot::PlotShaded("Gas phase",
-                           vaporizationCurve.getRawX(),
-                           vaporizationCurve.getRawY(),
+                           vaporizationCurveTemperatures.data(),
+                           vaporizationCurvePressures.data(),
                            bottomLine.begin(),
-                           static_cast<int>(vaporizationCurve.size()));
+                           static_cast<int>(vaporizationCurveTemperatures.size()));
         ImPlot::PopStyleColor();
 
         ImPlot::SetNextLineStyle({1, 0, 0, 1}, 3); // Red
-        ImPlot::PlotLine("Vaporization curve", vaporizationCurve.getRawX(), vaporizationCurve.getRawY(), static_cast<int>(vaporizationCurve.size()));
+        ImPlot::PlotLine("Vaporization curve",
+                         vaporizationCurveTemperatures.data(),
+                         vaporizationCurvePressures.data(),
+                         static_cast<int>(vaporizationCurveTemperatures.size()));
 
         const ImVec4 textColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
         ImPlot::SetNextMarkerStyle(ImPlotMarker_Square, 12.0f, textColor, 2.0f, textColor); // Black

@@ -1,5 +1,4 @@
 #include "PlotDataCompression.h"
-#include "PlotRawData.h"
 
 #include <doctest.h>
 

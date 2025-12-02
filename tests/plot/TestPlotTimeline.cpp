@@ -3,7 +3,7 @@
 #include <doctest.h>
 
 TEST_CASE("PlotTimeline should add data correctly") {
-    PlotTimeline data;
+    PlotTimeline data(1);
     data.add(1);
     data.add(4);
     data.add(3);
@@ -16,7 +16,7 @@ TEST_CASE("PlotTimeline should add data correctly") {
 }
 
 TEST_CASE("PlotTimeline should clear values correctly") {
-    PlotTimeline data;
+    PlotTimeline data(1);
     data.add(1);
     data.add(4);
     data.add(3);
@@ -26,7 +26,7 @@ TEST_CASE("PlotTimeline should clear values correctly") {
 }
 
 TEST_CASE("PlotTimeline should erase old values correctly") {
-    PlotTimeline data;
+    PlotTimeline data(1);
     for (size_t i = 0; i < 10; i++) {
         data.add((float) i + 1);
     }
@@ -38,7 +38,7 @@ TEST_CASE("PlotTimeline should erase old values correctly") {
 }
 
 TEST_CASE("PlotTimeline should detect when data is unordered") {
-    PlotTimeline data;
+    PlotTimeline data(1);
     for (size_t i = 0; i < 10; i++) {
         data.add((float) i + 1);
     }
@@ -56,4 +56,15 @@ TEST_CASE("PlotTimeline should detect when data is unordered") {
     data.add(1);
     data.add(2);
     CHECK_FALSE(data.isUnordered());
+}
+
+TEST_CASE("PlotTimeline should compress correctly") {
+    PlotTimeline data(3);
+    for (size_t i = 0; i < 15; i++) {
+        data.add((float) i);
+    }
+    data.compress();
+
+    CHECK(data.size() == 15);
+    CHECK(data.compressedSize() == 3);
 }
