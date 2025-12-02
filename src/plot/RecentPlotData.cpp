@@ -13,11 +13,9 @@ RecentPlotData::RecentPlotData(const PlotData& plotData, size_t windowX, const T
 }
 
 void RecentPlotData::plot(bool showCompressedData) {
-    // TODO: showCompressedData currently does nothing
-
     PlotData::LockedView view = plotData.makeLockedView();
-    const PlotTimeline& timeline = view.getTimeline();
-    const PlotValues& values = view.getValues();
+    const std::vector<float>& timeline = showCompressedData ? view.getTimeline().compressed() : view.getTimeline().raw();
+    const std::vector<float>& values = showCompressedData ? view.getValues().compressed() : view.getValues().raw();
     const PlotStyle& style = view.getStyle();
     const size_t size = timeline.size();
 
@@ -26,7 +24,7 @@ void RecentPlotData::plot(bool showCompressedData) {
     }
 
     if (size > 0) {
-        const float minX = values.last() - windowX;
+        const float minX = values.back() - windowX;
 
         while (start > 0 && values.at(start - 1) > minX) {
             start--;

@@ -5,6 +5,16 @@
 DataSeries::DataSeries(size_t targetCompressionSize) : targetCompressionSize(targetCompressionSize) {
 }
 
+void DataSeries::add(float value) {
+    values.push_back(value);
+    compressedValues.push_back(value);
+}
+
+void DataSeries::clear() {
+    values.clear();
+    compressedValues.clear();
+}
+
 void DataSeries::compress() {
     PlotDataCompression::meanCompression(values, compressedValues, targetCompressionSize);
 }
@@ -14,26 +24,10 @@ void DataSeries::eraseOld(size_t count) {
     compress();
 }
 
-size_t DataSeries::size() const {
-    return values.size();
+const std::vector<float>& DataSeries::raw() const {
+    return values;
 }
 
-size_t DataSeries::compressedSize() const {
-    return compressedValues.size();
-}
-
-float DataSeries::last() const {
-    return values.back();
-}
-
-float DataSeries::at(size_t index) const {
-    return values.at(index);
-}
-
-const float* DataSeries::data() const {
-    return values.data();
-}
-
-const float* DataSeries::compressedData() const {
-    return compressedValues.data();
+const std::vector<float>& DataSeries::compressed() const {
+    return compressedValues;
 }

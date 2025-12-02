@@ -1,8 +1,7 @@
 #include "NOSPhaseDiagramWindow.h"
 
+#include "DataSeries.h"
 #include "GSDataCenter.h"
-#include "PlotTimeline.h"
-#include "PlotValues.h"
 #include "VaporPressure.h"
 
 #include <cmath>
@@ -18,9 +17,8 @@ constexpr PT_Point criticalPoint{36.42f, 1050.7984099f};
 constexpr float minTempAntoineEquation_C = -10.f;
 constexpr float maxTempAntoineEquation_C = 40.f;
 
-// TODO: No need for compression here
-PlotValues vaporizationCurveTemperatures(1);
-PlotValues vaporizationCurvePressures(1);
+std::vector<float> vaporizationCurveTemperatures;
+std::vector<float> vaporizationCurvePressures;
 ImVector<float> topLine;
 ImVector<float> bottomLine;
 } // namespace NOSPhaseDiagramWindow
@@ -33,8 +31,8 @@ void NOSPhaseDiagramWindow::init() {
 
     for (float temp_C = minTempAntoineEquation_C; temp_C <= maxTempAntoineEquation_C; temp_C += .1f) {
         const float pressure_psi = static_cast<float>(VaporPressure::vaporPressureNOS_psi(temp_C));
-        vaporizationCurveTemperatures.add(temp_C);
-        vaporizationCurvePressures.add(pressure_psi);
+        vaporizationCurveTemperatures.push_back(temp_C);
+        vaporizationCurvePressures.push_back(pressure_psi);
     }
 
     topLine.resize(static_cast<int>(vaporizationCurveTemperatures.size()));

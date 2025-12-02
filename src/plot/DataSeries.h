@@ -6,18 +6,13 @@
 class DataSeries {
 public:
     DataSeries(size_t targetCompressionSize);
-
-    virtual void add(float value) = 0;
-    virtual void clear() = 0;
-
+    void add(float value);
+    void clear();
     void compress();
     void eraseOld(size_t count);
-    size_t size() const;
-    size_t compressedSize() const;
-    float last() const;
-    float at(size_t index) const;
-    const float* data() const;
-    const float* compressedData() const;
+
+    const std::vector<float>& raw() const;
+    const std::vector<float>& compressed() const;
 
 protected:
     std::vector<float> values;

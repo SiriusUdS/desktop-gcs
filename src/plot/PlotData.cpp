@@ -6,15 +6,15 @@
 
 #include <implot.h>
 
-PlotData::LockedView::LockedView(std::mutex& mtx, const PlotTimeline& timeline, const PlotValues& values, const PlotStyle& style)
+PlotData::LockedView::LockedView(std::mutex& mtx, const DataSeries& timeline, const DataSeries& values, const PlotStyle& style)
     : lock(mtx), timeline(timeline), values(values), style(style) {
 }
 
-const PlotTimeline& PlotData::LockedView::getTimeline() const {
+const DataSeries& PlotData::LockedView::getTimeline() const {
     return timeline;
 }
 
-const PlotValues& PlotData::LockedView::getValues() const {
+const DataSeries& PlotData::LockedView::getValues() const {
     return values;
 }
 
@@ -39,7 +39,7 @@ PlotData::PlotData(const char* name, const ThemedColor& color)
 void PlotData::addData(float timestamp, float value) {
     std::lock_guard<std::mutex> lock(mtx);
 
-    if (timeline.size() && timestamp < timeline.last()) {
+    if (timeline.raw().size() && timestamp < timeline.raw().back()) {
         GCS_APP_LOG_WARN("PlotData: Received unordered data for plot data {}, clearing data.", style.name);
         timeline.clear();
         values.clear();
@@ -52,12 +52,12 @@ void PlotData::addData(float timestamp, float value) {
         listener->onAddData(this, timestamp, value);
     }
 
-    if (values.size() > MAX_ORIGINAL_DATA_SIZE) {
+    if (values.raw().size() > MAX_ORIGINAL_DATA_SIZE) {
         timeline.eraseOld(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
         values.eraseOld(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
     }
 
-    if (values.compressedSize() > MAX_COMPRESSED_DATA_SIZE) {
+    if (values.compressed().size() > MAX_COMPRESSED_DATA_SIZE) {
         timeline.compress();
         values.compress();
     }
@@ -89,9 +89,9 @@ void PlotData::plot(bool showCompressedData) const {
 
     ImPlot::SetNextLineStyle(style.color.resolve(), style.weight);
     if (showCompressedData) {
-        ImPlot::PlotLine(style.name, timeline.compressedData(), values.compressedData(), static_cast<int>(values.compressedSize()));
+        ImPlot::PlotLine(style.name, timeline.compressed().data(), values.compressed().data(), static_cast<int>(values.compressed().size()));
     } else {
-        ImPlot::PlotLine(style.name, timeline.data(), values.data(), static_cast<int>(values.size()));
+        ImPlot::PlotLine(style.name, timeline.raw().data(), values.raw().data(), static_cast<int>(values.raw().size()));
     }
 }
 
@@ -103,21 +103,21 @@ void PlotData::plot(bool showCompressedData) const {
 float PlotData::recentAverageValue(size_t duration_ms) const {
     std::lock_guard<std::mutex> lock(mtx);
 
-    const size_t dataSize = values.size();
+    const size_t dataSize = values.raw().size();
 
     if (dataSize == 0) {
         return 0.f;
     }
 
-    const float lastTimestamp = timeline.last();
+    const float lastTimestamp = timeline.raw().back();
     float sum = 0.f;
     size_t count = 0;
 
     for (size_t i = dataSize; i-- > 0;) {
-        if ((lastTimestamp - timeline.at(i)) > duration_ms) {
+        if ((lastTimestamp - timeline.raw().at(i)) > duration_ms) {
             break;
         }
-        sum += values.at(i);
+        sum += values.raw().at(i);
         count++;
     }
 
