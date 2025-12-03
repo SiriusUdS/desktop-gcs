@@ -2,7 +2,7 @@
 #define TANKMASSWINDOW_H
 
 #include "GSDataCenter.h"
-#include "RecentPlotData.h"
+#include "RecentPlotDataView.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
 #include "UIWindow.h"
@@ -18,7 +18,7 @@ private:
     // TODO: Put this in string utils
     std::string getRecentPlotTitle(std::string title, size_t seconds);
 
-    static const size_t RECENT_TIME_WINDOW_SEC = 60;
+    static const size_t RECENT_TIME_WINDOW_MS = 60'000;
 
     // TODO: Make these static const
     std::string tankPressurePlotTitle;
@@ -27,20 +27,20 @@ private:
     std::string tankMassPlotTitle;
 
     // TODO: Replace these indexes with constants
-    RecentPlotData recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
-    RecentPlotData recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
-    RecentPlotData recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(),
-                                             RECENT_TIME_WINDOW_SEC * 1000,
-                                             ThemedColors::GREEN_PLOT_LINE};
-    RecentPlotData recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData[1].getValuePlotData(),
-                                             RECENT_TIME_WINDOW_SEC * 1000,
-                                             ThemedColors::YELLOW_PLOT_LINE};
-    RecentPlotData recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData[2].getValuePlotData(),
-                                         RECENT_TIME_WINDOW_SEC * 1000,
-                                         ThemedColors::BLUE_PLOT_LINE};
-    RecentPlotData recentEngineThrust{GSDataCenter::LoadCell_FillingStation_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
-    RecentPlotData recentTankMass{GSDataCenter::NOSTankMass_PlotData, RECENT_TIME_WINDOW_SEC * 1000};
-    RecentPlotData recentTankLoadCell{GSDataCenter::LoadCell_FillingStation_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_SEC * 1000};
+    RecentPlotDataView recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_MS};
+    RecentPlotDataView recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_MS};
+    RecentPlotDataView recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(),
+                                                 ThemedColors::GREEN_PLOT_LINE,
+                                                 RECENT_TIME_WINDOW_MS};
+    RecentPlotDataView recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData[1].getValuePlotData(),
+                                                 ThemedColors::YELLOW_PLOT_LINE,
+                                                 RECENT_TIME_WINDOW_MS};
+    RecentPlotDataView recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData[2].getValuePlotData(),
+                                             ThemedColors::BLUE_PLOT_LINE,
+                                             RECENT_TIME_WINDOW_MS};
+    RecentPlotDataView recentEngineThrust{GSDataCenter::LoadCell_FillingStation_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_MS};
+    RecentPlotDataView recentTankMass{GSDataCenter::NOSTankMass_PlotData, RECENT_TIME_WINDOW_MS};
+    RecentPlotDataView recentTankLoadCell{GSDataCenter::LoadCell_FillingStation_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_MS};
 };
 
 #endif // TANKMASSWINDOW_H

@@ -10,10 +10,10 @@
 #include <string>
 
 void TankMassWindow::init() {
-    tankPressurePlotTitle = getRecentPlotTitle("Tank Pressure", RECENT_TIME_WINDOW_SEC);
-    tankTemperaturePlotTitle = getRecentPlotTitle("Tank Temperature", RECENT_TIME_WINDOW_SEC);
-    engineThrustPlotTitle = getRecentPlotTitle("Engine Thrust", RECENT_TIME_WINDOW_SEC);
-    tankMassPlotTitle = getRecentPlotTitle("Tank Mass", RECENT_TIME_WINDOW_SEC);
+    tankPressurePlotTitle = getRecentPlotTitle("Tank Pressure", RECENT_TIME_WINDOW_MS / 1000);
+    tankTemperaturePlotTitle = getRecentPlotTitle("Tank Temperature", RECENT_TIME_WINDOW_MS / 1000);
+    engineThrustPlotTitle = getRecentPlotTitle("Engine Thrust", RECENT_TIME_WINDOW_MS / 1000);
+    tankMassPlotTitle = getRecentPlotTitle("Tank Mass", RECENT_TIME_WINDOW_MS / 1000);
 }
 
 void TankMassWindow::render() {
