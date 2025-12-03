@@ -35,6 +35,8 @@ namespace Application {
 mINI::INIFile iniFile("sirius_gcs.ini");
 mINI::INIStructure iniStructure;
 TankMassPlotDataUpdater tankMassPlotDataUpdater;
+std::vector<std::shared_ptr<UIWindow>> windows;
+std::shared_ptr<LoggingWindow> loggingWindow;
 } // namespace Application
 
 void Application::loadFonts() {
@@ -61,14 +63,28 @@ void Application::init() {
 
     iniFile.read(iniStructure);
 
-    MapWindow::init();
-    NOSPhaseDiagramWindow::init();
     PacketCSVLogging::init();
 
-    LoggingWindow::loadState(iniStructure);
-    MapWindow::loadState(iniStructure);
     PlotWindowCenter::loadState(iniStructure);
-    SerialComWindow::loadState(iniStructure);
+
+    loggingWindow = std::make_shared<LoggingWindow>();
+
+    windows.emplace_back(std::make_shared<BoardsWindow>());
+    windows.emplace_back(std::make_shared<ControlsWindow>());
+    windows.emplace_back(loggingWindow);
+    windows.emplace_back(std::make_shared<MapWindow>());
+    windows.emplace_back(std::make_shared<NOSPhaseDiagramWindow>());
+    windows.emplace_back(std::make_shared<RocketParametersWindow>());
+    windows.emplace_back(std::make_shared<SerialComWindow>());
+    windows.emplace_back(std::make_shared<SwitchesWindow>());
+    windows.emplace_back(std::make_shared<TankMassCalculatorWindow>());
+    windows.emplace_back(std::make_shared<TankMassWindow>());
+    windows.emplace_back(std::make_shared<ValvesWindow>());
+
+    for (const auto& window : windows) {
+        window->init();
+        window->loadState(iniStructure);
+    }
 
     Params::loadParams(iniStructure);
 
@@ -88,10 +104,11 @@ void Application::shutdown() {
 
     Params::saveParams(iniStructure);
 
-    LoggingWindow::saveState(iniStructure);
-    MapWindow::saveState(iniStructure);
     PlotWindowCenter::saveState(iniStructure);
-    SerialComWindow::saveState(iniStructure);
+
+    for (const auto& window : windows) {
+        window->saveState(iniStructure);
+    }
 
     iniFile.write(iniStructure);
 
@@ -118,30 +135,11 @@ std::vector<HelloImGui::DockingSplit> Application::createBaseDockingSplits() {
 }
 
 std::vector<HelloImGui::DockableWindow> Application::createDockableWindows() {
-    HelloImGui::DockableWindow boardsDockWin("Boards", ImGuiConfig::Dockspace::MAP, []() { BoardsWindow::render(); });
-    HelloImGui::DockableWindow controlsDockWin("Controls", ImGuiConfig::Dockspace::MAP, []() { ControlsWindow::render(); });
-    HelloImGui::DockableWindow loggingDockWin("Logs", ImGuiConfig::Dockspace::LOGGING, []() { LoggingWindow::render(); });
-    HelloImGui::DockableWindow mapDockWin("Map", ImGuiConfig::Dockspace::MAP, []() { MapWindow::render(); });
-    HelloImGui::DockableWindow nosPhaseDiagramDockWin("NOS Phase Diagram", ImGuiConfig::Dockspace::PLOT, []() { NOSPhaseDiagramWindow::render(); });
-    HelloImGui::DockableWindow rocketParamsDockWin("Rocket Parameters", ImGuiConfig::Dockspace::LOGGING, []() { RocketParametersWindow::render(); });
-    HelloImGui::DockableWindow serialComDockWin("Serial COM", ImGuiConfig::Dockspace::MAP, []() { SerialComWindow::render(); });
-    HelloImGui::DockableWindow switchesDockWin("Switches", ImGuiConfig::Dockspace::MAP, []() { SwitchesWindow::render(); });
-    HelloImGui::DockableWindow tankMassCalcDockWin("Tank Mass Calculator", ImGuiConfig::Dockspace::MAP, []() { TankMassCalculatorWindow::render(); });
-    HelloImGui::DockableWindow tankMassDockWin("Tank Mass", ImGuiConfig::Dockspace::PLOT, []() { TankMassWindow::render(); });
-    HelloImGui::DockableWindow valvesDockWin("Valves", ImGuiConfig::Dockspace::MAP, []() { ValvesWindow::render(); });
-
     std::vector<HelloImGui::DockableWindow> dockableWindows = PlotWindowCenter::createDockableWindows();
-    dockableWindows.push_back(boardsDockWin);
-    dockableWindows.push_back(controlsDockWin);
-    dockableWindows.push_back(loggingDockWin);
-    dockableWindows.push_back(mapDockWin);
-    dockableWindows.push_back(nosPhaseDiagramDockWin);
-    dockableWindows.push_back(rocketParamsDockWin);
-    dockableWindows.push_back(serialComDockWin);
-    dockableWindows.push_back(switchesDockWin);
-    dockableWindows.push_back(tankMassCalcDockWin);
-    dockableWindows.push_back(tankMassDockWin);
-    dockableWindows.push_back(valvesDockWin);
+
+    for (const auto& window : windows) {
+        dockableWindows.emplace_back(window->name(), window->dockspace(), [window]() { window->render(); });
+    }
 
     return dockableWindows;
 }

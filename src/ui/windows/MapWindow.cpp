@@ -1,5 +1,6 @@
 #include "MapWindow.h"
 
+#include "ImGuiConfig.h"
 #include "IniConfig.h"
 #include "Logging.h"
 #include "RichMarkItem.h"
@@ -8,32 +9,6 @@
 #include "TileSourceUrlImpl.h"
 
 #include <sstream>
-
-namespace MapWindow {
-void addMark(const GeoCoords& coords, const std::string& name);
-std::string getFsPathFromMapView(int mapView);
-void startTileProviderConnectivityTest();
-void updateMarkStyle();
-
-constexpr const char* INI_MAP_WINDOW_MAP_VIEW = "map_window_map_view";
-
-int mapView{};
-int prevMapView{};
-bool sourceIsFs{};
-bool canFetchTilesFromUrl{false};
-int downloadMinZ{0};
-int downloadMaxZ{18};
-size_t downloadTileCount{0};
-size_t downloadTileTotal{};
-float downloadProgress{0};
-std::chrono::seconds autoSourceSwitchDelay{1};
-std::chrono::steady_clock::time_point lastAutoSourceSwitchTime{std::chrono::steady_clock::now()};
-std::shared_ptr<RichMapPlot> mapPlot;
-std::shared_ptr<MarkStorage> storage;
-std::shared_ptr<TileGrabber> mapTileGrabber;
-std::shared_ptr<TileGrabber> satelliteTileGrabber;
-std::shared_ptr<TileSourceUrlConnTest> urlConnectionTest;
-} // namespace MapWindow
 
 void MapWindow::init() {
     constexpr const int GCS_TILE_REQUEST_LIMIT = 25;
@@ -52,20 +27,6 @@ void MapWindow::init() {
     addMark({46.14665264871996, -70.66861153239353}, "Tapis Venture");
 
     updateMarkStyle();
-}
-
-void MapWindow::loadState(const mINI::INIStructure& ini) {
-    mapPlot->loadState(ini);
-    if (ini.has(IniConfig::GCS_SECTION)) {
-        if (ini.get(IniConfig::GCS_SECTION).has(INI_MAP_WINDOW_MAP_VIEW)) {
-            mapView = std::stoi(ini.get(IniConfig::GCS_SECTION).get(INI_MAP_WINDOW_MAP_VIEW));
-        }
-    }
-}
-
-void MapWindow::saveState(mINI::INIStructure& ini) {
-    mapPlot->saveState(ini);
-    ini[IniConfig::GCS_SECTION].set(INI_MAP_WINDOW_MAP_VIEW, std::to_string(mapView));
 }
 
 void MapWindow::render() {
@@ -187,12 +148,34 @@ void MapWindow::render() {
     mapPlot->paint();
 }
 
+void MapWindow::loadState(const mINI::INIStructure& ini) {
+    mapPlot->loadState(ini);
+    if (ini.has(IniConfig::GCS_SECTION)) {
+        if (ini.get(IniConfig::GCS_SECTION).has(INI_MAP_WINDOW_MAP_VIEW)) {
+            mapView = std::stoi(ini.get(IniConfig::GCS_SECTION).get(INI_MAP_WINDOW_MAP_VIEW));
+        }
+    }
+}
+
+void MapWindow::saveState(mINI::INIStructure& ini) const {
+    mapPlot->saveState(ini);
+    ini[IniConfig::GCS_SECTION].set(INI_MAP_WINDOW_MAP_VIEW, std::to_string(mapView));
+}
+
+const char* MapWindow::name() const {
+    return "Map";
+}
+
+const char* MapWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
 void MapWindow::addMark(const GeoCoords& coords, const std::string& name) {
     storage->addMark(coords, name);
     mapPlot->addItem(std::reinterpret_pointer_cast<IRichItem>(storage->markItems().back().ptr));
 }
 
-std::string MapWindow::getFsPathFromMapView(int mapView) {
+std::string MapWindow::getFsPathFromMapView(int mapView) const {
     std::string mapViewFolder;
     if (mapView == MAP_VIEW) {
         mapViewFolder = "map";

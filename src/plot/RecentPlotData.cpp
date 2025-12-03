@@ -13,6 +13,8 @@ RecentPlotData::RecentPlotData(const PlotData& plotData, size_t windowX, const T
 }
 
 void RecentPlotData::plot(bool showCompressedData) {
+    // TODO: Fix bug where when old data is erased, "start" attribute becomes unsynced with PlotData data
+
     PlotData::LockedView view = plotData.makeLockedView();
     const std::vector<float>& timeline = showCompressedData ? view.getTimeline().compressed() : view.getTimeline().raw();
     const std::vector<float>& values = showCompressedData ? view.getValues().compressed() : view.getValues().raw();

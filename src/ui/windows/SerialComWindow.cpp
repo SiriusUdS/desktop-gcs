@@ -1,9 +1,9 @@
 #include "SerialComWindow.h"
 
-#include "BoardComStateMonitor.h"
 #include "ComPortSelector.h"
 #include "FontConfig.h"
 #include "GSDataCenter.h"
+#include "ImGuiConfig.h"
 #include "IniConfig.h"
 #include "PacketRateMonitor.h"
 #include "SerialCom.h"
@@ -14,20 +14,10 @@
 #include <algorithm>
 #include <imgui.h>
 
-namespace SerialComWindow {
-enum RecvBufferDisplayMode { TEXT = 0, HEXA = 1 };
+const char* SerialComWindow::INI_RECV_BUFFER_DISPLAY_MODE = "recv_buffer_display_mode";
 
-constexpr const char* INI_RECV_BUFFER_DISPLAY_MODE = "recv_buffer_display_mode";
-
-void renderBoardComStateTableRow(const char* boardName, BoardComStateMonitor::State state);
-void renderPacketRateTableRow(const char* packetName, double rate);
-void recvBufferContentModal();
-void updateRecvBufferContentDisplay(bool syncToCurrentBuffer);
-
-int recvBufferDisplayMode{TEXT};
-bool recvBufferDisplayPause{};
-std::vector<char> recvBufferContentDisplay(SerialConfig::PACKET_CIRCULAR_BUFFER_SIZE);
-} // namespace SerialComWindow
+SerialComWindow::SerialComWindow() : recvBufferContentDisplay(SerialConfig::PACKET_CIRCULAR_BUFFER_SIZE) {
+}
 
 void SerialComWindow::render() {
     if (ImGui::CollapsingHeader("Board COM")) {
@@ -196,11 +186,19 @@ void SerialComWindow::loadState(const mINI::INIStructure& ini) {
     }
 }
 
-void SerialComWindow::saveState(mINI::INIStructure& ini) {
+void SerialComWindow::saveState(mINI::INIStructure& ini) const {
     ini[IniConfig::GCS_SECTION].set(INI_RECV_BUFFER_DISPLAY_MODE, std::to_string(recvBufferDisplayMode));
 }
 
-void SerialComWindow::renderBoardComStateTableRow(const char* boardName, BoardComStateMonitor::State state) {
+const char* SerialComWindow::name() const {
+    return "Serial COM";
+}
+
+const char* SerialComWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
+void SerialComWindow::renderBoardComStateTableRow(const char* boardName, BoardComStateMonitor::State state) const {
     const char* comStateText = "Unknown";
     if (!SerialTask::com.comOpened()) {
         comStateText = "Disconnected";
@@ -225,7 +223,7 @@ void SerialComWindow::renderBoardComStateTableRow(const char* boardName, BoardCo
     ImGui::Text(comStateText);
 }
 
-void SerialComWindow::renderPacketRateTableRow(const char* packetName, double rate) {
+void SerialComWindow::renderPacketRateTableRow(const char* packetName, double rate) const {
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
     ImGui::Text(packetName);

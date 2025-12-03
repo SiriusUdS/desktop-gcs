@@ -1,15 +1,11 @@
 #include "SwitchesWindow.h"
 
 #include "GSDataCenter.h"
+#include "ImGuiConfig.h"
 #include "OnOff.h"
 #include "SwitchData.h"
 
 #include <imgui.h>
-#include <string>
-
-namespace SwitchesWindow {
-void renderSwitch(SwitchData& data, const char* name);
-}
 
 void SwitchesWindow::render() {
     renderSwitch(GSDataCenter::AllowDumpSwitchData, "Allow Dump");
@@ -21,7 +17,15 @@ void SwitchesWindow::render() {
     renderSwitch(GSDataCenter::ValveStartButtonData, "Valve Start");
 }
 
-void SwitchesWindow::renderSwitch(SwitchData& data, const char* name) {
+const char* SwitchesWindow::name() const {
+    return "Switches";
+}
+
+const char* SwitchesWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
+void SwitchesWindow::renderSwitch(const SwitchData& data, const char* name) const {
     ImGui::AlignTextToFramePadding();
     ImGui::Text("%s", name);
     ImGui::SameLine(260);

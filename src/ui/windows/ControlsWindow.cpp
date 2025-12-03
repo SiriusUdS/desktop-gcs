@@ -1,44 +1,16 @@
 #include "ControlsWindow.h"
 
 #include "CommandControl.h"
-#include "CommandTypes.h"
 #include "Engine/EngineSensors.h"
 #include "Engine/EngineState.h"
 #include "FillingStation/FillingStationSensors.h"
 #include "GSDataCenter.h"
+#include "ImGuiConfig.h"
 #include "Logging.h"
 #include "SwitchData.h"
 #include "ValveData.h"
 
 #include <imgui.h>
-
-namespace ControlsWindow {
-/**
- * @struct ValveSlider
- * @brief Holds the state of a valve slider.
- */
-struct PercentageInput {
-    int openedValue_perc{};        ///< Value in percentage of the input.
-    int lastSetOpenedValue_perc{}; ///< Value in percentage of the input that was last sent.
-    int lastOpenedValue_perc{};    ///< Last value sent to the command control.
-};
-
-PercentageInput nosValveSlider;
-PercentageInput ipaValveSlider;
-PercentageInput fillValveSlider;
-PercentageInput dumpValveSlider;
-PercentageInput nosHeatPadSlider;
-PercentageInput ipaHeatPadSlider;
-PercentageInput fillHeatPadSlider;
-PercentageInput dumpHeatPadSlider;
-
-static void renderPercentageInput(const char* name,
-                                  PercentageInput& slider,
-                                  CommandType commandType,
-                                  const char* tooltipDisabled = "",
-                                  bool inputEnabled = true,
-                                  bool onlyFullyClosedOrOpen = false);
-} // namespace ControlsWindow
 
 void ControlsWindow::render() {
     if (ImGui::CollapsingHeader("Valves")) {
@@ -100,12 +72,20 @@ void ControlsWindow::render() {
     }
 }
 
+const char* ControlsWindow::name() const {
+    return "Controls";
+}
+
+const char* ControlsWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
 void ControlsWindow::renderPercentageInput(const char* name,
                                            PercentageInput& slider,
                                            CommandType commandType,
                                            const char* tooltipDisabled,
                                            bool inputEnabled,
-                                           bool onlyFullyClosedOrOpen) {
+                                           bool onlyFullyClosedOrOpen) const {
     // TODO: Do we implement onlyFullyClosedOrOpen in this function or do we just remove it?
 
     constexpr float inputWidth = 200.0f;

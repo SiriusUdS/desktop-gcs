@@ -1,8 +1,17 @@
 #ifndef TANKMASSCALCULATORWINDOW_H
 #define TANKMASSCALCULATORWINDOW_H
 
-namespace TankMassCalculatorWindow {
-void render();
-}
+#include "UIWindow.h"
+
+class TankMassCalculatorWindow : public UIWindow {
+public:
+    void render() override;
+    const char* name() const override;
+    const char* dockspace() const override;
+
+private:
+    double tankTemperature_C{};
+    double tankPressure_psi{};
+};
 
 #endif // TANKMASSCALCULATORWINDOW_H

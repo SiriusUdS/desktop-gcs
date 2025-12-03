@@ -1,5 +1,6 @@
 #include "RocketParametersWindow.h"
 
+#include "ImGuiConfig.h"
 #include "RocketParams.h"
 
 #include <imgui.h>
@@ -11,4 +12,12 @@ void RocketParametersWindow::render() {
     if (ImGui::Button("Restore Default")) {
         RocketParams::NOSTankVolume_m3.currentValue = RocketParams::NOSTankVolume_m3.defaultValue;
     }
+}
+
+const char* RocketParametersWindow::name() const {
+    return "Rocket Parameters";
+}
+
+const char* RocketParametersWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::LOGGING;
 }

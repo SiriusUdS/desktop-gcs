@@ -1,21 +1,16 @@
 #include "BoardsWindow.h"
 
-#include "BoardComStateMonitor.h"
 #include "Engine/EngineState.h"
 #include "FillingStation/FillingStationState.h"
 #include "FontConfig.h"
 #include "GSControl/GSControlState.h"
 #include "GSDataCenter.h"
+#include "ImGuiConfig.h"
 #include "SerialCom.h"
 #include "SerialTask.h"
 #include "Storage/StorageErrorStatus.h"
 
 #include <imgui.h>
-
-namespace BoardsWindow {
-void renderBoardTableRow(const char* name, const char* boardStateName, BoardComStateMonitor::State comState);
-void renderStorageErrorStatusName(uint16_t storageErrorStatus);
-} // namespace BoardsWindow
 
 void BoardsWindow::render() {
     if (ImGui::CollapsingHeader("State")) {
@@ -101,7 +96,15 @@ void BoardsWindow::render() {
     }
 }
 
-void BoardsWindow::renderBoardTableRow(const char* name, const char* boardStateName, BoardComStateMonitor::State comState) {
+const char* BoardsWindow::name() const {
+    return "Boards";
+}
+
+const char* BoardsWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
+void BoardsWindow::renderBoardTableRow(const char* name, const char* boardStateName, BoardComStateMonitor::State comState) const {
     const char* comStateText = "Unknown";
     if (!SerialTask::com.comOpened()) {
         comStateText = "Disconnected";
@@ -128,6 +131,6 @@ void BoardsWindow::renderBoardTableRow(const char* name, const char* boardStateN
     ImGui::Text(comStateText);
 }
 
-void BoardsWindow::renderStorageErrorStatusName(uint16_t storageErrorStatus) {
+void BoardsWindow::renderStorageErrorStatusName(uint16_t storageErrorStatus) const {
     ImGui::Text("%d", storageErrorStatus);
 }

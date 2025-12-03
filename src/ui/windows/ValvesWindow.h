@@ -1,8 +1,18 @@
 #ifndef VALVESWINDOW_H
 #define VALVESWINDOW_H
 
-namespace ValvesWindow {
-void render();
-}
+#include "UIWindow.h"
+
+struct ValveData;
+
+class ValvesWindow : public UIWindow {
+public:
+    void render() override;
+    const char* name() const override;
+    const char* dockspace() const override;
+
+private:
+    void renderValveStateRow(const char* label, ValveData& data) const;
+};
 
 #endif // VALVESWINDOW_H

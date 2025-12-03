@@ -2,26 +2,17 @@
 
 #include "DataSeries.h"
 #include "GSDataCenter.h"
+#include "ImGuiConfig.h"
 #include "VaporPressure.h"
 
 #include <cmath>
-#include <imgui.h>
 #include <implot.h>
 
-namespace NOSPhaseDiagramWindow {
-using PT_Point = ImVec2; // Point type for Pressure-Temperature diagram (Temperature (C), Pressure (psi))
+const NOSPhaseDiagramWindow::PT_Point NOSPhaseDiagramWindow::triplePoint{-90.82f, 12.74156526f};
+const NOSPhaseDiagramWindow::PT_Point NOSPhaseDiagramWindow::criticalPoint{36.42f, 1050.7984099f};
 
-constexpr PT_Point triplePoint{-90.82f, 12.74156526f};
-constexpr PT_Point criticalPoint{36.42f, 1050.7984099f};
-
-constexpr float minTempAntoineEquation_C = -10.f;
-constexpr float maxTempAntoineEquation_C = 40.f;
-
-std::vector<float> vaporizationCurveTemperatures;
-std::vector<float> vaporizationCurvePressures;
-ImVector<float> topLine;
-ImVector<float> bottomLine;
-} // namespace NOSPhaseDiagramWindow
+const float NOSPhaseDiagramWindow::minTempAntoineEquation_C = -10.f;
+const float NOSPhaseDiagramWindow::maxTempAntoineEquation_C = 40.f;
 
 void NOSPhaseDiagramWindow::init() {
     vaporizationCurveTemperatures.clear();
@@ -81,4 +72,12 @@ void NOSPhaseDiagramWindow::render() {
 
         ImPlot::EndPlot();
     }
+}
+
+const char* NOSPhaseDiagramWindow::name() const {
+    return "NOS Phase Diagram";
+}
+
+const char* NOSPhaseDiagramWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::PLOT;
 }

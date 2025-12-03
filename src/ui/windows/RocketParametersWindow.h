@@ -1,8 +1,13 @@
 #ifndef ROCKETPARAMETERSWINDOW_H
 #define ROCKETPARAMETERSWINDOW_H
 
-namespace RocketParametersWindow {
-void render();
-}
+#include "UIWindow.h"
+
+class RocketParametersWindow : public UIWindow {
+public:
+    void render() override;
+    const char* name() const override;
+    const char* dockspace() const override;
+};
 
 #endif // ROCKETPARAMETERSWINDOW_H

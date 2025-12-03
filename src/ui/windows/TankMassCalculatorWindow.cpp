@@ -1,19 +1,14 @@
 #include "TankMassCalculatorWindow.h"
 
 #include "FontAwesome.h"
+#include "ImGuiConfig.h"
 #include "RocketParams.h"
 #include "TankMass.h"
 
-#include <cmath>
 #include <imgui.h>
 
-namespace TankMassCalculatorWindow {
-double tankTemperature_C{};
-double tankPressure_psi{};
-} // namespace TankMassCalculatorWindow
-
 void TankMassCalculatorWindow::render() {
-    ImGui::Text("Tank Volume (m^3): %f", RocketParams::NOSTankVolume_m3);
+    ImGui::Text("Tank Volume (m^3): %f", RocketParams::NOSTankVolume_m3.currentValue);
     ImGui::SameLine();
 
     const ImVec4 buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
@@ -41,4 +36,12 @@ void TankMassCalculatorWindow::render() {
     } else {
         ImGui::Text("%f", tankMass_lb);
     }
+}
+
+const char* TankMassCalculatorWindow::name() const {
+    return "Tank Mass Calculator";
+}
+
+const char* TankMassCalculatorWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
 }

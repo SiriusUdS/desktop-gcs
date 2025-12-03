@@ -1,8 +1,8 @@
 #include "LoggingWindow.h"
 
 #include "FontAwesome.h"
+#include "ImGuiConfig.h"
 #include "IniConfig.h"
-#include "LogBuffer.h"
 #include "Logging.h"
 #include "ThemedColors.h"
 #include "ToggleButton.h"
@@ -10,17 +10,8 @@
 #include <ini.h>
 #include <mutex>
 
-namespace LoggingWindow {
-constexpr const char* GCS_INI_LOG_WINDOW_AUTO_SCROLL = "log_window_auto_scroll";
-constexpr const char* GCS_INI_LOG_WINDOW_SHOW_DEBUG = "log_window_show_debug";
-constexpr const char* GCS_INI_LOG_WINDOW_SHOW_INFO = "log_window_show_info";
-constexpr const char* GCS_INI_LOG_WINDOW_SHOW_WARN = "log_window_show_warn";
-constexpr const char* GCS_INI_LOG_WINDOW_SHOW_ERROR = "log_window_show_error";
-
-bool showInfo{true}, showWarn{true}, showError{true}, showTrace{true}, showDebug{true};
-ImGuiTextFilter filter;
-LogBuffer logBuffer(filter, showDebug, showInfo, showWarn, showError);
-} // namespace LoggingWindow
+LoggingWindow::LoggingWindow() : logBuffer{filter, showDebug, showInfo, showWarn, showError} {
+}
 
 void LoggingWindow::render() {
     if (ToggleButton(ICON_FA_BUG " Debug", &showDebug, ThemedColors::BLUE_BUTTON.resolve())) {
@@ -72,11 +63,19 @@ void LoggingWindow::loadState(const mINI::INIStructure& ini) {
     }
 }
 
-void LoggingWindow::saveState(mINI::INIStructure& ini) {
+void LoggingWindow::saveState(mINI::INIStructure& ini) const {
     ini[IniConfig::GCS_SECTION].set(GCS_INI_LOG_WINDOW_SHOW_DEBUG, std::to_string(showDebug));
     ini[IniConfig::GCS_SECTION].set(GCS_INI_LOG_WINDOW_SHOW_INFO, std::to_string(showInfo));
     ini[IniConfig::GCS_SECTION].set(GCS_INI_LOG_WINDOW_SHOW_WARN, std::to_string(showWarn));
     ini[IniConfig::GCS_SECTION].set(GCS_INI_LOG_WINDOW_SHOW_ERROR, std::to_string(showError));
+}
+
+const char* LoggingWindow::name() const {
+    return "Logs";
+}
+
+const char* LoggingWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::LOGGING;
 }
 
 void LoggingWindow::addLog(const char* str, const char* strEnd, spdlog::level::level_enum type) {

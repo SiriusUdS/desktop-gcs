@@ -1,15 +1,11 @@
 #include "ValvesWindow.h"
 
-#include "FontConfig.h"
 #include "GSDataCenter.h"
+#include "ImGuiConfig.h"
 #include "ValveData.h"
 
 #include <imgui.h>
 #include <string>
-
-namespace ValvesWindow {
-void renderValveStateRow(const char* label, ValveData& data);
-} // namespace ValvesWindow
 
 void ValvesWindow::render() {
     if (ImGui::BeginTable("ValveStateTable", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
@@ -29,7 +25,15 @@ void ValvesWindow::render() {
     }
 }
 
-void ValvesWindow::renderValveStateRow(const char* label, ValveData& data) {
+const char* ValvesWindow::name() const {
+    return "Valves";
+}
+
+const char* ValvesWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
+void ValvesWindow::renderValveStateRow(const char* label, ValveData& data) const {
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
     ImGui::Text(label);
