@@ -8,6 +8,7 @@
 #include "ControlsWindow.h"
 #include "FontConfig.h"
 #include "ImGuiConfig.h"
+#include "LaunchWindow.h"
 #include "Logging.h"
 #include "LoggingWindow.h"
 #include "MapWindow.h"
@@ -80,6 +81,7 @@ void Application::init() {
     windows.emplace_back(std::make_shared<TankMassCalculatorWindow>());
     windows.emplace_back(std::make_shared<TankMassWindow>());
     windows.emplace_back(std::make_shared<ValvesWindow>());
+    windows.emplace_back(std::make_shared<LaunchWindow>());
 
     for (const auto& window : windows) {
         window->init();
