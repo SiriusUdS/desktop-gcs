@@ -5,30 +5,43 @@
 #include <algorithm>
 #include <imgui.h>
 
-LaunchWindow::LaunchWindow() {
-    StateMachineRenderer::StateRect rect1{.position{100, 0}, .size{200, 80}, .active = true, .label = "SAFE"};
-    StateMachineRenderer::StateRect rect2{.position{100, 200}, .size{200, 80}, .active = false, .label = "UNSAFE"};
-    StateMachineRenderer::StateRect rect3{.position{-200, 0}, .size{200, 80}, .active = false, .label = "INIT"};
-    StateMachineRenderer::Arrow arrow1{.points = {{100, 40}, {100, 160}},
-                                       .arrowhead = true,
-                                       .arrowheadDirection = StateMachineRenderer::ArrowheadDirection::DOWN};
-    StateMachineRenderer::Arrow arrow2{.points = {{-100, 0}, {-66, 0}, {-66, 33}, {-33, 33}, {-33, 0}, {0, 0}},
-                                       .arrowhead = true,
-                                       .arrowheadDirection = StateMachineRenderer::ArrowheadDirection::RIGHT};
+using StateRect = StateMachineRenderer::StateRect;
+using Arrow = StateMachineRenderer::Arrow;
+using ArrowType = StateMachineRenderer::ArrowType;
+using AnchorPointDir = StateMachineRenderer::AnchorPointDir;
+using ArrowheadDir = StateMachineRenderer::ArrowheadDir;
 
-    stateMachineRenderer.addStateRect(rect1);
-    stateMachineRenderer.addStateRect(rect2);
-    stateMachineRenderer.addStateRect(rect3);
-    stateMachineRenderer.addArrow(arrow1);
-    stateMachineRenderer.addArrow(arrow2);
+LaunchWindow::LaunchWindow() {
+    ImVec2 rectSize{160, 60};
+    ImVec2 halfRectSize{rectSize.x / 2.0f, rectSize.y / 2.0f};
+
+    StateRect fsInit{.position{-300, 0}, .size{rectSize}, .active{false}, .label{"INIT"}};
+    StateRect fsSafe{.position{0, 0}, .size{rectSize}, .active{true}, .label{"SAFE"}};
+    StateRect fsError{.position{-150, 140}, .size{rectSize}, .active{false}, .label{"ERROR"}};
+
+    Arrow fsInitToSafe = StateMachineRenderer::createArrow(fsInit, AnchorPointDir::RIGHT, fsSafe, AnchorPointDir::LEFT, ArrowType::HORIZONTAL);
+    fsInitToSafe.arrowhead = true;
+    fsInitToSafe.arrowheadDirection = ArrowheadDir::RIGHT;
+
+    Arrow fsInitToError = StateMachineRenderer::createArrow(fsInit, AnchorPointDir::BOTTOM, fsError, AnchorPointDir::TOP, ArrowType::HORIZONTAL);
+    fsInitToError.arrowhead = true;
+    fsInitToError.arrowheadDirection = ArrowheadDir::DOWN;
+
+    Arrow fsSafeToError = StateMachineRenderer::createArrow(fsSafe, AnchorPointDir::BOTTOM, fsError, AnchorPointDir::TOP, ArrowType::HORIZONTAL);
+    fsSafeToError.arrowhead = true;
+    fsSafeToError.arrowheadDirection = ArrowheadDir::DOWN;
+
+    fsStateMachine.addStateRect(fsInit);
+    fsStateMachine.addStateRect(fsSafe);
+    fsStateMachine.addStateRect(fsError);
+    fsStateMachine.addArrow(fsInitToSafe);
+    fsStateMachine.addArrow(fsInitToError);
+    fsStateMachine.addArrow(fsSafeToError);
 }
 
 void LaunchWindow::render() {
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
-    ImVec2 size = {windowSize.x, 2000};
-    stateMachineRenderer.render(size, true);
-
-    ImGui::Text("this is a test");
+    fsStateMachine.render(windowSize, true);
 }
 
 const char* LaunchWindow::name() const {

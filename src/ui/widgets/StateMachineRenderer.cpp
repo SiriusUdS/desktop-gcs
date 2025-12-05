@@ -36,6 +36,49 @@ void StateMachineRenderer::render(ImVec2 size, bool drawDebugRegions) {
     ImGui::SetCursorScreenPos({cursorPos.x, cursorPos.y + size.y});
 }
 
+StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& rect1,
+                                                              AnchorPointDir anchorRect1,
+                                                              const StateRect& rect2,
+                                                              AnchorPointDir anchorRect2,
+                                                              ArrowType type) {
+    const ImVec2 p1 = getAnchorPointPosition(rect1, anchorRect1);
+    const ImVec2 p2 = getAnchorPointPosition(rect2, anchorRect2);
+    std::vector<ImVec2> points;
+
+    points.push_back(p1);
+
+    if (p1.x == p2.x || p1.y == p2.y) {
+        // Do nothing, straight line
+    } else if (type == ArrowType::HORIZONTAL) {
+        float midY = (p1.y + p2.y) / 2;
+        points.push_back({p1.x, midY});
+        points.push_back({p2.x, midY});
+    } else if (type == ArrowType::VERTICAL) {
+        float midX = (p1.x + p2.x) / 2;
+        points.push_back({midX, p1.y});
+        points.push_back({midX, p2.y});
+    }
+
+    points.push_back(p2);
+
+    return {.points{points}};
+}
+
+ImVec2 StateMachineRenderer::getAnchorPointPosition(const StateRect& rect, AnchorPointDir dir) {
+    switch (dir) {
+    case AnchorPointDir::TOP:
+        return {rect.position.x, rect.position.y - rect.size.y / 2};
+    case AnchorPointDir::RIGHT:
+        return {rect.position.x + rect.size.x / 2, rect.position.y};
+    case AnchorPointDir::BOTTOM:
+        return {rect.position.x, rect.position.y + rect.size.y / 2};
+    case AnchorPointDir::LEFT:
+        return {rect.position.x - rect.size.x / 2, rect.position.y};
+    default:
+        return {0, 0};
+    }
+}
+
 void StateMachineRenderer::computeAvailableSpace(const ImVec2& size) {
     availableSpace = {size.x - PADDING * 2, size.y - PADDING * 2};
 }
@@ -151,19 +194,19 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
         float arrowheadBaseOffset = -8.0f * sizeScale;
 
         switch (arrow.arrowheadDirection) {
-        case ArrowheadDirection::UP:
+        case ArrowheadDir::UP:
             arrowPoint1 = {segmentEnd.x - arrowSize - arrowheadBaseOffset, segmentEnd.y + arrowSize};
             arrowPoint2 = {segmentEnd.x + arrowSize + arrowheadBaseOffset, segmentEnd.y + arrowSize};
             break;
-        case ArrowheadDirection::RIGHT:
+        case ArrowheadDir::RIGHT:
             arrowPoint1 = {segmentEnd.x - arrowSize, segmentEnd.y - arrowSize - arrowheadBaseOffset};
             arrowPoint2 = {segmentEnd.x - arrowSize, segmentEnd.y + arrowSize + arrowheadBaseOffset};
             break;
-        case ArrowheadDirection::DOWN:
+        case ArrowheadDir::DOWN:
             arrowPoint1 = {segmentEnd.x - arrowSize - arrowheadBaseOffset, segmentEnd.y - arrowSize};
             arrowPoint2 = {segmentEnd.x + arrowSize + arrowheadBaseOffset, segmentEnd.y - arrowSize};
             break;
-        case ArrowheadDirection::LEFT:
+        case ArrowheadDir::LEFT:
             arrowPoint1 = {segmentEnd.x + arrowSize, segmentEnd.y - arrowSize - arrowheadBaseOffset};
             arrowPoint2 = {segmentEnd.x + arrowSize, segmentEnd.y + arrowSize + arrowheadBaseOffset};
             break;
