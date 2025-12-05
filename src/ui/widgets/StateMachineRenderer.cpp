@@ -215,6 +215,37 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
         drawList->AddLine(segmentEnd, arrowPoint1, arrowColor, arrowThickness);
         drawList->AddLine(segmentEnd, arrowPoint2, arrowColor, arrowThickness);
     }
+
+    // Label
+    if (arrow.label != "") {
+        ImVec2 labelPosition;
+        size_t points_amount = arrow.points.size();
+
+        if (points_amount % 2 == 0) {
+            const ImVec2& midPoint1 = arrow.points[(points_amount / 2) - 1];
+            const ImVec2& midPoint2 = arrow.points[points_amount / 2];
+            labelPosition = {(midPoint1.x + midPoint2.x) / 2, (midPoint1.y + midPoint2.y) / 2};
+        } else {
+            labelPosition = arrow.points[points_amount / 2];
+        }
+
+        ImVec2 textSize = ImGui::CalcTextSize(arrow.label);
+        labelPosition = {labelPosition.x - textSize.x / 2, labelPosition.y - textSize.y / 2};
+
+        float bgRectPadding = 3.0f;
+
+        ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        ImU32 bg_u32 = ImGui::GetColorU32(bg);
+
+        ImVec2 labelWindowPosition = {middlePoint.x + (labelPosition.x + offsetPosition.x) * sizeScale,
+                                      middlePoint.y + (labelPosition.y + offsetPosition.y) * sizeScale};
+
+        ImVec2 rectMin = {labelWindowPosition.x - bgRectPadding, labelWindowPosition.y - bgRectPadding};
+        ImVec2 rectMax = {labelWindowPosition.x + textSize.x + bgRectPadding, labelWindowPosition.y + textSize.y + bgRectPadding};
+
+        drawList->AddRectFilled(rectMin, rectMax, bg_u32);
+        drawList->AddText(labelWindowPosition, arrowColor, arrow.label);
+    }
 }
 
 void StateMachineRenderer::drawDebugRegion(const ImVec2& size) {

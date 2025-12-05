@@ -19,6 +19,7 @@ public:
         std::vector<ImVec2> points;
         bool arrowhead{};
         ArrowheadDir arrowheadDirection{ArrowheadDir::UP};
+        const char* label{""};
     };
 
     enum class ArrowType { HORIZONTAL, VERTICAL };

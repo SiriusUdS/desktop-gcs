@@ -26,6 +26,7 @@ LaunchWindow::LaunchWindow() {
     Arrow fsInitToError = StateMachineRenderer::createArrow(fsInit, AnchorPointDir::BOTTOM, fsError, AnchorPointDir::TOP, ArrowType::HORIZONTAL);
     fsInitToError.arrowhead = true;
     fsInitToError.arrowheadDirection = ArrowheadDir::DOWN;
+    fsInitToError.label = "[Init Failed]";
 
     Arrow fsSafeToError = StateMachineRenderer::createArrow(fsSafe, AnchorPointDir::BOTTOM, fsError, AnchorPointDir::TOP, ArrowType::HORIZONTAL);
     fsSafeToError.arrowhead = true;
