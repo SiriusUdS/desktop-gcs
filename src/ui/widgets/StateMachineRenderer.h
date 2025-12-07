@@ -22,17 +22,27 @@ public:
         const char* label{""};
     };
 
-    enum class ArrowType { HORIZONTAL, VERTICAL };
+    enum class ArrowPathType { HORIZONTAL, VERTICAL, ORTHOGONAL };
 
-    enum class AnchorPointDir { TOP, RIGHT, BOTTOM, LEFT };
+    enum class AnchorEdgeSide { TOP, RIGHT, BOTTOM, LEFT };
+
+    struct AnchorEdge {
+        AnchorEdgeSide side;
+        float position{0.5}; /// Position along the edge, value goes from 0 to 1
+    };
 
 public:
     void addStateRect(StateRect rect);
     void addArrow(Arrow arrow);
     void render(ImVec2 size, bool drawDebugRegions = false);
 
-    static Arrow createArrow(const StateRect& rect1, AnchorPointDir anchorRect1, const StateRect& rect2, AnchorPointDir anchorRect2, ArrowType type);
-    static ImVec2 getAnchorPointPosition(const StateRect& rect, AnchorPointDir dir);
+    static Arrow createArrow(const StateRect& rect1,
+                             AnchorEdge anchorRect1,
+                             const StateRect& rect2,
+                             AnchorEdge anchorRect2,
+                             ArrowPathType pathType = ArrowPathType::HORIZONTAL,
+                             float routeOffset = 0.0f);
+    static ImVec2 getAnchorPointPosition(const StateRect& rect, AnchorEdge anchorEdge);
 
 private:
     void computeAvailableSpace(const ImVec2& size);
@@ -43,6 +53,8 @@ private:
 
     void drawStateRect(const StateRect& rect);
     void drawArrow(const Arrow& arrow);
+
+    ImVec2 getWindowPosFromStateMachinePos(const ImVec2& stateMachinePos);
 
     void drawDebugRegion(const ImVec2& size);
     void drawDebugPadding(const ImVec2& size);

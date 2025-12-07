@@ -37,10 +37,11 @@ void StateMachineRenderer::render(ImVec2 size, bool drawDebugRegions) {
 }
 
 StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& rect1,
-                                                              AnchorPointDir anchorRect1,
+                                                              AnchorEdge anchorRect1,
                                                               const StateRect& rect2,
-                                                              AnchorPointDir anchorRect2,
-                                                              ArrowType type) {
+                                                              AnchorEdge anchorRect2,
+                                                              ArrowPathType pathType,
+                                                              float routeOffset) {
     const ImVec2 p1 = getAnchorPointPosition(rect1, anchorRect1);
     const ImVec2 p2 = getAnchorPointPosition(rect2, anchorRect2);
     std::vector<ImVec2> points;
@@ -49,14 +50,20 @@ StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& r
 
     if (p1.x == p2.x || p1.y == p2.y) {
         // Do nothing, straight line
-    } else if (type == ArrowType::HORIZONTAL) {
-        float midY = (p1.y + p2.y) / 2;
-        points.push_back({p1.x, midY});
-        points.push_back({p2.x, midY});
-    } else if (type == ArrowType::VERTICAL) {
-        float midX = (p1.x + p2.x) / 2;
-        points.push_back({midX, p1.y});
-        points.push_back({midX, p2.y});
+    } else if (pathType == ArrowPathType::HORIZONTAL) {
+        float midSegmentY = (p1.y + p2.y) / 2 + routeOffset;
+        points.push_back({p1.x, midSegmentY});
+        points.push_back({p2.x, midSegmentY});
+    } else if (pathType == ArrowPathType::VERTICAL) {
+        float midSegmentX = (p1.x + p2.x) / 2 + routeOffset;
+        points.push_back({midSegmentX, p1.y});
+        points.push_back({midSegmentX, p2.y});
+    } else if (pathType == ArrowPathType::ORTHOGONAL) {
+        if (anchorRect1.side == AnchorEdgeSide::TOP || anchorRect1.side == AnchorEdgeSide::BOTTOM) {
+            points.push_back({p1.x, p2.y});
+        } else {
+            points.push_back({p2.x, p1.y});
+        }
     }
 
     points.push_back(p2);
@@ -64,16 +71,16 @@ StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& r
     return {.points{points}};
 }
 
-ImVec2 StateMachineRenderer::getAnchorPointPosition(const StateRect& rect, AnchorPointDir dir) {
-    switch (dir) {
-    case AnchorPointDir::TOP:
-        return {rect.position.x, rect.position.y - rect.size.y / 2};
-    case AnchorPointDir::RIGHT:
-        return {rect.position.x + rect.size.x / 2, rect.position.y};
-    case AnchorPointDir::BOTTOM:
-        return {rect.position.x, rect.position.y + rect.size.y / 2};
-    case AnchorPointDir::LEFT:
-        return {rect.position.x - rect.size.x / 2, rect.position.y};
+ImVec2 StateMachineRenderer::getAnchorPointPosition(const StateRect& rect, AnchorEdge anchorEdge) {
+    switch (anchorEdge.side) {
+    case AnchorEdgeSide::TOP:
+        return {rect.position.x + rect.size.x * (anchorEdge.position - 0.5f), rect.position.y - rect.size.y / 2};
+    case AnchorEdgeSide::RIGHT:
+        return {rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y * (anchorEdge.position - 0.5f)};
+    case AnchorEdgeSide::BOTTOM:
+        return {rect.position.x - rect.size.x * (anchorEdge.position - 0.5f), rect.position.y + rect.size.y / 2};
+    case AnchorEdgeSide::LEFT:
+        return {rect.position.x - rect.size.x / 2, rect.position.y - rect.size.y * (anchorEdge.position - 0.5f)};
     default:
         return {0, 0};
     }
@@ -142,8 +149,7 @@ void StateMachineRenderer::drawStateRect(const StateRect& rect) {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
 
     // Rect position
-    ImVec2 rectWindowPos = {(rect.position.x + offsetPosition.x) * sizeScale + middlePoint.x,
-                            (rect.position.y + offsetPosition.y) * sizeScale + middlePoint.y};
+    ImVec2 rectWindowPos = getWindowPosFromStateMachinePos(rect.position);
     ImVec2 rectMin = {rectWindowPos.x - rect.size.x * sizeScale / 2, rectWindowPos.y - rect.size.y * sizeScale / 2};
     ImVec2 rectMax = {rectMin.x + rect.size.x * sizeScale, rectMin.y + rect.size.y * sizeScale};
 
@@ -178,8 +184,8 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
     for (size_t i = 0; i < arrow.points.size() - 1; i++) {
         const ImVec2& p1 = arrow.points[i];
         const ImVec2& p2 = arrow.points[i + 1];
-        ImVec2 segmentStart = {middlePoint.x + (p1.x + offsetPosition.x) * sizeScale, middlePoint.y + (p1.y + offsetPosition.y) * sizeScale};
-        ImVec2 segmentEnd = {middlePoint.x + (p2.x + offsetPosition.x) * sizeScale, middlePoint.y + (p2.y + offsetPosition.y) * sizeScale};
+        ImVec2 segmentStart = getWindowPosFromStateMachinePos(p1);
+        ImVec2 segmentEnd = getWindowPosFromStateMachinePos(p2);
 
         drawList->AddLine(segmentStart, segmentEnd, arrowColor, arrowThickness);
     }
@@ -187,8 +193,7 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
     // Arrowhead
     if (arrow.arrowhead) {
         const ImVec2& lastPoint = arrow.points.back();
-        ImVec2 segmentEnd = {middlePoint.x + (lastPoint.x + offsetPosition.x) * sizeScale,
-                             middlePoint.y + (lastPoint.y + offsetPosition.y) * sizeScale};
+        ImVec2 segmentEnd = getWindowPosFromStateMachinePos(lastPoint);
         ImVec2 arrowPoint1, arrowPoint2;
         float arrowSize = 20.0f * sizeScale;
         float arrowheadBaseOffset = -8.0f * sizeScale;
@@ -229,23 +234,24 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
             labelPosition = arrow.points[points_amount / 2];
         }
 
+        ImVec2 labelWindowPosition = getWindowPosFromStateMachinePos(labelPosition);
         ImVec2 textSize = ImGui::CalcTextSize(arrow.label);
-        labelPosition = {labelPosition.x - textSize.x / 2, labelPosition.y - textSize.y / 2};
+        labelWindowPosition = {labelWindowPosition.x - textSize.x / 2, labelWindowPosition.y - textSize.y / 2};
 
         float bgRectPadding = 3.0f;
+        ImVec2 rectMin = {labelWindowPosition.x - bgRectPadding, labelWindowPosition.y - bgRectPadding};
+        ImVec2 rectMax = {labelWindowPosition.x + textSize.x + bgRectPadding, labelWindowPosition.y + textSize.y + bgRectPadding};
 
         ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
         ImU32 bg_u32 = ImGui::GetColorU32(bg);
 
-        ImVec2 labelWindowPosition = {middlePoint.x + (labelPosition.x + offsetPosition.x) * sizeScale,
-                                      middlePoint.y + (labelPosition.y + offsetPosition.y) * sizeScale};
-
-        ImVec2 rectMin = {labelWindowPosition.x - bgRectPadding, labelWindowPosition.y - bgRectPadding};
-        ImVec2 rectMax = {labelWindowPosition.x + textSize.x + bgRectPadding, labelWindowPosition.y + textSize.y + bgRectPadding};
-
         drawList->AddRectFilled(rectMin, rectMax, bg_u32);
         drawList->AddText(labelWindowPosition, arrowColor, arrow.label);
     }
+}
+
+ImVec2 StateMachineRenderer::getWindowPosFromStateMachinePos(const ImVec2& stateMachinePos) {
+    return {(stateMachinePos.x + offsetPosition.x) * sizeScale + middlePoint.x, (stateMachinePos.y + offsetPosition.y) * sizeScale + middlePoint.y};
 }
 
 void StateMachineRenderer::drawDebugRegion(const ImVec2& size) {
