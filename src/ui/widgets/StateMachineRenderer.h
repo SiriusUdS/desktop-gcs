@@ -17,7 +17,7 @@ public:
 
     struct Arrow {
         std::vector<ImVec2> points;
-        bool arrowhead{};
+        bool arrowhead{true};
         ArrowheadDir arrowheadDirection{ArrowheadDir::UP};
         const char* label{""};
     };

@@ -17,6 +17,8 @@ const ThemedColor BLUE_PLOT_LINE{.lightTheme = {40, 80, 185}, .darkTheme = {100,
 const ThemedColor CYAN_PLOT_LINE{.lightTheme = {0, 145, 145}, .darkTheme = {60, 220, 220}};
 const ThemedColor PURPLE_PLOT_LINE{.lightTheme = {110, 55, 175}, .darkTheme = {170, 110, 255}};
 const ThemedColor GRAY_PLOT_LINE{.lightTheme = {120, 120, 120}, .darkTheme = {200, 200, 200}};
+
+const ThemedColor STATE_MACHINE_ARROW{.lightTheme = {0, 0, 0}, .darkTheme = {255, 255, 255}};
 } // namespace ThemedColors
 
 #endif // THEMEDCOLORS_H

@@ -1,5 +1,7 @@
 #include "StateMachineRenderer.h"
 
+#include "ThemedColors.h"
+
 const float StateMachineRenderer::PADDING = 40.0f;
 
 void StateMachineRenderer::addStateRect(StateRect rect) {
@@ -46,16 +48,16 @@ StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& r
     const ImVec2 p2 = getAnchorPointPosition(rect2, anchorRect2);
     std::vector<ImVec2> points;
 
+    // Create arrow path
     points.push_back(p1);
-
     if (p1.x == p2.x || p1.y == p2.y) {
         // Do nothing, straight line
     } else if (pathType == ArrowPathType::HORIZONTAL) {
-        float midSegmentY = (p1.y + p2.y) / 2 + routeOffset;
+        float midSegmentY = (p1.y + p2.y) / 2.0f + routeOffset;
         points.push_back({p1.x, midSegmentY});
         points.push_back({p2.x, midSegmentY});
     } else if (pathType == ArrowPathType::VERTICAL) {
-        float midSegmentX = (p1.x + p2.x) / 2 + routeOffset;
+        float midSegmentX = (p1.x + p2.x) / 2.0f + routeOffset;
         points.push_back({midSegmentX, p1.y});
         points.push_back({midSegmentX, p2.y});
     } else if (pathType == ArrowPathType::ORTHOGONAL) {
@@ -65,10 +67,20 @@ StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& r
             points.push_back({p2.x, p1.y});
         }
     }
-
     points.push_back(p2);
 
-    return {.points{points}};
+    // Determine arrowhead direction
+    ArrowheadDir dir = ArrowheadDir::UP;
+    const ImVec2& ps = points.at(points.size() - 2); // Second to last point
+    if (p2.y > ps.y) {
+        dir = ArrowheadDir::DOWN;
+    } else if (p2.x > ps.x) {
+        dir = ArrowheadDir::RIGHT;
+    } else if (p2.x < ps.x) {
+        dir = ArrowheadDir::LEFT;
+    }
+
+    return {.points{points}, .arrowheadDirection{dir}};
 }
 
 ImVec2 StateMachineRenderer::getAnchorPointPosition(const StateRect& rect, AnchorEdge anchorEdge) {
@@ -177,7 +189,7 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
 
     // Style
-    ImColor arrowColor = IM_COL32(0, 0, 0, 255);
+    ImColor arrowColor = ThemedColors::STATE_MACHINE_ARROW.resolve();
     float arrowThickness = 2.0f;
 
     // Arrow segments
@@ -238,7 +250,7 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
         ImVec2 textSize = ImGui::CalcTextSize(arrow.label);
         labelWindowPosition = {labelWindowPosition.x - textSize.x / 2, labelWindowPosition.y - textSize.y / 2};
 
-        float bgRectPadding = 3.0f;
+        float bgRectPadding = 2.0f;
         ImVec2 rectMin = {labelWindowPosition.x - bgRectPadding, labelWindowPosition.y - bgRectPadding};
         ImVec2 rectMax = {labelWindowPosition.x + textSize.x + bgRectPadding, labelWindowPosition.y + textSize.y + bgRectPadding};
 
