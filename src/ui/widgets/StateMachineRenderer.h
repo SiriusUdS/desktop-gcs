@@ -20,6 +20,7 @@ public:
         bool arrowhead{true};
         ArrowheadDir arrowheadDirection{ArrowheadDir::UP};
         const char* label{""};
+        ImVec2 labelOffset{0, 0};
     };
 
     enum class ArrowPathType { HORIZONTAL, VERTICAL, ORTHOGONAL };

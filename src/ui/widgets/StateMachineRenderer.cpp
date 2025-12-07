@@ -117,21 +117,37 @@ void StateMachineRenderer::computeBoundaries() {
     ImVec2 topLeft = {FLT_MAX, FLT_MAX};
     ImVec2 bottomRight = {-FLT_MAX, -FLT_MAX};
 
+    // Compute boundaries from rects
     for (const auto& rect : rects) {
         if (rect.position.x - rect.size.x / 2 < topLeft.x) {
             topLeft.x = rect.position.x - rect.size.x / 2;
         }
-
         if (rect.position.x + rect.size.x / 2 > bottomRight.x) {
             bottomRight.x = rect.position.x + rect.size.x / 2;
         }
-
         if (rect.position.y - rect.size.y / 2 < topLeft.y) {
             topLeft.y = rect.position.y - rect.size.y / 2;
         }
-
         if (rect.position.y + rect.size.y / 2 > bottomRight.y) {
             bottomRight.y = rect.position.y + rect.size.y / 2;
+        }
+    }
+
+    // Compute boundaries from arrows
+    for (const auto& arrow : arrows) {
+        for (const auto& point : arrow.points) {
+            if (point.x < topLeft.x) {
+                topLeft.x = point.x;
+            }
+            if (point.x > bottomRight.x) {
+                bottomRight.x = point.x;
+            }
+            if (point.y < topLeft.y) {
+                topLeft.y = point.y;
+            }
+            if (point.y > bottomRight.y) {
+                bottomRight.y = point.y;
+            }
         }
     }
 
@@ -236,15 +252,16 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
     // Label
     if (arrow.label != "") {
         ImVec2 labelPosition;
-        size_t points_amount = arrow.points.size();
+        size_t pointsAmount = arrow.points.size();
 
-        if (points_amount % 2 == 0) {
-            const ImVec2& midPoint1 = arrow.points[(points_amount / 2) - 1];
-            const ImVec2& midPoint2 = arrow.points[points_amount / 2];
+        if (pointsAmount % 2 == 0) {
+            const ImVec2& midPoint1 = arrow.points[(pointsAmount / 2) - 1];
+            const ImVec2& midPoint2 = arrow.points[pointsAmount / 2];
             labelPosition = {(midPoint1.x + midPoint2.x) / 2, (midPoint1.y + midPoint2.y) / 2};
         } else {
-            labelPosition = arrow.points[points_amount / 2];
+            labelPosition = arrow.points[pointsAmount / 2];
         }
+        labelPosition = {labelPosition.x + arrow.labelOffset.x, labelPosition.y + arrow.labelOffset.y};
 
         ImVec2 labelWindowPosition = getWindowPosFromStateMachinePos(labelPosition);
         ImVec2 textSize = ImGui::CalcTextSize(arrow.label);

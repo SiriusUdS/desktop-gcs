@@ -17,11 +17,11 @@ LaunchWindow::LaunchWindow() {
 
     StateRect fsInit{.position{-500, 0}, .size{rectSize}, .active{false}, .label{"INIT"}};
     StateRect fsSafe{.position{0, 0}, .size{rectSize}, .active{true}, .label{"SAFE"}};
-    StateRect fsTest{.position{0, -210}, .size{rectSize}, .active{false}, .label{"TEST"}};
-    StateRect fsAbort{.position{450, -210}, .size{rectSize}, .active{false}, .label{"ABORT"}};
-    StateRect fsError{.position{-225, 210}, .size{rectSize}, .active{false}, .label{"ERROR"}};
-    StateRect fsUnsafe{.position{225, 210}, .size{rectSize}, .active{false}, .label{"UNSAFE"}};
-    StateRect fsIgnite{.position{225, 420}, .size{rectSize}, .active{false}, .label{"IGNITE"}};
+    StateRect fsTest{.position{0, -150}, .size{rectSize}, .active{false}, .label{"TEST"}};
+    StateRect fsAbort{.position{450, -150}, .size{rectSize}, .active{false}, .label{"ABORT"}};
+    StateRect fsError{.position{-225, 150}, .size{rectSize}, .active{false}, .label{"ERROR"}};
+    StateRect fsUnsafe{.position{225, 150}, .size{rectSize}, .active{false}, .label{"UNSAFE"}};
+    StateRect fsIgnite{.position{225, 300}, .size{rectSize}, .active{false}, .label{"IGNITE"}};
 
     Arrow fsInitToSafe = StateMachineRenderer::createArrow(fsInit, {AnchorEdgeSide::RIGHT}, fsSafe, {AnchorEdgeSide::LEFT});
     fsInitToSafe.label = "[Init Completed]";
@@ -56,7 +56,7 @@ LaunchWindow::LaunchWindow() {
     fsErrorToSafe.label = "SAFE";
 
     Arrow fsErrorToAbort =
-      StateMachineRenderer::createArrow(fsError, {AnchorEdgeSide::BOTTOM}, fsAbort, {AnchorEdgeSide::BOTTOM}, ArrowPathType::HORIZONTAL, 500.0f);
+      StateMachineRenderer::createArrow(fsError, {AnchorEdgeSide::BOTTOM}, fsAbort, {AnchorEdgeSide::BOTTOM}, ArrowPathType::HORIZONTAL, 350.0f);
 
     Arrow fsUnsafeToSafe =
       StateMachineRenderer::createArrow(fsUnsafe, {AnchorEdgeSide::TOP}, fsSafe, {AnchorEdgeSide::RIGHT}, ArrowPathType::ORTHOGONAL);
@@ -71,6 +71,7 @@ LaunchWindow::LaunchWindow() {
     Arrow fsUnsafeToAbort =
       StateMachineRenderer::createArrow(fsUnsafe, {AnchorEdgeSide::RIGHT}, fsAbort, {AnchorEdgeSide::BOTTOM}, ArrowPathType::ORTHOGONAL);
     fsUnsafeToAbort.label = "ABORT";
+    fsUnsafeToAbort.labelOffset = {0, -195};
 
     fsStateMachine.addStateRect(fsInit);
     fsStateMachine.addStateRect(fsSafe);
