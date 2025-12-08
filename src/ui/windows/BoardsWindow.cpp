@@ -12,7 +12,7 @@
 
 #include <imgui.h>
 
-void BoardsWindow::render() {
+void BoardsWindow::renderImpl() {
     if (ImGui::CollapsingHeader("State")) {
         const char* motorBoardStateName = "Unknown";
         switch (GSDataCenter::motorBoardState) {

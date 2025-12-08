@@ -16,7 +16,7 @@ void TankMassWindow::init() {
     tankMassPlotTitle = getRecentPlotTitle("Tank Mass", RECENT_TIME_WINDOW_MS / 1000);
 }
 
-void TankMassWindow::render() {
+void TankMassWindow::renderImpl() {
     constexpr double TEMP_VALUE = 1.0;
 
     constexpr int PLOT_ROWS = 2;

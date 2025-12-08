@@ -12,6 +12,10 @@ void StateMachineRenderer::addArrow(Arrow arrow) {
     arrows.push_back(arrow);
 }
 
+void StateMachineRenderer::addLabel(Label label) {
+    labels.push_back(label);
+}
+
 void StateMachineRenderer::render(ImVec2 size, bool drawDebugRegions) {
     // TODO: Make these functions return values instead of having extra attributes
     computeAvailableSpace(size);
@@ -28,6 +32,10 @@ void StateMachineRenderer::render(ImVec2 size, bool drawDebugRegions) {
         drawArrow(arrow);
     }
 
+    for (const auto& label : labels) {
+        drawLabel(label);
+    }
+
     if (drawDebugRegions) {
         drawDebugRegion(size);
         drawDebugPadding(size);
@@ -39,63 +47,25 @@ void StateMachineRenderer::render(ImVec2 size, bool drawDebugRegions) {
 }
 
 StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& rect1,
-                                                              AnchorEdge anchorRect1,
+                                                              AnchorEdge anchorEdge1,
                                                               const StateRect& rect2,
-                                                              AnchorEdge anchorRect2,
+                                                              AnchorEdge anchorEdge2,
                                                               ArrowPathType pathType,
                                                               float routeOffset) {
-    const ImVec2 p1 = getAnchorPointPosition(rect1, anchorRect1);
-    const ImVec2 p2 = getAnchorPointPosition(rect2, anchorRect2);
-    std::vector<ImVec2> points;
-
-    // Create arrow path
-    points.push_back(p1);
-    if (p1.x == p2.x || p1.y == p2.y) {
-        // Do nothing, straight line
-    } else if (pathType == ArrowPathType::HORIZONTAL) {
-        float midSegmentY = (p1.y + p2.y) / 2.0f + routeOffset;
-        points.push_back({p1.x, midSegmentY});
-        points.push_back({p2.x, midSegmentY});
-    } else if (pathType == ArrowPathType::VERTICAL) {
-        float midSegmentX = (p1.x + p2.x) / 2.0f + routeOffset;
-        points.push_back({midSegmentX, p1.y});
-        points.push_back({midSegmentX, p2.y});
-    } else if (pathType == ArrowPathType::ORTHOGONAL) {
-        if (anchorRect1.side == AnchorEdgeSide::TOP || anchorRect1.side == AnchorEdgeSide::BOTTOM) {
-            points.push_back({p1.x, p2.y});
-        } else {
-            points.push_back({p2.x, p1.y});
-        }
-    }
-    points.push_back(p2);
-
-    // Determine arrowhead direction
-    ArrowheadDir dir = ArrowheadDir::UP;
-    const ImVec2& ps = points.at(points.size() - 2); // Second to last point
-    if (p2.y > ps.y) {
-        dir = ArrowheadDir::DOWN;
-    } else if (p2.x > ps.x) {
-        dir = ArrowheadDir::RIGHT;
-    } else if (p2.x < ps.x) {
-        dir = ArrowheadDir::LEFT;
-    }
-
-    return {.points{points}, .arrowheadDirection{dir}};
+    const ImVec2 p1 = getStateRectAnchorPointPosition(rect1, anchorEdge1);
+    const ImVec2 p2 = getStateRectAnchorPointPosition(rect2, anchorEdge2);
+    return createArrowFromAnchorPoints(p1, anchorEdge1, p2, pathType, routeOffset);
 }
 
-ImVec2 StateMachineRenderer::getAnchorPointPosition(const StateRect& rect, AnchorEdge anchorEdge) {
-    switch (anchorEdge.side) {
-    case AnchorEdgeSide::TOP:
-        return {rect.position.x + rect.size.x * (anchorEdge.position - 0.5f), rect.position.y - rect.size.y / 2};
-    case AnchorEdgeSide::RIGHT:
-        return {rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y * (anchorEdge.position - 0.5f)};
-    case AnchorEdgeSide::BOTTOM:
-        return {rect.position.x - rect.size.x * (anchorEdge.position - 0.5f), rect.position.y + rect.size.y / 2};
-    case AnchorEdgeSide::LEFT:
-        return {rect.position.x - rect.size.x / 2, rect.position.y - rect.size.y * (anchorEdge.position - 0.5f)};
-    default:
-        return {0, 0};
-    }
+StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& rect,
+                                                              AnchorEdge rectAnchorEdge,
+                                                              const Label& label,
+                                                              AnchorEdge labelAnchorEdge,
+                                                              ArrowPathType pathType,
+                                                              float routeOffset) {
+    const ImVec2 p1 = getStateRectAnchorPointPosition(rect, rectAnchorEdge);
+    const ImVec2 p2 = getLabelAnchorPointPosition(label, labelAnchorEdge);
+    return createArrowFromAnchorPoints(p1, rectAnchorEdge, p2, pathType, routeOffset);
 }
 
 void StateMachineRenderer::computeAvailableSpace(const ImVec2& size) {
@@ -279,8 +249,54 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
     }
 }
 
+void StateMachineRenderer::drawLabel(const Label& label) {
+    if (label.text == "") {
+        return;
+    }
+
+    ImVec2 labelWindowPosition = getWindowPosFromStateMachinePos(label.position);
+    ImVec2 textSize = ImGui::CalcTextSize(label.text);
+    labelWindowPosition = {labelWindowPosition.x - textSize.x / 2, labelWindowPosition.y - textSize.y / 2};
+
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+    const ImU32 textColor = ImGui::GetColorU32(ImGuiCol_Text);
+    drawList->AddText(labelWindowPosition, textColor, label.text);
+}
+
 ImVec2 StateMachineRenderer::getWindowPosFromStateMachinePos(const ImVec2& stateMachinePos) {
     return {(stateMachinePos.x + offsetPosition.x) * sizeScale + middlePoint.x, (stateMachinePos.y + offsetPosition.y) * sizeScale + middlePoint.y};
+}
+
+ImVec2 StateMachineRenderer::getStateRectAnchorPointPosition(const StateRect& rect, AnchorEdge anchorEdge) {
+    switch (anchorEdge.side) {
+    case AnchorEdgeSide::TOP:
+        return {rect.position.x + rect.size.x * (anchorEdge.position - 0.5f), rect.position.y - rect.size.y / 2};
+    case AnchorEdgeSide::RIGHT:
+        return {rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y * (anchorEdge.position - 0.5f)};
+    case AnchorEdgeSide::BOTTOM:
+        return {rect.position.x - rect.size.x * (anchorEdge.position - 0.5f), rect.position.y + rect.size.y / 2};
+    case AnchorEdgeSide::LEFT:
+        return {rect.position.x - rect.size.x / 2, rect.position.y - rect.size.y * (anchorEdge.position - 0.5f)};
+    default:
+        return {0, 0};
+    }
+}
+
+ImVec2 StateMachineRenderer::getLabelAnchorPointPosition(const Label& label, AnchorEdge anchorEdge) {
+    ImVec2 textSize = ImGui::CalcTextSize(label.text);
+
+    switch (anchorEdge.side) {
+    case AnchorEdgeSide::TOP:
+        return {label.position.x + textSize.x * (anchorEdge.position - 0.5f), label.position.y - textSize.y / 2};
+    case AnchorEdgeSide::RIGHT:
+        return {label.position.x + textSize.x / 2, label.position.y + textSize.y * (anchorEdge.position - 0.5f)};
+    case AnchorEdgeSide::BOTTOM:
+        return {label.position.x - textSize.x * (anchorEdge.position - 0.5f), label.position.y + textSize.y / 2};
+    case AnchorEdgeSide::LEFT:
+        return {label.position.x - textSize.x / 2, label.position.y - textSize.y * (anchorEdge.position - 0.5f)};
+    default:
+        return {0, 0};
+    }
 }
 
 void StateMachineRenderer::drawDebugRegion(const ImVec2& size) {
@@ -313,4 +329,46 @@ void StateMachineRenderer::drawDebugMiddlePoint(const ImVec2& size) {
     ImVec2 midPoint = {cursorPos.x + size.x / 2, cursorPos.y + size.y / 2}; // TODO: Use computeMiddlePoint in the future
 
     drawList->AddCircleFilled(midPoint, radius, color);
+}
+
+StateMachineRenderer::Arrow StateMachineRenderer::createArrowFromAnchorPoints(const ImVec2& p1,
+                                                                              AnchorEdge anchorEdge1,
+                                                                              const ImVec2& p2,
+                                                                              ArrowPathType pathType,
+                                                                              float routeOffset) {
+    std::vector<ImVec2> points;
+
+    // Create arrow path
+    points.push_back(p1);
+    if (p1.x == p2.x || p1.y == p2.y) {
+        // Do nothing, straight line
+    } else if (pathType == ArrowPathType::HORIZONTAL) {
+        float midSegmentY = (p1.y + p2.y) / 2.0f + routeOffset;
+        points.push_back({p1.x, midSegmentY});
+        points.push_back({p2.x, midSegmentY});
+    } else if (pathType == ArrowPathType::VERTICAL) {
+        float midSegmentX = (p1.x + p2.x) / 2.0f + routeOffset;
+        points.push_back({midSegmentX, p1.y});
+        points.push_back({midSegmentX, p2.y});
+    } else if (pathType == ArrowPathType::ORTHOGONAL) {
+        if (anchorEdge1.side == AnchorEdgeSide::TOP || anchorEdge1.side == AnchorEdgeSide::BOTTOM) {
+            points.push_back({p1.x, p2.y});
+        } else {
+            points.push_back({p2.x, p1.y});
+        }
+    }
+    points.push_back(p2);
+
+    // Determine arrowhead direction
+    ArrowheadDir dir = ArrowheadDir::UP;
+    const ImVec2& ps = points.at(points.size() - 2); // Second to last point
+    if (p2.y > ps.y) {
+        dir = ArrowheadDir::DOWN;
+    } else if (p2.x > ps.x) {
+        dir = ArrowheadDir::RIGHT;
+    } else if (p2.x < ps.x) {
+        dir = ArrowheadDir::LEFT;
+    }
+
+    return {.points{points}, .arrowheadDirection{dir}};
 }

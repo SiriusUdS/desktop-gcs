@@ -37,7 +37,7 @@ void NOSPhaseDiagramWindow::init() {
     }
 }
 
-void NOSPhaseDiagramWindow::render() {
+void NOSPhaseDiagramWindow::renderImpl() {
     ImPlot::SetNextAxesToFit();
     if (ImPlot::BeginPlot("NOS Phase Diagram", ImGui::GetContentRegionAvail(), ImPlotFlags_NoInputs)) {
         ImPlot::SetupAxes("Temperature (C)", "Pressure (psi)");

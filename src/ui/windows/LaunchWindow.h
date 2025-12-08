@@ -6,8 +6,8 @@
 
 class LaunchWindow : public UIWindow {
 public:
-    LaunchWindow();
-    void render() override;
+    void lazyInit() override;
+    void renderImpl() override;
     const char* name() const override;
     const char* dockspace() const override;
 

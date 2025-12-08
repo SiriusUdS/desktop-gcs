@@ -10,7 +10,7 @@
 class TankMassWindow : public UIWindow {
 public:
     void init() override;
-    void render() override;
+    void renderImpl() override;
     const char* name() const override;
     const char* dockspace() const override;
 

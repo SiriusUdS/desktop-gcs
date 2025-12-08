@@ -7,7 +7,7 @@
 
 #include <imgui.h>
 
-void SwitchesWindow::render() {
+void SwitchesWindow::renderImpl() {
     renderSwitch(GSDataCenter::AllowDumpSwitchData, "Allow Dump");
     renderSwitch(GSDataCenter::AllowFillSwitchData, "Allow Fill");
     renderSwitch(GSDataCenter::ArmIgniterSwitchData, "Arm Igniter");

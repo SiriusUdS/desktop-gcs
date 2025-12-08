@@ -13,7 +13,7 @@
 LoggingWindow::LoggingWindow() : logBuffer{filter, showDebug, showInfo, showWarn, showError} {
 }
 
-void LoggingWindow::render() {
+void LoggingWindow::renderImpl() {
     if (ToggleButton(ICON_FA_BUG " Debug", &showDebug, ThemedColors::BLUE_BUTTON.resolve())) {
         logBuffer.updateVisibleLogs();
     }

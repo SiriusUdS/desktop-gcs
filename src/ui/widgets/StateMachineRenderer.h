@@ -10,7 +10,7 @@ public:
         ImVec2 position;
         ImVec2 size;
         bool active{};
-        const char* label{"UNKNOWN"};
+        const char* label{""};
     };
 
     enum class ArrowheadDir { UP, RIGHT, DOWN, LEFT };
@@ -32,18 +32,30 @@ public:
         float position{0.5}; /// Position along the edge, value goes from 0 to 1
     };
 
+    struct Label {
+        ImVec2 position;
+        const char* text{""};
+    };
+
 public:
     void addStateRect(StateRect rect);
     void addArrow(Arrow arrow);
+    void addLabel(Label label);
     void render(ImVec2 size, bool drawDebugRegions = false);
 
     static Arrow createArrow(const StateRect& rect1,
-                             AnchorEdge anchorRect1,
+                             AnchorEdge anchorEdge1,
                              const StateRect& rect2,
-                             AnchorEdge anchorRect2,
+                             AnchorEdge anchorEdge2,
                              ArrowPathType pathType = ArrowPathType::HORIZONTAL,
-                             float routeOffset = 0.0f);
-    static ImVec2 getAnchorPointPosition(const StateRect& rect, AnchorEdge anchorEdge);
+                             float routeOffset = 0.0f); // State rect to state rect
+
+    static Arrow createArrow(const StateRect& rect,
+                             AnchorEdge rectAnchorEdge,
+                             const Label& label,
+                             AnchorEdge labelAnchorEdge,
+                             ArrowPathType pathType = ArrowPathType::HORIZONTAL,
+                             float routeOffset = 0.0f); // State rect to label
 
 private:
     void computeAvailableSpace(const ImVec2& size);
@@ -54,18 +66,29 @@ private:
 
     void drawStateRect(const StateRect& rect);
     void drawArrow(const Arrow& arrow);
+    void drawLabel(const Label& label);
 
     ImVec2 getWindowPosFromStateMachinePos(const ImVec2& stateMachinePos);
+
+    static ImVec2 getStateRectAnchorPointPosition(const StateRect& rect, AnchorEdge anchorEdge);
+    static ImVec2 getLabelAnchorPointPosition(const Label& label, AnchorEdge anchorEdge);
 
     void drawDebugRegion(const ImVec2& size);
     void drawDebugPadding(const ImVec2& size);
     void drawDebugMiddlePoint(const ImVec2& size);
+
+    static Arrow createArrowFromAnchorPoints(const ImVec2& p1,
+                                             AnchorEdge anchorEdge1,
+                                             const ImVec2& p2,
+                                             ArrowPathType pathType = ArrowPathType::HORIZONTAL,
+                                             float routeOffset = 0.0f);
 
 private:
     static const float PADDING;
 
     std::vector<StateRect> rects;
     std::vector<Arrow> arrows;
+    std::vector<Label> labels;
 
     ImVec2 availableSpace;
     ImVec2 middlePoint;

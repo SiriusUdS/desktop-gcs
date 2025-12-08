@@ -7,16 +7,31 @@ class UIWindow {
 public:
     virtual ~UIWindow() = default;
 
-    // TODO: Use constructors instead of init?
+    void render() {
+        if (!hasLazyInit) {
+            lazyInit();
+            hasLazyInit = true;
+        }
+
+        renderImpl();
+    }
+
     virtual void init() {
     }
-    virtual void render() = 0;
     virtual void loadState(const mINI::INIStructure& ini) {
     }
     virtual void saveState(mINI::INIStructure& ini) const {
     }
     virtual const char* name() const = 0;
     virtual const char* dockspace() const = 0;
+
+protected:
+    // TODO: Make sure renderImpl and lazyInit are protected in all child classes
+    virtual void lazyInit() {
+    }
+    virtual void renderImpl() = 0;
+
+    bool hasLazyInit{};
 };
 
 #endif // UIWINDOW_H

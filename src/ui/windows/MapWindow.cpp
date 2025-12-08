@@ -29,7 +29,7 @@ void MapWindow::init() {
     updateMarkStyle();
 }
 
-void MapWindow::render() {
+void MapWindow::renderImpl() {
     constexpr const size_t GCS_MAP_MAX_TILES_DOWNLOAD = 100'000;
 
     if (ImGui::CollapsingHeader("Download Tiles")) {

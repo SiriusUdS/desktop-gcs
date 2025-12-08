@@ -10,8 +10,9 @@ using Arrow = StateMachineRenderer::Arrow;
 using ArrowPathType = StateMachineRenderer::ArrowPathType;
 using AnchorEdgeSide = StateMachineRenderer::AnchorEdgeSide;
 using ArrowheadDir = StateMachineRenderer::ArrowheadDir;
+using Label = StateMachineRenderer::Label;
 
-LaunchWindow::LaunchWindow() {
+void LaunchWindow::lazyInit() {
     ImVec2 rectSize{240, 60};
     ImVec2 halfRectSize{rectSize.x / 2.0f, rectSize.y / 2.0f};
 
@@ -22,6 +23,8 @@ LaunchWindow::LaunchWindow() {
     StateRect fsError{.position{-225, 150}, .size{rectSize}, .active{false}, .label{"ERROR"}};
     StateRect fsUnsafe{.position{225, 150}, .size{rectSize}, .active{false}, .label{"UNSAFE"}};
     StateRect fsIgnite{.position{225, 300}, .size{rectSize}, .active{false}, .label{"IGNITE"}};
+
+    Label fsTestToErrorLabel{.position{-400, -150}, .text{"To ERROR"}};
 
     Arrow fsInitToSafe = StateMachineRenderer::createArrow(fsInit, {AnchorEdgeSide::RIGHT}, fsSafe, {AnchorEdgeSide::LEFT});
     fsInitToSafe.label = "[Init Completed]";
@@ -43,6 +46,9 @@ LaunchWindow::LaunchWindow() {
 
     Arrow fsTestToSafe = StateMachineRenderer::createArrow(fsTest, {AnchorEdgeSide::BOTTOM, 0.85f}, fsSafe, {AnchorEdgeSide::TOP, 0.15f});
     fsTestToSafe.label = "SAFE";
+
+    Arrow fsTestToError = StateMachineRenderer::createArrow(fsTest, {AnchorEdgeSide::LEFT}, fsTestToErrorLabel, {AnchorEdgeSide::RIGHT});
+    fsTestToError.label = "[On Error]";
 
     Arrow fsAbortToSafe = StateMachineRenderer::createArrow(fsAbort,
                                                             {AnchorEdgeSide::BOTTOM, 0.85f},
@@ -80,6 +86,7 @@ LaunchWindow::LaunchWindow() {
     fsStateMachine.addStateRect(fsError);
     fsStateMachine.addStateRect(fsUnsafe);
     fsStateMachine.addStateRect(fsIgnite);
+    fsStateMachine.addLabel(fsTestToErrorLabel);
     fsStateMachine.addArrow(fsInitToSafe);
     fsStateMachine.addArrow(fsInitToError);
     fsStateMachine.addArrow(fsSafeToTest);
@@ -87,6 +94,7 @@ LaunchWindow::LaunchWindow() {
     fsStateMachine.addArrow(fsSafeToError);
     fsStateMachine.addArrow(fsSafeToAbort);
     fsStateMachine.addArrow(fsTestToSafe);
+    fsStateMachine.addArrow(fsTestToError);
     fsStateMachine.addArrow(fsAbortToSafe);
     fsStateMachine.addArrow(fsErrorToSafe);
     fsStateMachine.addArrow(fsErrorToAbort);
@@ -96,7 +104,7 @@ LaunchWindow::LaunchWindow() {
     fsStateMachine.addArrow(fsUnsafeToAbort);
 }
 
-void LaunchWindow::render() {
+void LaunchWindow::renderImpl() {
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
     fsStateMachine.render(windowSize);
 }

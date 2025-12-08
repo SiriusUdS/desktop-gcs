@@ -7,7 +7,7 @@
 
 #include <imgui.h>
 
-void TankMassCalculatorWindow::render() {
+void TankMassCalculatorWindow::renderImpl() {
     ImGui::Text("Tank Volume (m^3): %f", RocketParams::NOSTankVolume_m3.currentValue);
     ImGui::SameLine();
 

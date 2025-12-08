@@ -19,7 +19,7 @@ const char* SerialComWindow::INI_RECV_BUFFER_DISPLAY_MODE = "recv_buffer_display
 SerialComWindow::SerialComWindow() : recvBufferContentDisplay(SerialConfig::PACKET_CIRCULAR_BUFFER_SIZE) {
 }
 
-void SerialComWindow::render() {
+void SerialComWindow::renderImpl() {
     if (ImGui::CollapsingHeader("Board COM")) {
         std::string comPortStr = SerialTask::comPortSelector.available() ? SerialTask::comPortSelector.current() : "None available";
         ImGui::Text("COM port: %s", comPortStr.c_str());

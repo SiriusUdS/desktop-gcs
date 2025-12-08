@@ -12,7 +12,7 @@
 
 #include <imgui.h>
 
-void ControlsWindow::render() {
+void ControlsWindow::renderImpl() {
     if (ImGui::CollapsingHeader("Valves")) {
         const bool nosAndIpaValveSliderEnabled = GSDataCenter::motorBoardState == ENGINE_STATE_UNSAFE && GSDataCenter::ArmServoSwitchData.isOn
                                                  && !GSDataCenter::AllowDumpSwitchData.isOn && !GSDataCenter::AllowFillSwitchData.isOn

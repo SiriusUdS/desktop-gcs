@@ -7,7 +7,7 @@
 #include <imgui.h>
 #include <string>
 
-void ValvesWindow::render() {
+void ValvesWindow::renderImpl() {
     if (ImGui::BeginTable("ValveStateTable", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
         ImGui::TableSetupColumn("Valve");
         ImGui::TableSetupColumn("Is idle");

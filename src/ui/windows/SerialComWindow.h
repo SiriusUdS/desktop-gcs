@@ -10,7 +10,7 @@ class SerialComWindow : public UIWindow {
 public:
     SerialComWindow();
 
-    void render() override;
+    void renderImpl() override;
     void loadState(const mINI::INIStructure& ini) override;
     void saveState(mINI::INIStructure& ini) const override;
     const char* name() const override;
