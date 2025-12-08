@@ -6,6 +6,12 @@
 
 class StateMachineRenderer {
 public:
+    struct Params {
+        float windowPadding{40.0f};
+        float labelPadding{40.0f};
+        float labelFontSize{23.0f};
+    };
+
     struct StateRect {
         ImVec2 position;
         ImVec2 size;
@@ -38,24 +44,29 @@ public:
     };
 
 public:
+    StateMachineRenderer();
+    StateMachineRenderer(Params params);
+
     void addStateRect(StateRect rect);
     void addArrow(Arrow arrow);
     void addLabel(Label label);
     void render(ImVec2 size, bool drawDebugRegions = false);
 
-    static Arrow createArrow(const StateRect& rect1,
-                             AnchorEdge anchorEdge1,
-                             const StateRect& rect2,
-                             AnchorEdge anchorEdge2,
-                             ArrowPathType pathType = ArrowPathType::HORIZONTAL,
-                             float routeOffset = 0.0f); // State rect to state rect
+    // State rect to state rect
+    Arrow createArrow(const StateRect& rect1,
+                      AnchorEdge anchorEdge1,
+                      const StateRect& rect2,
+                      AnchorEdge anchorEdge2,
+                      ArrowPathType pathType = ArrowPathType::HORIZONTAL,
+                      float routeOffset = 0.0f);
 
-    static Arrow createArrow(const StateRect& rect,
-                             AnchorEdge rectAnchorEdge,
-                             const Label& label,
-                             AnchorEdge labelAnchorEdge,
-                             ArrowPathType pathType = ArrowPathType::HORIZONTAL,
-                             float routeOffset = 0.0f); // State rect to label
+    // State rect to label
+    Arrow createArrow(const StateRect& rect,
+                      AnchorEdge rectAnchorEdge,
+                      const Label& label,
+                      AnchorEdge labelAnchorEdge,
+                      ArrowPathType pathType = ArrowPathType::HORIZONTAL,
+                      float routeOffset = 0.0f);
 
 private:
     void computeAvailableSpace(const ImVec2& size);
@@ -70,21 +81,21 @@ private:
 
     ImVec2 getWindowPosFromStateMachinePos(const ImVec2& stateMachinePos);
 
-    static ImVec2 getStateRectAnchorPointPosition(const StateRect& rect, AnchorEdge anchorEdge);
-    static ImVec2 getLabelAnchorPointPosition(const Label& label, AnchorEdge anchorEdge);
+    ImVec2 getStateRectAnchorPointPosition(const StateRect& rect, AnchorEdge anchorEdge);
+    ImVec2 getLabelAnchorPointPosition(const Label& label, AnchorEdge anchorEdge);
 
     void drawDebugRegion(const ImVec2& size);
     void drawDebugPadding(const ImVec2& size);
     void drawDebugMiddlePoint(const ImVec2& size);
 
-    static Arrow createArrowFromAnchorPoints(const ImVec2& p1,
-                                             AnchorEdge anchorEdge1,
-                                             const ImVec2& p2,
-                                             ArrowPathType pathType = ArrowPathType::HORIZONTAL,
-                                             float routeOffset = 0.0f);
+    Arrow createArrowFromAnchorPoints(const ImVec2& p1,
+                                      AnchorEdge anchorEdge1,
+                                      const ImVec2& p2,
+                                      ArrowPathType pathType = ArrowPathType::HORIZONTAL,
+                                      float routeOffset = 0.0f);
 
 private:
-    static const float PADDING;
+    Params params;
 
     std::vector<StateRect> rects;
     std::vector<Arrow> arrows;

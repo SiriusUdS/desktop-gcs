@@ -1,8 +1,13 @@
 #include "StateMachineRenderer.h"
 
+#include "FontConfig.h"
 #include "ThemedColors.h"
 
-const float StateMachineRenderer::PADDING = 40.0f;
+StateMachineRenderer::StateMachineRenderer() {
+}
+
+StateMachineRenderer::StateMachineRenderer(Params params) : params{params} {
+}
 
 void StateMachineRenderer::addStateRect(StateRect rect) {
     rects.push_back(rect);
@@ -69,12 +74,12 @@ StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& r
 }
 
 void StateMachineRenderer::computeAvailableSpace(const ImVec2& size) {
-    availableSpace = {size.x - PADDING * 2, size.y - PADDING * 2};
+    availableSpace = {size.x - params.windowPadding * 2, size.y - params.windowPadding * 2};
 }
 
 void StateMachineRenderer::computeMiddlePoint() {
     ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-    middlePoint = {cursorPos.x + PADDING + availableSpace.x / 2, cursorPos.y + PADDING + availableSpace.y / 2};
+    middlePoint = {cursorPos.x + params.windowPadding + availableSpace.x / 2, cursorPos.y + params.windowPadding + availableSpace.y / 2};
 }
 
 void StateMachineRenderer::computeBoundaries() {
@@ -234,10 +239,10 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
         labelPosition = {labelPosition.x + arrow.labelOffset.x, labelPosition.y + arrow.labelOffset.y};
 
         ImVec2 labelWindowPosition = getWindowPosFromStateMachinePos(labelPosition);
-        ImVec2 textSize = ImGui::CalcTextSize(arrow.label);
+        ImVec2 textSize = FontConfig::mainFont->CalcTextSizeA(params.labelFontSize, FLT_MAX, -1.0f, arrow.label);
         labelWindowPosition = {labelWindowPosition.x - textSize.x / 2, labelWindowPosition.y - textSize.y / 2};
 
-        float bgRectPadding = 2.0f;
+        float bgRectPadding = 1.0f;
         ImVec2 rectMin = {labelWindowPosition.x - bgRectPadding, labelWindowPosition.y - bgRectPadding};
         ImVec2 rectMax = {labelWindowPosition.x + textSize.x + bgRectPadding, labelWindowPosition.y + textSize.y + bgRectPadding};
 
@@ -245,7 +250,7 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
         ImU32 bg_u32 = ImGui::GetColorU32(bg);
 
         drawList->AddRectFilled(rectMin, rectMax, bg_u32);
-        drawList->AddText(labelWindowPosition, arrowColor, arrow.label);
+        drawList->AddText(FontConfig::mainFont, params.labelFontSize, labelWindowPosition, arrowColor, arrow.label);
     }
 }
 
@@ -284,16 +289,17 @@ ImVec2 StateMachineRenderer::getStateRectAnchorPointPosition(const StateRect& re
 
 ImVec2 StateMachineRenderer::getLabelAnchorPointPosition(const Label& label, AnchorEdge anchorEdge) {
     ImVec2 textSize = ImGui::CalcTextSize(label.text);
+    ImVec2 labelSize = {textSize.x + params.labelPadding, textSize.y + params.labelPadding};
 
     switch (anchorEdge.side) {
     case AnchorEdgeSide::TOP:
-        return {label.position.x + textSize.x * (anchorEdge.position - 0.5f), label.position.y - textSize.y / 2};
+        return {label.position.x + labelSize.x * (anchorEdge.position - 0.5f), label.position.y - labelSize.y / 2};
     case AnchorEdgeSide::RIGHT:
-        return {label.position.x + textSize.x / 2, label.position.y + textSize.y * (anchorEdge.position - 0.5f)};
+        return {label.position.x + labelSize.x / 2, label.position.y + labelSize.y * (anchorEdge.position - 0.5f)};
     case AnchorEdgeSide::BOTTOM:
-        return {label.position.x - textSize.x * (anchorEdge.position - 0.5f), label.position.y + textSize.y / 2};
+        return {label.position.x - labelSize.x * (anchorEdge.position - 0.5f), label.position.y + labelSize.y / 2};
     case AnchorEdgeSide::LEFT:
-        return {label.position.x - textSize.x / 2, label.position.y - textSize.y * (anchorEdge.position - 0.5f)};
+        return {label.position.x - labelSize.x / 2, label.position.y - labelSize.y * (anchorEdge.position - 0.5f)};
     default:
         return {0, 0};
     }
@@ -313,8 +319,8 @@ void StateMachineRenderer::drawDebugPadding(const ImVec2& size) {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
 
     ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-    ImVec2 rectMin = {cursorPos.x + PADDING, cursorPos.y + PADDING};
-    ImVec2 rectMax = {cursorPos.x + size.x - PADDING, cursorPos.y + size.y - PADDING};
+    ImVec2 rectMin = {cursorPos.x + params.windowPadding, cursorPos.y + params.windowPadding};
+    ImVec2 rectMax = {cursorPos.x + size.x - params.windowPadding, cursorPos.y + size.y - params.windowPadding};
     ImColor rectColor = IM_COL32(0, 0, 255, 255);
 
     drawList->AddRect(rectMin, rectMax, rectColor);

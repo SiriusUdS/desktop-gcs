@@ -13,71 +13,69 @@ using ArrowheadDir = StateMachineRenderer::ArrowheadDir;
 using Label = StateMachineRenderer::Label;
 
 void LaunchWindow::lazyInit() {
-    ImVec2 rectSize{240, 60};
+    ImVec2 rectSize{180, 40};
     ImVec2 halfRectSize{rectSize.x / 2.0f, rectSize.y / 2.0f};
 
-    StateRect fsInit{.position{-500, 0}, .size{rectSize}, .active{false}, .label{"INIT"}};
-    StateRect fsSafe{.position{0, 0}, .size{rectSize}, .active{true}, .label{"SAFE"}};
-    StateRect fsTest{.position{0, -150}, .size{rectSize}, .active{false}, .label{"TEST"}};
-    StateRect fsAbort{.position{450, -150}, .size{rectSize}, .active{false}, .label{"ABORT"}};
-    StateRect fsError{.position{-225, 150}, .size{rectSize}, .active{false}, .label{"ERROR"}};
-    StateRect fsUnsafe{.position{225, 150}, .size{rectSize}, .active{false}, .label{"UNSAFE"}};
-    StateRect fsIgnite{.position{225, 300}, .size{rectSize}, .active{false}, .label{"IGNITE"}};
+    StateRect fsInit{.position{-350, 0}, .size{rectSize}, .active{false}, .label{"INIT"}};
+    StateRect fsSafe{.position{0, 0}, .size{rectSize}, .active{false}, .label{"SAFE"}};
+    StateRect fsTest{.position{0, -110}, .size{rectSize}, .active{false}, .label{"TEST"}};
+    StateRect fsAbort{.position{350, -110}, .size{rectSize}, .active{false}, .label{"ABORT"}};
+    StateRect fsError{.position{-175, 110}, .size{rectSize}, .active{true}, .label{"ERROR"}};
+    StateRect fsUnsafe{.position{175, 110}, .size{rectSize}, .active{false}, .label{"UNSAFE"}};
+    StateRect fsIgnite{.position{175, 220}, .size{rectSize}, .active{false}, .label{"IGNITE"}};
 
-    Label fsTestToErrorLabel{.position{-400, -150}, .text{"To ERROR"}};
+    Label fsTestToErrorLabel{.position{-300, -110}, .text{"To ERROR"}};
+    Label fsIgniteToSafeLabel{.position{-75, 220}, .text{"To SAFE"}};
 
-    Arrow fsInitToSafe = StateMachineRenderer::createArrow(fsInit, {AnchorEdgeSide::RIGHT}, fsSafe, {AnchorEdgeSide::LEFT});
+    Arrow fsInitToSafe = fsStateMachine.createArrow(fsInit, {AnchorEdgeSide::RIGHT}, fsSafe, {AnchorEdgeSide::LEFT});
     fsInitToSafe.label = "[Init Completed]";
 
-    Arrow fsInitToError = StateMachineRenderer::createArrow(fsInit, {AnchorEdgeSide::BOTTOM}, fsError, {AnchorEdgeSide::TOP, 0.25f});
+    Arrow fsInitToError = fsStateMachine.createArrow(fsInit, {AnchorEdgeSide::BOTTOM}, fsError, {AnchorEdgeSide::TOP, 0.25f});
     fsInitToError.label = "[Init Failed]";
 
-    Arrow fsSafeToTest = StateMachineRenderer::createArrow(fsSafe, {AnchorEdgeSide::TOP}, fsTest, {AnchorEdgeSide::BOTTOM});
+    Arrow fsSafeToTest = fsStateMachine.createArrow(fsSafe, {AnchorEdgeSide::TOP}, fsTest, {AnchorEdgeSide::BOTTOM});
     fsSafeToTest.label = "TEST";
 
-    Arrow fsSafeToUnsafe = StateMachineRenderer::createArrow(fsSafe, {AnchorEdgeSide::BOTTOM, 0.25f}, fsUnsafe, {AnchorEdgeSide::TOP, 0.25f});
+    Arrow fsSafeToUnsafe = fsStateMachine.createArrow(fsSafe, {AnchorEdgeSide::BOTTOM, 0.25f}, fsUnsafe, {AnchorEdgeSide::TOP, 0.25f});
     fsSafeToUnsafe.label = "UNSAFE";
 
-    Arrow fsSafeToError =
-      StateMachineRenderer::createArrow(fsSafe, {AnchorEdgeSide::BOTTOM}, fsError, {AnchorEdgeSide::RIGHT}, ArrowPathType::ORTHOGONAL);
+    Arrow fsSafeToError = fsStateMachine.createArrow(fsSafe, {AnchorEdgeSide::BOTTOM}, fsError, {AnchorEdgeSide::RIGHT}, ArrowPathType::ORTHOGONAL);
 
     Arrow fsSafeToAbort =
-      StateMachineRenderer::createArrow(fsSafe, {AnchorEdgeSide::TOP, 0.85f}, fsAbort, {AnchorEdgeSide::BOTTOM}, ArrowPathType::HORIZONTAL, 30);
+      fsStateMachine.createArrow(fsSafe, {AnchorEdgeSide::TOP, 0.85f}, fsAbort, {AnchorEdgeSide::BOTTOM}, ArrowPathType::HORIZONTAL, 20);
 
-    Arrow fsTestToSafe = StateMachineRenderer::createArrow(fsTest, {AnchorEdgeSide::BOTTOM, 0.85f}, fsSafe, {AnchorEdgeSide::TOP, 0.15f});
+    Arrow fsTestToSafe = fsStateMachine.createArrow(fsTest, {AnchorEdgeSide::BOTTOM, 0.85f}, fsSafe, {AnchorEdgeSide::TOP, 0.15f});
     fsTestToSafe.label = "SAFE";
 
-    Arrow fsTestToError = StateMachineRenderer::createArrow(fsTest, {AnchorEdgeSide::LEFT}, fsTestToErrorLabel, {AnchorEdgeSide::RIGHT});
+    Arrow fsTestToError = fsStateMachine.createArrow(fsTest, {AnchorEdgeSide::LEFT}, fsTestToErrorLabel, {AnchorEdgeSide::RIGHT});
     fsTestToError.label = "[On Error]";
 
-    Arrow fsAbortToSafe = StateMachineRenderer::createArrow(fsAbort,
-                                                            {AnchorEdgeSide::BOTTOM, 0.85f},
-                                                            fsSafe,
-                                                            {AnchorEdgeSide::TOP, 0.70f},
-                                                            ArrowPathType::HORIZONTAL,
-                                                            -20);
+    Arrow fsAbortToSafe =
+      fsStateMachine.createArrow(fsAbort, {AnchorEdgeSide::BOTTOM, 0.85f}, fsSafe, {AnchorEdgeSide::TOP, 0.70f}, ArrowPathType::HORIZONTAL, -10);
     fsAbortToSafe.label = "SAFE";
 
-    Arrow fsErrorToSafe = StateMachineRenderer::createArrow(fsError, {AnchorEdgeSide::TOP, 0.75f}, fsSafe, {AnchorEdgeSide::BOTTOM, 0.75f});
+    Arrow fsErrorToSafe = fsStateMachine.createArrow(fsError, {AnchorEdgeSide::TOP, 0.75f}, fsSafe, {AnchorEdgeSide::BOTTOM, 0.75f});
     fsErrorToSafe.label = "SAFE";
 
     Arrow fsErrorToAbort =
-      StateMachineRenderer::createArrow(fsError, {AnchorEdgeSide::BOTTOM}, fsAbort, {AnchorEdgeSide::BOTTOM}, ArrowPathType::HORIZONTAL, 350.0f);
+      fsStateMachine.createArrow(fsError, {AnchorEdgeSide::BOTTOM}, fsAbort, {AnchorEdgeSide::BOTTOM}, ArrowPathType::HORIZONTAL, 275.0f);
 
-    Arrow fsUnsafeToSafe =
-      StateMachineRenderer::createArrow(fsUnsafe, {AnchorEdgeSide::TOP}, fsSafe, {AnchorEdgeSide::RIGHT}, ArrowPathType::ORTHOGONAL);
+    Arrow fsUnsafeToSafe = fsStateMachine.createArrow(fsUnsafe, {AnchorEdgeSide::TOP}, fsSafe, {AnchorEdgeSide::RIGHT}, ArrowPathType::ORTHOGONAL);
     fsUnsafeToSafe.label = "SAFE";
 
-    Arrow fsUnsafeToIgnite = StateMachineRenderer::createArrow(fsUnsafe, {AnchorEdgeSide::BOTTOM}, fsIgnite, {AnchorEdgeSide::TOP});
+    Arrow fsUnsafeToIgnite = fsStateMachine.createArrow(fsUnsafe, {AnchorEdgeSide::BOTTOM}, fsIgnite, {AnchorEdgeSide::TOP});
     fsUnsafeToIgnite.label = "IGNITE";
 
-    Arrow fsUnsafeToError = StateMachineRenderer::createArrow(fsUnsafe, {AnchorEdgeSide::LEFT}, fsError, {AnchorEdgeSide::RIGHT});
+    Arrow fsUnsafeToError = fsStateMachine.createArrow(fsUnsafe, {AnchorEdgeSide::LEFT}, fsError, {AnchorEdgeSide::RIGHT});
     fsUnsafeToError.label = "[On Error]";
 
     Arrow fsUnsafeToAbort =
-      StateMachineRenderer::createArrow(fsUnsafe, {AnchorEdgeSide::RIGHT}, fsAbort, {AnchorEdgeSide::BOTTOM}, ArrowPathType::ORTHOGONAL);
+      fsStateMachine.createArrow(fsUnsafe, {AnchorEdgeSide::RIGHT}, fsAbort, {AnchorEdgeSide::BOTTOM}, ArrowPathType::ORTHOGONAL);
     fsUnsafeToAbort.label = "ABORT";
-    fsUnsafeToAbort.labelOffset = {0, -195};
+    fsUnsafeToAbort.labelOffset = {0, -145};
+
+    Arrow fsIgniteToSafe = fsStateMachine.createArrow(fsIgnite, {AnchorEdgeSide::LEFT}, fsIgniteToSafeLabel, {AnchorEdgeSide::RIGHT});
+    fsIgniteToSafe.label = "SAFE";
 
     fsStateMachine.addStateRect(fsInit);
     fsStateMachine.addStateRect(fsSafe);
@@ -87,6 +85,7 @@ void LaunchWindow::lazyInit() {
     fsStateMachine.addStateRect(fsUnsafe);
     fsStateMachine.addStateRect(fsIgnite);
     fsStateMachine.addLabel(fsTestToErrorLabel);
+    fsStateMachine.addLabel(fsIgniteToSafeLabel);
     fsStateMachine.addArrow(fsInitToSafe);
     fsStateMachine.addArrow(fsInitToError);
     fsStateMachine.addArrow(fsSafeToTest);
@@ -102,6 +101,7 @@ void LaunchWindow::lazyInit() {
     fsStateMachine.addArrow(fsUnsafeToIgnite);
     fsStateMachine.addArrow(fsUnsafeToError);
     fsStateMachine.addArrow(fsUnsafeToAbort);
+    fsStateMachine.addArrow(fsIgniteToSafe);
 }
 
 void LaunchWindow::renderImpl() {
