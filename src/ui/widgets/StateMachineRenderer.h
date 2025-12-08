@@ -7,8 +7,11 @@
 class StateMachineRenderer {
 public:
     struct Params {
-        float windowPadding{40.0f};
-        float labelPadding{40.0f};
+        float windowPadding{20.0f};
+        float stateRectRounding{10.0f};
+        float stateRectBorderThickness{2.0f};
+        float arrowThickness{2.0f};
+        float labelPadding{15.0f};
         float labelFontSize{23.0f};
     };
 

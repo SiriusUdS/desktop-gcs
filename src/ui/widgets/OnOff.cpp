@@ -8,7 +8,7 @@
 void OnOff(bool isOn, const char* id) {
     std::string label = isOn ? "ON###" : "OFF###";
     label += id;
-    ImVec4 color = isOn ? ThemedColors::GREEN_BUTTON.resolve() : ThemedColors::RED_BUTTON.resolve();
+    ImVec4 color = isOn ? ThemedColors::Button::green.resolve() : ThemedColors::Button::red.resolve();
 
     ImGui::PushStyleColor(ImGuiCol_Button, color);
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color);

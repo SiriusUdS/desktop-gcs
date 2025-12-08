@@ -14,19 +14,19 @@ LoggingWindow::LoggingWindow() : logBuffer{filter, showDebug, showInfo, showWarn
 }
 
 void LoggingWindow::renderImpl() {
-    if (ToggleButton(ICON_FA_BUG " Debug", &showDebug, ThemedColors::BLUE_BUTTON.resolve())) {
+    if (ToggleButton(ICON_FA_BUG " Debug", &showDebug, ThemedColors::Button::blue.resolve())) {
         logBuffer.updateVisibleLogs();
     }
     ImGui::SameLine();
-    if (ToggleButton(ICON_FA_INFO_CIRCLE " Info", &showInfo, ThemedColors::GREEN_BUTTON.resolve())) {
+    if (ToggleButton(ICON_FA_INFO_CIRCLE " Info", &showInfo, ThemedColors::Button::green.resolve())) {
         logBuffer.updateVisibleLogs();
     }
     ImGui::SameLine();
-    if (ToggleButton(ICON_FA_EXCLAMATION_TRIANGLE " Warn", &showWarn, ThemedColors::YELLOW_BUTTON.resolve())) {
+    if (ToggleButton(ICON_FA_EXCLAMATION_TRIANGLE " Warn", &showWarn, ThemedColors::Button::yellow.resolve())) {
         logBuffer.updateVisibleLogs();
     }
     ImGui::SameLine();
-    if (ToggleButton(ICON_FA_BOMB " Error", &showError, ThemedColors::RED_BUTTON.resolve())) {
+    if (ToggleButton(ICON_FA_BOMB " Error", &showError, ThemedColors::Button::red.resolve())) {
         logBuffer.updateVisibleLogs();
     }
     ImGui::SameLine();

@@ -30,13 +30,13 @@ private:
     RecentPlotDataView recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_MS};
     RecentPlotDataView recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_MS};
     RecentPlotDataView recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(),
-                                                 ThemedColors::GREEN_PLOT_LINE,
+                                                 ThemedColors::PlotLine::green,
                                                  RECENT_TIME_WINDOW_MS};
     RecentPlotDataView recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData[1].getValuePlotData(),
-                                                 ThemedColors::YELLOW_PLOT_LINE,
+                                                 ThemedColors::PlotLine::yellow,
                                                  RECENT_TIME_WINDOW_MS};
     RecentPlotDataView recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData[2].getValuePlotData(),
-                                             ThemedColors::BLUE_PLOT_LINE,
+                                             ThemedColors::PlotLine::blue,
                                              RECENT_TIME_WINDOW_MS};
     RecentPlotDataView recentEngineThrust{GSDataCenter::LoadCell_FillingStation_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_MS};
     RecentPlotDataView recentTankMass{GSDataCenter::NOSTankMass_PlotData, RECENT_TIME_WINDOW_MS};

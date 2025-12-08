@@ -19,7 +19,7 @@ void LaunchWindow::lazyInit() {
     StateRect fsInit{.position{-350, 0}, .size{rectSize}, .active{false}, .label{"INIT"}};
     StateRect fsSafe{.position{0, 0}, .size{rectSize}, .active{false}, .label{"SAFE"}};
     StateRect fsTest{.position{0, -110}, .size{rectSize}, .active{false}, .label{"TEST"}};
-    StateRect fsAbort{.position{350, -110}, .size{rectSize}, .active{false}, .label{"ABORT"}};
+    StateRect fsAbort{.position{300, -110}, .size{rectSize}, .active{false}, .label{"ABORT"}};
     StateRect fsError{.position{-175, 110}, .size{rectSize}, .active{true}, .label{"ERROR"}};
     StateRect fsUnsafe{.position{175, 110}, .size{rectSize}, .active{false}, .label{"UNSAFE"}};
     StateRect fsIgnite{.position{175, 220}, .size{rectSize}, .active{false}, .label{"IGNITE"}};

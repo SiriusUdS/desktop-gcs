@@ -161,14 +161,12 @@ void StateMachineRenderer::drawStateRect(const StateRect& rect) {
     ImVec2 textPosition = {rectWindowPos.x - textSize.x / 2, rectWindowPos.y - textSize.y / 2};
 
     // Style
-    ImColor color = rect.active ? IM_COL32(170, 255, 170, 255) : IM_COL32(255, 170, 170, 255);
-    ImColor borderColor = IM_COL32(0, 0, 0, 255);
-    ImColor textColor = IM_COL32(0, 0, 0, 255);
-    float rounding = 10.0f;
-    float borderThickness = 2.0f;
+    ImColor color = rect.active ? ThemedColors::StateMachine::activeState.resolve() : ThemedColors::StateMachine::inactiveState.resolve();
+    ImColor borderColor = ImGui::GetColorU32(ImGuiCol_Text);
+    ImColor textColor = ImGui::GetColorU32(ImGuiCol_Text);
 
-    drawList->AddRectFilled(rectMin, rectMax, color, rounding);
-    drawList->AddRect(rectMin, rectMax, borderColor, rounding, 0, borderThickness);
+    drawList->AddRectFilled(rectMin, rectMax, color, params.stateRectRounding);
+    drawList->AddRect(rectMin, rectMax, borderColor, params.stateRectRounding, 0, params.stateRectBorderThickness);
     drawList->AddText(textPosition, textColor, rect.label);
 }
 
@@ -180,8 +178,7 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
 
     // Style
-    ImColor arrowColor = ThemedColors::STATE_MACHINE_ARROW.resolve();
-    float arrowThickness = 2.0f;
+    ImColor arrowColor = ThemedColors::StateMachine::arrow.resolve();
 
     // Arrow segments
     for (size_t i = 0; i < arrow.points.size() - 1; i++) {
@@ -190,7 +187,7 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
         ImVec2 segmentStart = getWindowPosFromStateMachinePos(p1);
         ImVec2 segmentEnd = getWindowPosFromStateMachinePos(p2);
 
-        drawList->AddLine(segmentStart, segmentEnd, arrowColor, arrowThickness);
+        drawList->AddLine(segmentStart, segmentEnd, arrowColor, params.arrowThickness);
     }
 
     // Arrowhead
@@ -220,8 +217,8 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
             break;
         }
 
-        drawList->AddLine(segmentEnd, arrowPoint1, arrowColor, arrowThickness);
-        drawList->AddLine(segmentEnd, arrowPoint2, arrowColor, arrowThickness);
+        drawList->AddLine(segmentEnd, arrowPoint1, arrowColor, params.arrowThickness);
+        drawList->AddLine(segmentEnd, arrowPoint2, arrowColor, params.arrowThickness);
     }
 
     // Label
@@ -238,19 +235,21 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
         }
         labelPosition = {labelPosition.x + arrow.labelOffset.x, labelPosition.y + arrow.labelOffset.y};
 
+        const ImVec2 textSize = FontConfig::mainFont->CalcTextSizeA(params.labelFontSize, FLT_MAX, -1.0f, arrow.label);
         ImVec2 labelWindowPosition = getWindowPosFromStateMachinePos(labelPosition);
-        ImVec2 textSize = FontConfig::mainFont->CalcTextSizeA(params.labelFontSize, FLT_MAX, -1.0f, arrow.label);
         labelWindowPosition = {labelWindowPosition.x - textSize.x / 2, labelWindowPosition.y - textSize.y / 2};
 
         float bgRectPadding = 1.0f;
-        ImVec2 rectMin = {labelWindowPosition.x - bgRectPadding, labelWindowPosition.y - bgRectPadding};
-        ImVec2 rectMax = {labelWindowPosition.x + textSize.x + bgRectPadding, labelWindowPosition.y + textSize.y + bgRectPadding};
+        const ImVec2 rectMin = {labelWindowPosition.x - bgRectPadding, labelWindowPosition.y - bgRectPadding};
+        const ImVec2 rectMax = {labelWindowPosition.x + textSize.x + bgRectPadding, labelWindowPosition.y + textSize.y + bgRectPadding};
 
-        ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
-        ImU32 bg_u32 = ImGui::GetColorU32(bg);
+        const ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        const ImColor bg_u32 = ImGui::GetColorU32(bg);
+
+        const ImColor textColor = ImGui::GetColorU32(ImGuiCol_Text);
 
         drawList->AddRectFilled(rectMin, rectMax, bg_u32);
-        drawList->AddText(FontConfig::mainFont, params.labelFontSize, labelWindowPosition, arrowColor, arrow.label);
+        drawList->AddText(FontConfig::mainFont, params.labelFontSize, labelWindowPosition, textColor, arrow.label);
     }
 }
 
@@ -264,7 +263,7 @@ void StateMachineRenderer::drawLabel(const Label& label) {
     labelWindowPosition = {labelWindowPosition.x - textSize.x / 2, labelWindowPosition.y - textSize.y / 2};
 
     ImDrawList* drawList = ImGui::GetWindowDrawList();
-    const ImU32 textColor = ImGui::GetColorU32(ImGuiCol_Text);
+    const ImColor textColor = ImGui::GetColorU32(ImGuiCol_Text);
     drawList->AddText(labelWindowPosition, textColor, label.text);
 }
 
@@ -289,7 +288,7 @@ ImVec2 StateMachineRenderer::getStateRectAnchorPointPosition(const StateRect& re
 
 ImVec2 StateMachineRenderer::getLabelAnchorPointPosition(const Label& label, AnchorEdge anchorEdge) {
     ImVec2 textSize = ImGui::CalcTextSize(label.text);
-    ImVec2 labelSize = {textSize.x + params.labelPadding, textSize.y + params.labelPadding};
+    ImVec2 labelSize = {textSize.x + params.labelPadding * 2, textSize.y + params.labelPadding * 2};
 
     switch (anchorEdge.side) {
     case AnchorEdgeSide::TOP:
