@@ -7,12 +7,15 @@
 class StateMachineRenderer {
 public:
     struct Params {
-        float windowPadding{20.0f};
-        float stateRectRounding{10.0f};
-        float stateRectBorderThickness{2.0f};
+        bool showArrowLabels{true};
+        float arrowLabelFontSize{23.0f};
+        float arrowLabelPadding{15.0f};
         float arrowThickness{2.0f};
-        float labelPadding{15.0f};
-        float labelFontSize{23.0f};
+        float labelFontSize{32.0f};
+        float stateRectBorderThickness{2.0f};
+        float stateRectRounding{10.0f};
+        float stateRectLabelFontSize{32.0f};
+        float windowPadding{20.0f};
     };
 
     struct StateRect {
@@ -71,6 +74,8 @@ public:
                       ArrowPathType pathType = ArrowPathType::HORIZONTAL,
                       float routeOffset = 0.0f);
 
+    Params params;
+
 private:
     void computeAvailableSpace(const ImVec2& size);
     void computeMiddlePoint();
@@ -80,6 +85,7 @@ private:
 
     void drawStateRect(const StateRect& rect);
     void drawArrow(const Arrow& arrow);
+    void drawArrowLabel(const Arrow& arrow);
     void drawLabel(const Label& label);
 
     ImVec2 getWindowPosFromStateMachinePos(const ImVec2& stateMachinePos);
@@ -98,8 +104,6 @@ private:
                                       float routeOffset = 0.0f);
 
 private:
-    Params params;
-
     std::vector<StateRect> rects;
     std::vector<Arrow> arrows;
     std::vector<Label> labels;

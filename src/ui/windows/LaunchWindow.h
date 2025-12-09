@@ -12,7 +12,11 @@ public:
     const char* dockspace() const override;
 
 private:
-    StateMachineRenderer fsStateMachine; // Filling station state machine
+    void initFillStationStateMachine();
+    void initMotorStateMachine();
+
+    StateMachineRenderer fsStateMachine;
+    StateMachineRenderer motorStateMachine;
 };
 
 #endif // LAUNCHWINDOW_H

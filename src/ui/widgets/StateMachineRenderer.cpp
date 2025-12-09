@@ -37,6 +37,12 @@ void StateMachineRenderer::render(ImVec2 size, bool drawDebugRegions) {
         drawArrow(arrow);
     }
 
+    if (params.showArrowLabels) {
+        for (const auto& arrow : arrows) {
+            drawArrowLabel(arrow);
+        }
+    }
+
     for (const auto& label : labels) {
         drawLabel(label);
     }
@@ -157,7 +163,8 @@ void StateMachineRenderer::drawStateRect(const StateRect& rect) {
     ImVec2 rectMax = {rectMin.x + rect.size.x * sizeScale, rectMin.y + rect.size.y * sizeScale};
 
     // Text position
-    ImVec2 textSize = ImGui::CalcTextSize(rect.label);
+    float textFontSize = params.stateRectLabelFontSize * sizeScale;
+    ImVec2 textSize = FontConfig::mainFont->CalcTextSizeA(textFontSize, FLT_MAX, -1.0f, rect.label);
     ImVec2 textPosition = {rectWindowPos.x - textSize.x / 2, rectWindowPos.y - textSize.y / 2};
 
     // Style
@@ -167,7 +174,7 @@ void StateMachineRenderer::drawStateRect(const StateRect& rect) {
 
     drawList->AddRectFilled(rectMin, rectMax, color, params.stateRectRounding);
     drawList->AddRect(rectMin, rectMax, borderColor, params.stateRectRounding, 0, params.stateRectBorderThickness);
-    drawList->AddText(textPosition, textColor, rect.label);
+    drawList->AddText(FontConfig::mainFont, textFontSize, textPosition, textColor, rect.label);
 }
 
 void StateMachineRenderer::drawArrow(const Arrow& arrow) {
@@ -220,37 +227,43 @@ void StateMachineRenderer::drawArrow(const Arrow& arrow) {
         drawList->AddLine(segmentEnd, arrowPoint1, arrowColor, params.arrowThickness);
         drawList->AddLine(segmentEnd, arrowPoint2, arrowColor, params.arrowThickness);
     }
+}
 
-    // Label
-    if (arrow.label != "") {
-        ImVec2 labelPosition;
-        size_t pointsAmount = arrow.points.size();
-
-        if (pointsAmount % 2 == 0) {
-            const ImVec2& midPoint1 = arrow.points[(pointsAmount / 2) - 1];
-            const ImVec2& midPoint2 = arrow.points[pointsAmount / 2];
-            labelPosition = {(midPoint1.x + midPoint2.x) / 2, (midPoint1.y + midPoint2.y) / 2};
-        } else {
-            labelPosition = arrow.points[pointsAmount / 2];
-        }
-        labelPosition = {labelPosition.x + arrow.labelOffset.x, labelPosition.y + arrow.labelOffset.y};
-
-        const ImVec2 textSize = FontConfig::mainFont->CalcTextSizeA(params.labelFontSize, FLT_MAX, -1.0f, arrow.label);
-        ImVec2 labelWindowPosition = getWindowPosFromStateMachinePos(labelPosition);
-        labelWindowPosition = {labelWindowPosition.x - textSize.x / 2, labelWindowPosition.y - textSize.y / 2};
-
-        float bgRectPadding = 1.0f;
-        const ImVec2 rectMin = {labelWindowPosition.x - bgRectPadding, labelWindowPosition.y - bgRectPadding};
-        const ImVec2 rectMax = {labelWindowPosition.x + textSize.x + bgRectPadding, labelWindowPosition.y + textSize.y + bgRectPadding};
-
-        const ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
-        const ImColor bg_u32 = ImGui::GetColorU32(bg);
-
-        const ImColor textColor = ImGui::GetColorU32(ImGuiCol_Text);
-
-        drawList->AddRectFilled(rectMin, rectMax, bg_u32);
-        drawList->AddText(FontConfig::mainFont, params.labelFontSize, labelWindowPosition, textColor, arrow.label);
+void StateMachineRenderer::drawArrowLabel(const Arrow& arrow) {
+    if (arrow.label == "") {
+        return;
     }
+
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+    ImVec2 labelPosition;
+    size_t pointsAmount = arrow.points.size();
+
+    if (pointsAmount % 2 == 0) {
+        const ImVec2& midPoint1 = arrow.points[(pointsAmount / 2) - 1];
+        const ImVec2& midPoint2 = arrow.points[pointsAmount / 2];
+        labelPosition = {(midPoint1.x + midPoint2.x) / 2, (midPoint1.y + midPoint2.y) / 2};
+    } else {
+        labelPosition = arrow.points[pointsAmount / 2];
+    }
+    labelPosition = {labelPosition.x + arrow.labelOffset.x, labelPosition.y + arrow.labelOffset.y};
+
+    const float textFontSize = params.arrowLabelFontSize * sizeScale;
+    const ImVec2 textSize = FontConfig::mainFont->CalcTextSizeA(textFontSize, FLT_MAX, -1.0f, arrow.label);
+    ImVec2 labelWindowPosition = getWindowPosFromStateMachinePos(labelPosition);
+    labelWindowPosition = {labelWindowPosition.x - textSize.x / 2, labelWindowPosition.y - textSize.y / 2};
+
+    float bgRectPadding = 1.0f;
+    const ImVec2 rectMin = {labelWindowPosition.x - bgRectPadding, labelWindowPosition.y - bgRectPadding};
+    const ImVec2 rectMax = {labelWindowPosition.x + textSize.x + bgRectPadding, labelWindowPosition.y + textSize.y + bgRectPadding};
+
+    const ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+    const ImColor bg_u32 = ImGui::GetColorU32(bg);
+
+    const ImColor textColor = ImGui::GetColorU32(ImGuiCol_Text);
+
+    drawList->AddRectFilled(rectMin, rectMax, bg_u32);
+    drawList->AddText(FontConfig::mainFont, textFontSize, labelWindowPosition, textColor, arrow.label);
 }
 
 void StateMachineRenderer::drawLabel(const Label& label) {
@@ -259,12 +272,13 @@ void StateMachineRenderer::drawLabel(const Label& label) {
     }
 
     ImVec2 labelWindowPosition = getWindowPosFromStateMachinePos(label.position);
-    ImVec2 textSize = ImGui::CalcTextSize(label.text);
+    float textFontSize = params.labelFontSize * sizeScale;
+    ImVec2 textSize = FontConfig::mainFont->CalcTextSizeA(textFontSize, FLT_MAX, -1.0f, label.text);
     labelWindowPosition = {labelWindowPosition.x - textSize.x / 2, labelWindowPosition.y - textSize.y / 2};
 
     ImDrawList* drawList = ImGui::GetWindowDrawList();
     const ImColor textColor = ImGui::GetColorU32(ImGuiCol_Text);
-    drawList->AddText(labelWindowPosition, textColor, label.text);
+    drawList->AddText(FontConfig::mainFont, textFontSize, labelWindowPosition, textColor, label.text);
 }
 
 ImVec2 StateMachineRenderer::getWindowPosFromStateMachinePos(const ImVec2& stateMachinePos) {
@@ -288,7 +302,7 @@ ImVec2 StateMachineRenderer::getStateRectAnchorPointPosition(const StateRect& re
 
 ImVec2 StateMachineRenderer::getLabelAnchorPointPosition(const Label& label, AnchorEdge anchorEdge) {
     ImVec2 textSize = ImGui::CalcTextSize(label.text);
-    ImVec2 labelSize = {textSize.x + params.labelPadding * 2, textSize.y + params.labelPadding * 2};
+    ImVec2 labelSize = {textSize.x + params.arrowLabelPadding * 2, textSize.y + params.arrowLabelPadding * 2};
 
     switch (anchorEdge.side) {
     case AnchorEdgeSide::TOP:
