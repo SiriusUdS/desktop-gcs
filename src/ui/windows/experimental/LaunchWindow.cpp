@@ -17,6 +17,14 @@ void LaunchWindow::lazyInit() {
     initMotorStateMachine();
 }
 
+const char* LaunchWindow::name() const {
+    return "Launch";
+}
+
+const char* LaunchWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
 void LaunchWindow::renderImpl() {
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
     float stateMachineHeight = 600.0f;
@@ -31,14 +39,6 @@ void LaunchWindow::renderImpl() {
 
         ImGui::EndTable();
     }
-}
-
-const char* LaunchWindow::name() const {
-    return "Launch";
-}
-
-const char* LaunchWindow::dockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void LaunchWindow::initFillStationStateMachine() {

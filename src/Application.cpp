@@ -6,16 +6,20 @@
 
 #include "BoardsWindow.h"
 #include "ControlsWindow.h"
+#include "FillWindow.h"
 #include "FontConfig.h"
 #include "ImGuiConfig.h"
 #include "LaunchWindow.h"
 #include "Logging.h"
 #include "LoggingWindow.h"
 #include "MapWindow.h"
+#include "MonitoringWindow.h"
 #include "NOSPhaseDiagramWindow.h"
 #include "PacketCSVLogging.h"
 #include "Params.h"
 #include "PlotWindowCenter.h"
+#include "PrefillWindow.h"
+#include "ResultsWindow.h"
 #include "RocketParametersWindow.h"
 #include "SensorPlotData.h"
 #include "SerialComWindow.h"
@@ -70,18 +74,23 @@ void Application::init() {
 
     loggingWindow = std::make_shared<LoggingWindow>();
 
-    windows.emplace_back(std::make_shared<BoardsWindow>());
-    windows.emplace_back(std::make_shared<ControlsWindow>());
+    // windows.emplace_back(std::make_shared<BoardsWindow>());
+    // windows.emplace_back(std::make_shared<ControlsWindow>());
     windows.emplace_back(loggingWindow);
     windows.emplace_back(std::make_shared<MapWindow>());
-    windows.emplace_back(std::make_shared<NOSPhaseDiagramWindow>());
+    // windows.emplace_back(std::make_shared<NOSPhaseDiagramWindow>());
     windows.emplace_back(std::make_shared<RocketParametersWindow>());
-    windows.emplace_back(std::make_shared<SerialComWindow>());
-    windows.emplace_back(std::make_shared<SwitchesWindow>());
+    // windows.emplace_back(std::make_shared<SerialComWindow>());
+    // windows.emplace_back(std::make_shared<SwitchesWindow>());
     windows.emplace_back(std::make_shared<TankMassCalculatorWindow>());
     windows.emplace_back(std::make_shared<TankMassWindow>());
-    windows.emplace_back(std::make_shared<ValvesWindow>());
+    // windows.emplace_back(std::make_shared<ValvesWindow>());
+
+    windows.emplace_back(std::make_shared<PrefillWindow>());
+    windows.emplace_back(std::make_shared<FillWindow>());
     windows.emplace_back(std::make_shared<LaunchWindow>());
+    windows.emplace_back(std::make_shared<MonitoringWindow>());
+    windows.emplace_back(std::make_shared<ResultsWindow>());
 
     for (const auto& window : windows) {
         window->init();

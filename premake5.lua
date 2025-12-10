@@ -29,6 +29,7 @@ workspace "sirius-gcs"
         "src/ui/theme",
         "src/ui/widgets",
         "src/ui/windows",
+        "src/ui/windows/experimental",
         "external/ceSerial",
         "external/mINI",
         "external/sirius-headers-common"
