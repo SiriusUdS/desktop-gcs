@@ -1,5 +1,4 @@
-#ifndef ITILELOADER_H
-#define ITILELOADER_H
+#pragma once
 
 #include <imgui.h>
 
@@ -53,5 +52,3 @@ public:
         return false;
     }
 };
-
-#endif // ITILELOADER_H

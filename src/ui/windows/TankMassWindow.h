@@ -1,5 +1,4 @@
-#ifndef TANKMASSWINDOW_H
-#define TANKMASSWINDOW_H
+#pragma once
 
 #include "GSDataCenter.h"
 #include "RecentPlotDataView.h"
@@ -42,5 +41,3 @@ private:
     RecentPlotDataView recentTankMass{GSDataCenter::NOSTankMass_PlotData, RECENT_TIME_WINDOW_MS};
     RecentPlotDataView recentTankLoadCell{GSDataCenter::LoadCell_FillingStation_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_MS};
 };
-
-#endif // TANKMASSWINDOW_H

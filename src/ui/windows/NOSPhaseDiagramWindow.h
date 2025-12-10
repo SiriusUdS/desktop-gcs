@@ -1,5 +1,4 @@
-#ifndef NOSPHASEDIAGRAMWINDOW_H
-#define NOSPHASEDIAGRAMWINDOW_H
+#pragma once
 
 #include "UIWindow.h"
 
@@ -26,5 +25,3 @@ private:
     ImVector<float> topLine;
     ImVector<float> bottomLine;
 };
-
-#endif // NOSPHASEDIAGRAMWINDOW_H

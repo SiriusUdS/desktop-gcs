@@ -1,5 +1,4 @@
-#ifndef SWITCHESWINDOW_H
-#define SWITCHESWINDOW_H
+#pragma once
 
 #include "UIWindow.h"
 
@@ -14,5 +13,3 @@ public:
 private:
     void renderSwitch(const SwitchData& data, const char* name) const;
 };
-
-#endif // SWITCHESWINDOW_H

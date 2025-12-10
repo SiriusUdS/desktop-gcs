@@ -1,5 +1,4 @@
-#ifndef LOGGINGWINDOW_H
-#define LOGGINGWINDOW_H
+#pragma once
 
 #include "LogBuffer.h"
 #include "UIWindow.h"
@@ -31,5 +30,3 @@ private:
     ImGuiTextFilter filter;
     LogBuffer logBuffer;
 };
-
-#endif // LOGGINGWINDOW_H

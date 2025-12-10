@@ -1,5 +1,4 @@
-#ifndef COORDS_H
-#define COORDS_H
+#pragma once
 
 #include "implot.h"
 
@@ -13,8 +12,25 @@ inline constexpr double PI{std::numbers::pi_v<double>};
 inline constexpr double PI2{std::numbers::pi_v<double> * 2.0};
 inline constexpr double RAD{std::numbers::pi_v<double> / 180.0};
 inline constexpr double DEG{180.0 / std::numbers::pi_v<double>};
-inline constexpr int POW2[]{(1 << 0),  (1 << 1),  (1 << 2),  (1 << 3),  (1 << 4),  (1 << 5),  (1 << 6),  (1 << 7),  (1 << 8), (1 << 9),
-                            (1 << 10), (1 << 11), (1 << 12), (1 << 13), (1 << 14), (1 << 15), (1 << 16), (1 << 17), (1 << 18)};
+inline constexpr int POW2[]{(1 << 0),
+                            (1 << 1),
+                            (1 << 2),
+                            (1 << 3),
+                            (1 << 4),
+                            (1 << 5),
+                            (1 << 6),
+                            (1 << 7),
+                            (1 << 8),
+                            (1 << 9),
+                            (1 << 10),
+                            (1 << 11),
+                            (1 << 12),
+                            (1 << 13),
+                            (1 << 14),
+                            (1 << 15),
+                            (1 << 16),
+                            (1 << 17),
+                            (1 << 18)};
 
 inline constexpr double MIN_LAT{-85.0};
 inline constexpr double MAX_LAT{+85.0};
@@ -265,5 +281,3 @@ inline const GeoCoords midpoint(const GeoCoords& a, const GeoCoords& b) {
     LatLon::midpoint(c.lat, c.lon, a.lat, a.lon, b.lat, b.lon);
     return c;
 }
-
-#endif // COORDS_H

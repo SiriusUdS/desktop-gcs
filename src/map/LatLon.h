@@ -1,5 +1,4 @@
-#ifndef LATLON_H
-#define LATLON_H
+#pragma once
 
 #include <math.h>
 #include <numbers>
@@ -98,5 +97,3 @@ inline void cartesian(double& x, double& y, double lat, double lon, double lat0,
 }
 
 } // namespace LatLon
-
-#endif // LATLON_H

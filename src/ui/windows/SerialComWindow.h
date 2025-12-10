@@ -1,5 +1,4 @@
-#ifndef SERIALCOMWINDOW_H
-#define SERIALCOMWINDOW_H
+#pragma once
 
 #include "BoardComStateMonitor.h"
 #include "UIWindow.h"
@@ -30,5 +29,3 @@ private:
     bool recvBufferDisplayPause{};
     std::vector<char> recvBufferContentDisplay;
 };
-
-#endif // SERIALCOMWINDOW_H

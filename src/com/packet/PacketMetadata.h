@@ -1,5 +1,4 @@
-#ifndef PACKETMETADATA_H
-#define PACKETMETADATA_H
+#pragma once
 
 /**
  * @struct PacketMetadata
@@ -14,5 +13,3 @@ struct PacketMetadata {
     Status status{Status::NONE}; ///< Status of the packet.
     size_t size{};               ///< Size of the packet in bytes.
 };
-
-#endif // PACKETMETADATA_H

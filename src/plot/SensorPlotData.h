@@ -1,5 +1,4 @@
-#ifndef SENSORPLOTDATA_H
-#define SENSORPLOTDATA_H
+#pragma once
 
 #include "PlotData.h"
 
@@ -28,5 +27,3 @@ private:
     PlotData adcPlotData;
     PlotData valuePlotData;
 };
-
-#endif // SENSORPLOTDATA_H

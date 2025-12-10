@@ -1,5 +1,4 @@
-#ifndef IMGUITEXTBUFFERSINK_H
-#define IMGUITEXTBUFFERSINK_H
+#pragma once
 
 #include <spdlog/sinks/base_sink.h>
 
@@ -12,5 +11,3 @@ protected:
     void sink_it_(const spdlog::details::log_msg& msg) override;
     void flush_() override;
 };
-
-#endif // IMGUITEXTBUFFERSINK_H

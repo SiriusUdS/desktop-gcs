@@ -1,5 +1,4 @@
-#ifndef MAPPLOT_H
-#define MAPPLOT_H
+#pragma once
 
 #include <memory>
 
@@ -191,5 +190,3 @@ private:
     enum class SetBounds { None, Geo, Local };
     SetBounds _setBounds{SetBounds::None};
 };
-
-#endif // MAPPLOT_H

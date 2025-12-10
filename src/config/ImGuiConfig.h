@@ -1,5 +1,4 @@
-#ifndef IMGUICONFIG_H
-#define IMGUICONFIG_H
+#pragma once
 
 namespace ImGuiConfig {
 
@@ -10,5 +9,3 @@ constexpr const char* PLOT = "MainDockSpace";
 } // namespace Dockspace
 
 } // namespace ImGuiConfig
-
-#endif // IMGUICONFIG_H

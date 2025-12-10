@@ -1,5 +1,4 @@
-#ifndef FILLWINDOW_H
-#define FILLWINDOW_H
+#pragma once
 
 #include "UIWindow.h"
 
@@ -11,5 +10,3 @@ public:
 private:
     void renderImpl() override;
 };
-
-#endif // FILLWINDOW_H

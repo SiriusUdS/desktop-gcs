@@ -1,5 +1,4 @@
-#ifndef PLOTDATAVIEW_H
-#define PLOTDATAVIEW_H
+#pragma once
 
 #include "DataSelector.h"
 
@@ -19,5 +18,3 @@ private:
     const PlotData& plotData;
     const ThemedColor& color;
 };
-
-#endif // PLOTDATAVIEW_H

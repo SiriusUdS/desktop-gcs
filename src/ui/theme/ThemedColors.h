@@ -1,5 +1,4 @@
-#ifndef THEMEDCOLORS_H
-#define THEMEDCOLORS_H
+#pragma once
 
 #include "ThemedColor.h"
 
@@ -28,5 +27,3 @@ const ThemedColor inactiveState{.lightTheme{255, 170, 170}, .darkTheme{140, 0, 0
 const ThemedColor arrow{.lightTheme{0, 0, 0}, .darkTheme{255, 255, 255}};
 } // namespace StateMachine
 } // namespace ThemedColors
-
-#endif // THEMEDCOLORS_H

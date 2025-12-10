@@ -1,5 +1,4 @@
-#ifndef CRC_H
-#define CRC_H
+#pragma once
 
 #include "CRC/CRCConstants.h"
 
@@ -33,5 +32,3 @@ inline std::uint32_t computeCrc(uint8_t* data, size_t sizeInBytes) {
     return crc;
 }
 } // namespace CRC
-
-#endif // CRC_H

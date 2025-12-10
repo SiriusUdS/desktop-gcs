@@ -1,5 +1,4 @@
-#ifndef PACKETFRAMER_H
-#define PACKETFRAMER_H
+#pragma once
 
 #include "PacketCircularBuffer.h"
 #include "PacketMetadata.h"
@@ -31,5 +30,3 @@ private:
     PacketMetadata currentPacketMetadata;
     bool readingValidPacket{};
 };
-
-#endif // PACKETFRAMER_H

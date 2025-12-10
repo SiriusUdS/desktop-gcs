@@ -1,5 +1,4 @@
-#ifndef DATASERIES_H
-#define DATASERIES_H
+#pragma once
 
 #include <vector>
 
@@ -19,5 +18,3 @@ protected:
     std::vector<float> compressedValues;
     size_t targetCompressionSize{};
 };
-
-#endif // DATASERIES_H

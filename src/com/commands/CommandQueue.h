@@ -1,5 +1,4 @@
-#ifndef COMMANDQUEUE_H
-#define COMMANDQUEUE_H
+#pragma once
 
 #include "CommandTypes.h"
 
@@ -23,5 +22,3 @@ private:
     std::queue<CommandType> pendingTypes;
     std::array<std::optional<uint32_t>, static_cast<std::size_t>(CommandType::Count)> values{};
 };
-
-#endif // COMMANDQUEUE_H

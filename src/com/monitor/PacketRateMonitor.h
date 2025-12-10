@@ -1,5 +1,4 @@
-#ifndef PACKETRATEMONITOR_H
-#define PACKETRATEMONITOR_H
+#pragma once
 
 #include <chrono>
 #include <deque>
@@ -23,5 +22,3 @@ private:
     std::deque<std::chrono::steady_clock::time_point> timePoints;
     std::mutex mtx;
 };
-
-#endif // PACKETRATEMONITOR_H

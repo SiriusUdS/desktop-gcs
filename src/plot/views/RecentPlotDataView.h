@@ -1,5 +1,4 @@
-#ifndef RECENTPLOTDATAVIEW_H
-#define RECENTPLOTDATAVIEW_H
+#pragma once
 
 #include "DataSelector.h"
 #include "PlotDataView.h"
@@ -18,5 +17,3 @@ private:
     RecentDataSelector rawDataSelector;
     RecentDataSelector compressedDataSelector;
 };
-
-#endif // RECENTPLOTDATAVIEW_H

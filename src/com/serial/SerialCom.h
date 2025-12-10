@@ -1,5 +1,4 @@
-#ifndef SERIALCOM_H
-#define SERIALCOM_H
+#pragma once
 
 #include <ceserial.h>
 
@@ -20,5 +19,3 @@ public:
 private:
     ceSerial com;
 };
-
-#endif // SERIALCOM_H

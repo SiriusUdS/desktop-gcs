@@ -1,8 +1,5 @@
-#ifndef INICONFIG_H
-#define INICONFIG_H
+#pragma once
 
 namespace IniConfig {
 constexpr const char* GCS_SECTION = "GCS";
 }
-
-#endif // INICONFIG_H

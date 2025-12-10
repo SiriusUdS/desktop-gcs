@@ -1,5 +1,4 @@
-#ifndef TILEASYNC_H
-#define TILEASYNC_H
+#pragma once
 
 #include <chrono>
 #include <future>
@@ -43,5 +42,3 @@ struct TileAsync {
         return this->z == other.z && this->x == other.x && this->y == other.y;
     }
 };
-
-#endif // TILEASYNC_H

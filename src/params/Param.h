@@ -1,5 +1,4 @@
-#ifndef PARAM_H
-#define PARAM_H
+#pragma once
 
 #include <string>
 
@@ -12,5 +11,3 @@ struct Param {
     T defaultValue;
     std::string iniKey;
 };
-
-#endif // PARAM_H

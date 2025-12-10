@@ -1,5 +1,4 @@
-#ifndef ITILESAVER_H
-#define ITILESAVER_H
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -26,5 +25,3 @@ public:
      */
     virtual bool saveMulti(const std::vector<std::shared_ptr<ITile>>& tiles) const = 0;
 };
-
-#endif // ITILESAVER_H

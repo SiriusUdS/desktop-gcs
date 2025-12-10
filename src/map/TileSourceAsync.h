@@ -1,5 +1,4 @@
-#ifndef TILESOURCEASYNC_H
-#define TILESOURCEASYNC_H
+#pragma once
 
 #include "ITileSource.h"
 #include "TileAsync.h"
@@ -64,5 +63,3 @@ private:
     int _failedFetchesInARow{};
     int _failedFetchesInARowThreshold{10};
 };
-
-#endif // TILESOURCEASYNC_H

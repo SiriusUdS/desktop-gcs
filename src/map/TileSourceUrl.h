@@ -1,5 +1,4 @@
-#ifndef TILESOURCEURL_H
-#define TILESOURCEURL_H
+#pragma once
 
 #include "TileSourceAsync.h"
 
@@ -26,5 +25,3 @@ protected:
 private:
     std::string _userAgent{"curl"};
 };
-
-#endif // TILESOURCEURL_H

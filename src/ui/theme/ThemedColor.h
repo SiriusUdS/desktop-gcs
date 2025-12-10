@@ -1,5 +1,4 @@
-#ifndef THEMEDCOLOR_H
-#define THEMEDCOLOR_H
+#pragma once
 
 #include <imgui.h>
 
@@ -9,5 +8,3 @@ struct ThemedColor {
 
     ImColor resolve() const;
 };
-
-#endif // THEMEDCOLOR_H

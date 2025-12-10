@@ -1,5 +1,4 @@
-#ifndef RICHMARKITEM_H
-#define RICHMARKITEM_H
+#pragma once
 
 #include "Coords.h"
 #include "IRichItem.h"
@@ -146,5 +145,3 @@ private:
     float _dphi{1.0};
     Style _style;
 };
-
-#endif // RICHMARKITEM_H

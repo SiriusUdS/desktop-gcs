@@ -1,9 +1,6 @@
-#ifndef UITHEME_H
-#define UITHEME_H
+#pragma once
 
 namespace UITheme {
 void update();
 bool isDarkTheme();
 } // namespace UITheme
-
-#endif UITHEME_H

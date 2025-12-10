@@ -1,5 +1,4 @@
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#pragma once
 
 #include <chrono>
 #include <hello_imgui/hello_imgui.h>
@@ -17,5 +16,3 @@ std::vector<HelloImGui::DockableWindow> createDockableWindows();
 
 extern std::shared_ptr<LoggingWindow> loggingWindow;
 } // namespace Application
-
-#endif // APPLICATION_H

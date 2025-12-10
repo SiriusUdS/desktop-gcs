@@ -1,5 +1,4 @@
-#ifndef PLOTDATA_H
-#define PLOTDATA_H
+#pragma once
 
 #include "DataSeries.h"
 #include "PlotStyle.h"
@@ -49,5 +48,3 @@ private:
     std::vector<PlotDataUpdateListener*> listeners;
     mutable std::mutex mtx;
 };
-
-#endif // PLOTDATA_H

@@ -1,5 +1,4 @@
-#ifndef RICHMARKSTORAGE_H
-#define RICHMARKSTORAGE_H
+#pragma once
 
 #include "Coords.h"
 
@@ -60,5 +59,3 @@ private:
     // Mark Items
     std::vector<ItemNode> _markItems;
 };
-
-#endif // RICHMARKITEM_H

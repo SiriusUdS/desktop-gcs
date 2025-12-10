@@ -1,5 +1,4 @@
-#ifndef IRICHITEM_H
-#define IRICHITEM_H
+#pragma once
 
 /**
  * @class IRichItem
@@ -36,5 +35,3 @@ public:
      */
     virtual void paint() = 0;
 };
-
-#endif // IRICHITEM_H

@@ -1,5 +1,4 @@
-#ifndef COMMANDTYPES_H
-#define COMMANDTYPES_H
+#pragma once
 
 #include "Telecommunication/BoardCommand.h"
 #include "Telecommunication/PacketHeaderVariable.h"
@@ -43,5 +42,3 @@ enum class HeatPadCommandType {
 };
 
 enum class BoardType { Engine = ENGINE_BOARD_ID, FillingStation = FILLING_STATION_BOARD_ID };
-
-#endif // COMMANDTYPES_H

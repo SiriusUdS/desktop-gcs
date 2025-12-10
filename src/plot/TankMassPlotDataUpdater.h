@@ -1,5 +1,4 @@
-#ifndef TANKMASSPLOTDATAUPDATER_H
-#define TANKMASSPLOTDATAUPDATER_H
+#pragma once
 
 #include "PlotDataUpdateListener.h"
 
@@ -23,5 +22,3 @@ private:
     std::map<const PlotData*, PlotDataUpdate> plotDataUpdateMap;
     std::mutex mtx;
 };
-
-#endif // TANKMASSPLOTDATAUPDATER_H

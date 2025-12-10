@@ -1,5 +1,4 @@
-#ifndef PREFILLWINDOW_H
-#define PREFILLWINDOW_H
+#pragma once
 
 #include "UIWindow.h"
 
@@ -11,5 +10,3 @@ public:
 private:
     void renderImpl() override;
 };
-
-#endif // PREFILLWINDOW_H

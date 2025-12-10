@@ -1,5 +1,4 @@
-#ifndef UIWINDOW_H
-#define UIWINDOW_H
+#pragma once
 
 #include <ini.h>
 
@@ -34,5 +33,3 @@ protected:
 
     bool hasLazyInit{};
 };
-
-#endif // UIWINDOW_H

@@ -1,5 +1,4 @@
-#ifndef BOARDCOMSTATEMONITOR_H
-#define BOARDCOMSTATEMONITOR_H
+#pragma once
 
 #include "Timer.h"
 
@@ -32,5 +31,3 @@ private:
     bool ioSuccessSinceStart{};
     Timer lastSuccessfulPacketReadTimer;
 };
-
-#endif // BOARDCOMSTATEMONITOR_H

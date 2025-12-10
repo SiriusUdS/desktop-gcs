@@ -1,5 +1,4 @@
-#ifndef PACKETCSVLOGGING_H
-#define PACKETCSVLOGGING_H
+#pragma once
 
 #include "CSVLogger.h"
 #include "GSDataCenter.h"
@@ -23,5 +22,3 @@ void logGSControlPacket(const GSControlStatusPacket* packet);
 void logEngineStatusPacket(const EngineStatusPacket* packet);
 void logFillingStationStatusPacket(const FillingStationStatusPacket* packet);
 } // namespace PacketCSVLogging
-
-#endif // PACKETCSVLOGGING_H

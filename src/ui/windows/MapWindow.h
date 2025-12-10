@@ -1,5 +1,4 @@
-#ifndef MAPWINDOW_H
-#define MAPWINDOW_H
+#pragma once
 
 #include "RichMapPlot.h"
 #include "RichMarkStorage.h"
@@ -46,5 +45,3 @@ private:
     std::shared_ptr<TileGrabber> satelliteTileGrabber;
     std::shared_ptr<TileSourceUrlConnTest> urlConnectionTest;
 };
-
-#endif // MAPWINDOW_H

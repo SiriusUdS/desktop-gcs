@@ -1,5 +1,4 @@
-#ifndef TANKMASSCALCULATORWINDOW_H
-#define TANKMASSCALCULATORWINDOW_H
+#pragma once
 
 #include "UIWindow.h"
 
@@ -13,5 +12,3 @@ private:
     double tankTemperature_C{};
     double tankPressure_psi{};
 };
-
-#endif // TANKMASSCALCULATORWINDOW_H

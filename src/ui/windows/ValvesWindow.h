@@ -1,5 +1,4 @@
-#ifndef VALVESWINDOW_H
-#define VALVESWINDOW_H
+#pragma once
 
 #include "UIWindow.h"
 
@@ -14,5 +13,3 @@ public:
 private:
     void renderValveStateRow(const char* label, ValveData& data) const;
 };
-
-#endif // VALVESWINDOW_H

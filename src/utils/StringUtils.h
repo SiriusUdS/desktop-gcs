@@ -1,5 +1,4 @@
-#ifndef STRINGUTILS_H
-#define STRINGUTILS_H
+#pragma once
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -13,5 +12,3 @@ void convertStringToIniId(std::string& s);
 std::string wcharToString(const WCHAR* wstr); // TODO: this shouldn't be a member function of this class
 #endif
 } // namespace StringUtils
-
-#endif // STRINGUTILS_H

@@ -1,5 +1,4 @@
-#ifndef RICHMAPPLOT_H
-#define RICHMAPPLOT_H
+#pragma once
 
 #include "MapPlot.h"
 
@@ -26,5 +25,3 @@ public:
 private:
     std::vector<std::weak_ptr<IRichItem>> _items;
 };
-
-#endif // RICHMAPPLOT_H

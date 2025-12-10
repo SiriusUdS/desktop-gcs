@@ -1,5 +1,4 @@
-#ifndef CONTROLSWINDOW_H
-#define CONTROLSWINDOW_H
+#pragma once
 
 #include "CommandTypes.h"
 #include "UIWindow.h"
@@ -37,5 +36,3 @@ private:
                                bool inputEnabled = true,
                                bool onlyFullyClosedOrOpen = false) const;
 };
-
-#endif // CONTROLSWINDOW_H

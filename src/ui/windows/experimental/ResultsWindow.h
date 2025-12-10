@@ -1,5 +1,4 @@
-#ifndef RESULTSWINDOW_H
-#define RESULTSWINDOW_H
+#pragma once
 
 #include "UIWindow.h"
 
@@ -11,5 +10,3 @@ public:
 private:
     void renderImpl() override;
 };
-
-#endif // RESULTSWINDOW_H

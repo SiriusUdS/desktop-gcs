@@ -1,5 +1,4 @@
-#ifndef SERIALCONFIG_H
-#define SERIALCONFIG_H
+#pragma once
 
 namespace SerialConfig {
 constexpr size_t MAX_PACKET_SIZE = 64;
@@ -17,5 +16,3 @@ constexpr size_t IPA_VALVE_STATUS_INDEX = 1;
 constexpr size_t FILL_VALVE_STATUS_INDEX = 0;
 constexpr size_t DUMP_VALVE_STATUS_INDEX = 1;
 } // namespace SerialConfig
-
-#endif // SERIALCONFIG_H

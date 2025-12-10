@@ -1,5 +1,4 @@
-#ifndef CSVLOGGER_H
-#define CSVLOGGER_H
+#pragma once
 
 #include <fstream>
 #include <vector>
@@ -27,5 +26,3 @@ private:
     std::string currentFileName;
     bool firstLog{true};
 };
-
-#endif // CSVLOGGER_H

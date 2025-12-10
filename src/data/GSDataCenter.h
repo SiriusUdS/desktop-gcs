@@ -1,5 +1,4 @@
-#ifndef GSDATACENTER_H
-#define GSDATACENTER_H
+#pragma once
 
 #include <atomic>
 #include <vector>
@@ -63,5 +62,3 @@ extern std::atomic<float> tankTemperature_C;
 extern std::atomic<float> tankPressure_psi;
 extern std::atomic<float> tankLoadCell_lb;
 } // namespace GSDataCenter
-
-#endif // GSDATACENTER_H

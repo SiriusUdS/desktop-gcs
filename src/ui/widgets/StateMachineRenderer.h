@@ -1,5 +1,4 @@
-#ifndef STATEMACHINERENDERER_H
-#define STATEMACHINERENDERER_H
+#pragma once
 
 #include <imgui.h>
 #include <vector>
@@ -115,5 +114,3 @@ private:
     ImVec2 offsetPosition;
     float sizeScale{1};
 };
-
-#endif // STATEMACHINERENDERER_H

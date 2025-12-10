@@ -1,5 +1,4 @@
-#ifndef TILESAVER_H
-#define TILESAVER_H
+#pragma once
 
 #include "ITileSaver.h"
 #include "TileSourceFs.h"
@@ -62,5 +61,3 @@ protected:
 private:
     std::filesystem::path _basePath{TileSourceFs::BasePathDefault()};
 };
-
-#endif // TILESAVER_H

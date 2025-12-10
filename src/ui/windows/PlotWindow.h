@@ -1,5 +1,4 @@
-#ifndef PLOTWINDOW_H
-#define PLOTWINDOW_H
+#pragma once
 
 #include <implot.h>
 #include <ini.h>
@@ -33,5 +32,3 @@ private:
     bool showAvgValues{};
     int dataType{};
 }; // namespace PlotWindow
-
-#endif // PLOTWINDOW_H

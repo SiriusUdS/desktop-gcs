@@ -1,5 +1,4 @@
-#ifndef PACKETRECEIVER_H
-#define PACKETRECEIVER_H
+#pragma once
 
 #include "PacketCircularBuffer.h"
 #include "PacketFramer.h"
@@ -23,5 +22,3 @@ private:
     PacketFramer pf{buf};
     std::queue<PacketMetadata> packetMetadataQueue{};
 };
-
-#endif // PACKETRECEIVER_H

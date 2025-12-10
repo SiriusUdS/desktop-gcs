@@ -1,5 +1,4 @@
-#ifndef ROCKETPARAMETERSWINDOW_H
-#define ROCKETPARAMETERSWINDOW_H
+#pragma once
 
 #include "UIWindow.h"
 
@@ -9,5 +8,3 @@ public:
     const char* name() const override;
     const char* dockspace() const override;
 };
-
-#endif // ROCKETPARAMETERSWINDOW_H

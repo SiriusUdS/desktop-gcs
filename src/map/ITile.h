@@ -1,5 +1,4 @@
-#ifndef ITILE_H
-#define ITILE_H
+#pragma once
 
 #include <imgui.h>
 
@@ -76,5 +75,3 @@ public:
      */
     virtual ImTextureID texture() const = 0;
 };
-
-#endif // ITILE_H

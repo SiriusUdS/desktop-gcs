@@ -1,5 +1,4 @@
-#ifndef ITILESOURCE_H
-#define ITILESOURCE_H
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -87,5 +86,3 @@ public:
      */
     virtual int requestLimit() const = 0;
 };
-
-#endif // ITILESOURCE_H

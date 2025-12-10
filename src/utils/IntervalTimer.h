@@ -1,5 +1,4 @@
-#ifndef INTERVALTIMER_H
-#define INTERVALTIMER_H
+#pragma once
 
 #include <chrono>
 
@@ -18,5 +17,3 @@ private:
     std::chrono::steady_clock::time_point startTime;
     std::chrono::steady_clock::duration interval;
 };
-
-#endif // INTERVALTIMER_H

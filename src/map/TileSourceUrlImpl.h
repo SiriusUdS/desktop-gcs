@@ -1,5 +1,4 @@
-#ifndef TILESOURCEURLIMPL_H
-#define TILESOURCEURLIMPL_H
+#pragma once
 
 #include "TileSourceUrl.h"
 
@@ -60,5 +59,3 @@ public:
     static std::string makeSourceUrl(int z, int x, int y);
 };
 using TileSourceUrlArc = TileSourceUrlArcImagery;
-
-#endif // TILESOURCEURLIMPL_H

@@ -1,5 +1,4 @@
-#ifndef VALVEDATA_H
-#define VALVEDATA_H
+#pragma once
 
 #include <stdint.h>
 
@@ -13,5 +12,3 @@ struct ValveData {
     std::atomic<bool> openedSwitchHigh{};       ///< Opened switch is high.
     std::atomic<uint16_t> positionOpened_pct{}; ///< Position opened in percentage.
 };
-
-#endif // VALVEDATA_H

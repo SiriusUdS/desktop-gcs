@@ -1,5 +1,4 @@
-#ifndef TILESOURCEFS_H
-#define TILESOURCEFS_H
+#pragma once
 
 #include "TileSourceAsync.h"
 
@@ -77,5 +76,3 @@ public:
 protected:
     virtual std::filesystem::path dirPath(int z, int x, int y) const override;
 };
-
-#endif // TILELOADERIMPL_H

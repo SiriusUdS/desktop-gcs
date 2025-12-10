@@ -1,5 +1,4 @@
-#ifndef PLOTSTYLE_H
-#define PLOTSTYLE_H
+#pragma once
 
 #include <imgui.h>
 
@@ -14,5 +13,3 @@ struct PlotStyle {
     const ThemedColor& color; ///< Color of the plot line
     float weight;             ///< Thickness of the plot line
 };
-
-#endif // PLOTSTYLE_H

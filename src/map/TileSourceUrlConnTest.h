@@ -1,5 +1,4 @@
-#ifndef TILESOURCECONNTEST_H
-#define TILESOURCECONNTEST_H
+#pragma once
 
 #include <future>
 
@@ -18,5 +17,3 @@ private:
     std::mutex mtx;
     std::atomic_bool lastFetchSuccessful{false};
 };
-
-#endif // TILESOURCEURL_H

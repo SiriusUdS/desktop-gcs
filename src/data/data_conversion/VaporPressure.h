@@ -1,8 +1,5 @@
-#ifndef VAPORPRESSURE_H
-#define VAPORPRESSURE_H
+#pragma once
 
 namespace VaporPressure {
 double vaporPressureNOS_psi(float temperature_C);
 }
-
-#endif // VAPORPRESSURE_H

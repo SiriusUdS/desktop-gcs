@@ -1,5 +1,4 @@
-#ifndef TILELOADERIMPL_H
-#define TILELOADERIMPL_H
+#pragma once
 
 #include "TileLoader.h"
 #include "TileSourceFs.h"
@@ -70,5 +69,3 @@ public:
         : TileLoader{std::make_shared<TileSourceFsSubDir>(requestLimit, MAP_PRELOAD, dirname), true} {
     }
 };
-
-#endif // TILELOADERIMPL_H

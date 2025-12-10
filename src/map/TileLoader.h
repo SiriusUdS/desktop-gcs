@@ -1,5 +1,4 @@
-#ifndef TILELOADER_H
-#define TILELOADER_H
+#pragma once
 
 #include "ITileLoader.h"
 
@@ -32,5 +31,3 @@ private:
     std::vector<std::shared_ptr<ITile>> _tiles;
     bool _dummiesAreFinal{};
 };
-
-#endif // TILELOADER_H

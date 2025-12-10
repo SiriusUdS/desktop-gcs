@@ -1,5 +1,4 @@
-#ifndef SERIALTASK_H
-#define SERIALTASK_H
+#pragma once
 
 #include <atomic>
 #include <thread>
@@ -32,5 +31,3 @@ extern WindowsComPortDiscovery comPortDiscovery;
 extern ComPortSelector comPortSelector;
 extern SerialCom com;
 } // namespace SerialTask
-
-#endif // SERIALTASK_H

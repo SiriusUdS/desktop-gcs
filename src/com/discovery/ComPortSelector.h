@@ -1,5 +1,4 @@
-#ifndef COMPORTSELECTOR_H
-#define COMPORTSELECTOR_H
+#pragma once
 
 #include <mutex>
 #include <string>
@@ -24,5 +23,3 @@ private:
     std::vector<std::string> comPorts;
     mutable std::mutex mtx;
 };
-
-#endif // COMPORTSELECTOR_H

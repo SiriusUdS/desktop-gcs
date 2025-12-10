@@ -1,5 +1,4 @@
-#ifndef PLOTWINDOWCENTER_H
-#define PLOTWINDOWCENTER_H
+#pragma once
 
 #include "PlotWindow.h"
 
@@ -16,5 +15,3 @@ extern PlotWindow thermistorFillingStationPlot;
 extern PlotWindow pressureSensorFillingStationPlot;
 extern PlotWindow loadCellFillingStationPlot;
 } // namespace PlotWindowCenter
-
-#endif // PLOTWINDOWCENTER_H

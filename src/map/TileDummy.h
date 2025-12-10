@@ -1,5 +1,4 @@
-#ifndef TILEDUMMY_H
-#define TILEDUMMY_H
+#pragma once
 
 #include "ITile.h"
 
@@ -64,5 +63,3 @@ public:
 private:
     int _z{}, _x{}, _y{};
 };
-
-#endif // TILEDUMMY_H

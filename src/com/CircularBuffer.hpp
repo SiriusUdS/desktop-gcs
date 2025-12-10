@@ -1,5 +1,4 @@
-#ifndef CIRCULARBUFFER_H
-#define CIRCULARBUFFER_H
+#pragma once
 
 #include "Logging.h"
 
@@ -137,5 +136,3 @@ inline size_t CircularBuffer<BUFSIZE>::prevIndex(size_t idx, size_t decrement) c
     }
     return idx - decrement;
 }
-
-#endif // CIRCULARBUFFER_H

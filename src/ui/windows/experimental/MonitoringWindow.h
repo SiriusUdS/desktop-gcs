@@ -1,5 +1,4 @@
-#ifndef MONITORINGWINDOW_H
-#define MONITORINGWINDOW_H
+#pragma once
 
 #include "UIWindow.h"
 
@@ -11,5 +10,3 @@ public:
 private:
     void renderImpl() override;
 };
-
-#endif // MONITORINGWINDOW_H

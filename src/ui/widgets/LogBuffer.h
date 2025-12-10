@@ -1,5 +1,4 @@
-#ifndef LOGBUFFER_H
-#define LOGBUFFER_H
+#pragma once
 
 #include <imgui.h>
 #include <spdlog/spdlog.h>
@@ -28,5 +27,3 @@ private:
     ImVector<int> visibleLines;
     std::mutex mtx;
 };
-
-#endif // LOGBUFFER_H

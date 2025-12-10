@@ -1,5 +1,4 @@
-#ifndef RECENTDATASELECTOR_H
-#define RECENTDATASELECTOR_H
+#pragma once
 
 #include "DataSelector.h"
 
@@ -12,5 +11,3 @@ private:
     size_t timelapseWindow_ms{};
     size_t start{};
 };
-
-#endif // RECENTDATASELECTOR_H

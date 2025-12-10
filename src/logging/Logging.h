@@ -1,5 +1,4 @@
-#ifndef LOGGING_H
-#define LOGGING_H
+#pragma once
 
 #include <memory>
 #include <spdlog/spdlog.h>
@@ -39,5 +38,3 @@ void implAppWarnLog(fmt::format_string<Args...> fmt, Args&&... args) {
 #define GCS_APP_LOG_ERROR(fmt, ...) Logging::implAppErrorLog(fmt, __VA_ARGS__)
 #define GCS_APP_LOG_INFO(fmt, ...) Logging::implAppInfoLog(fmt, __VA_ARGS__)
 #define GCS_APP_LOG_WARN(fmt, ...) Logging::implAppWarnLog(fmt, __VA_ARGS__)
-
-#endif // LOGGING_H

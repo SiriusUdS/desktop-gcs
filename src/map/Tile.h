@@ -1,5 +1,4 @@
-#ifndef TILE_H
-#define TILE_H
+#pragma once
 
 #include "TileDummy.h"
 
@@ -38,5 +37,3 @@ private:
     mutable std::vector<std::byte> _rgbaBlob;
     mutable GLuint _id{0};
 };
-
-#endif // TILE_H

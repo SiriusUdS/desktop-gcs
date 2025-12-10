@@ -1,5 +1,4 @@
-#ifndef LAUNCHWINDOW_H
-#define LAUNCHWINDOW_H
+#pragma once
 
 #include "StateMachineRenderer.h"
 #include "UIWindow.h"
@@ -19,5 +18,3 @@ private:
     StateMachineRenderer fsStateMachine;
     StateMachineRenderer motorStateMachine;
 };
-
-#endif // LAUNCHWINDOW_H

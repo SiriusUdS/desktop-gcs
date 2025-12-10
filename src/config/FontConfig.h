@@ -1,5 +1,4 @@
-#ifndef FONTCONFIG_H
-#define FONTCONFIG_H
+#pragma once
 
 #include <imgui.h>
 
@@ -8,5 +7,3 @@ inline ImFont* mainFont = nullptr;
 inline ImFont* boldMainFont = nullptr;
 inline ImFont* monospaceFont = nullptr;
 } // namespace FontConfig
-
-#endif // FONTCONFIG_H

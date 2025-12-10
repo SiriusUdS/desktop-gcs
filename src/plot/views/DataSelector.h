@@ -1,5 +1,4 @@
-#ifndef DATASELECTOR_H
-#define DATASELECTOR_H
+#pragma once
 
 #include <vector>
 
@@ -13,5 +12,3 @@ public:
 public:
     virtual Window getWindow(const std::vector<float>& data) = 0;
 };
-
-#endif // DATASELECTOR_H

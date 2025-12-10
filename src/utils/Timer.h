@@ -1,5 +1,4 @@
-#ifndef TIMER_H
-#define TIMER_H
+#pragma once
 
 #include <chrono>
 
@@ -19,5 +18,3 @@ private:
     std::chrono::steady_clock::time_point startTime;
     std::chrono::steady_clock::duration duration{};
 };
-
-#endif // TIMER_H
