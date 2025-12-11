@@ -13,7 +13,25 @@ const char* PrefillWindow::dockspace() const {
 }
 
 void PrefillWindow::renderImpl() {
+    ImGui::SeparatorText("Tests");
+
+    ImGui::BeginDisabled(sensorTestSequencer.isBusy());
+
     if (ImGui::Button("Test NOS Valve")) {
         sensorTestSequencer.testNOSValve();
     }
+
+    if (ImGui::Button("Test IPA Valve")) {
+        sensorTestSequencer.testIPAValve();
+    }
+
+    if (ImGui::Button("Test Fill Valve")) {
+        sensorTestSequencer.testFillValve();
+    }
+
+    if (ImGui::Button("Test Dump Valve")) {
+        sensorTestSequencer.testDumpValve();
+    }
+
+    ImGui::EndDisabled();
 }

@@ -46,6 +46,7 @@ void CommandControl::processCommands() {
     case State::IDLE:
         getNextCommand();
         break;
+
     case State::SENDING:
         if (lastTimeSentTimer.getElapsedTimeInSeconds() < TIME_BETWEEN_COMMAND_SENDS_SEC) {
             break;
@@ -54,7 +55,6 @@ void CommandControl::processCommands() {
         BoardCommand* formattedData = reinterpret_cast<BoardCommand*>(data);
         if (!SerialTask::com.write(data, dataSize)) {
             GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over serial communication.");
-            break;
         }
         timesSent++;
         if (NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND <= timesSent) {
