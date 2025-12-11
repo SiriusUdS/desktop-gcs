@@ -7,39 +7,45 @@
  * @param type The type of command to enqueue.
  * @param value The value associated with the command.
  */
-void CommandQueue::enqueue(CommandType type, uint32_t value) {
-    size_t idx = static_cast<std::size_t>(type);
+const std::shared_ptr<QueuedCommand> CommandQueue::enqueue(CommandType type, uint32_t value) {
+    auto typeIdx = static_cast<std::underlying_type_t<CommandType>>(type);
 
-    // TODO: Can't queue multiple commands of same type but different unit (ex. fill heat pad and dump heat pad overwrite each other, needs to be
-    // fixed)
-    if (!values[idx].has_value()) {
-        pendingTypes.push(type);
+    if (active.find(typeIdx) == active.end()) {
+        queue.push(type);
     }
-    values[idx] = value;
+
+    auto command = std::make_shared<QueuedCommand>();
+    command->type = type;
+    command->value = value;
+    active[typeIdx] = command;
+
+    return command;
 }
 
 /**
  * @brief Dequeues the next command from the queue.
+ * @returns The next command if one is available, else returns std::nullopt.
  */
-std::optional<Command> CommandQueue::dequeue() {
-    if (pendingTypes.empty()) {
+std::optional<std::shared_ptr<QueuedCommand>> CommandQueue::dequeue() {
+    if (queue.empty()) {
         return std::nullopt;
     }
 
-    CommandType type = pendingTypes.front();
-    pendingTypes.pop();
+    CommandType type = queue.front();
+    queue.pop();
 
-    size_t idx = static_cast<std::size_t>(type);
+    auto idx = static_cast<std::underlying_type_t<CommandType>>(type);
 
-    if (!values[idx].has_value()) {
-        GCS_APP_LOG_ERROR("CommandQueue: Internal desync, no value for CommandType {}.", static_cast<int>(type));
+    auto it = active.find(idx);
+    if (it == active.end()) {
+        GCS_APP_LOG_WARN("CommandQueue: Desynchronization between command queue and active commands map. This should never happend.");
         return std::nullopt;
     }
 
-    uint32_t value = *values[idx];
-    values[idx] = std::nullopt;
+    auto cmd = it->second;
+    active.erase(it);
 
-    return Command{.type = type, .value = value};
+    return cmd;
 }
 
 /**
@@ -47,5 +53,5 @@ std::optional<Command> CommandQueue::dequeue() {
  * @returns True if the queue is empty, false otherwise.
  */
 bool CommandQueue::empty() const {
-    return pendingTypes.empty();
+    return active.empty();
 }

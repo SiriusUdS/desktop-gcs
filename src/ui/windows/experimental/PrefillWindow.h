@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SensorTestSequencer.h"
 #include "UIWindow.h"
 
 class PrefillWindow : public UIWindow {
@@ -9,4 +10,6 @@ public:
 
 private:
     void renderImpl() override;
+
+    SensorTestSequencer sensorTestSequencer;
 };

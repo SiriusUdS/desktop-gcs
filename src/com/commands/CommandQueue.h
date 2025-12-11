@@ -2,9 +2,10 @@
 
 #include "CommandTypes.h"
 
-#include <array>
+#include <memory>
 #include <optional>
 #include <queue>
+#include <unordered_map>
 
 /**
  * @class CommandQueue
@@ -14,11 +15,11 @@
  */
 class CommandQueue {
 public:
-    void enqueue(CommandType type, uint32_t value);
-    std::optional<Command> dequeue();
+    const std::shared_ptr<QueuedCommand> enqueue(CommandType type, uint32_t value);
+    std::optional<std::shared_ptr<QueuedCommand>> dequeue();
     bool empty() const;
 
 private:
-    std::queue<CommandType> pendingTypes;
-    std::array<std::optional<uint32_t>, static_cast<std::size_t>(CommandType::Count)> values{};
+    std::queue<CommandType> queue;
+    std::unordered_map<std::underlying_type_t<CommandType>, std::shared_ptr<QueuedCommand>> active;
 };

@@ -3,6 +3,8 @@
 #include "Telecommunication/BoardCommand.h"
 #include "Telecommunication/PacketHeaderVariable.h"
 
+#include <atomic>
+
 enum class CommandType : size_t {
     NosValve,
     IpaValve,
@@ -19,12 +21,13 @@ enum class CommandType : size_t {
 };
 
 /**
- * @struct Command
+ * @struct QueuedCommand
  * @brief Represents a command with its type and value.
  */
-struct Command {
-    CommandType type; ///< Type of the command.
-    uint32_t value;   ///< Value of the command.
+struct QueuedCommand {
+    CommandType type;             ///< Type of the command.
+    uint32_t value;               ///< Value of the command.
+    std::atomic_bool processed{}; ///< Whether the command was processed or not.
 };
 
 enum class ValveCommandType {

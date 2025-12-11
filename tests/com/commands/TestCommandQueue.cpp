@@ -2,18 +2,18 @@
 
 #include <doctest.h>
 
-void checkNoCommand(std::optional<Command> optionalCmd) {
+void checkNoCommand(std::optional<std::shared_ptr<QueuedCommand>> optionalCmd) {
     CHECK(!optionalCmd.has_value());
 }
 
-void checkCommand(std::optional<Command> optionalCmd, CommandType type, uint32_t value) {
+void checkCommand(std::optional<std::shared_ptr<QueuedCommand>> optionalCmd, CommandType type, uint32_t value) {
     if (!optionalCmd.has_value()) {
         CHECK(false);
         return;
     }
-    Command cmd = optionalCmd.value();
-    CHECK(type == cmd.type);
-    CHECK(value == cmd.value);
+    std::shared_ptr<QueuedCommand> cmd = optionalCmd.value();
+    CHECK(type == cmd->type);
+    CHECK(value == cmd->value);
 }
 
 TEST_CASE("CommandQueue should not return command if dequeuing and no command was queued") {

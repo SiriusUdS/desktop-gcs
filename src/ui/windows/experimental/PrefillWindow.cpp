@@ -2,6 +2,8 @@
 
 #include "ImGuiConfig.h"
 
+#include <imgui.h>
+
 const char* PrefillWindow::name() const {
     return "Prefill";
 }
@@ -11,4 +13,7 @@ const char* PrefillWindow::dockspace() const {
 }
 
 void PrefillWindow::renderImpl() {
+    if (ImGui::Button("Test NOS Valve")) {
+        sensorTestSequencer.testNOSValve();
+    }
 }

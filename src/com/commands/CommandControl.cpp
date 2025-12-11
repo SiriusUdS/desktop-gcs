@@ -21,13 +21,13 @@ constexpr size_t MAX_DATA_SIZE = 256;                       ///< Maximum size of
 constexpr size_t NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND = 20; ///< Each command is sent this many times to improve communication with the boards
 constexpr double TIME_BETWEEN_COMMAND_SENDS_SEC = 0.131;    ///< Wait this much between each command send
 
-State state = State::IDLE;             ///< Current state of the command
-uint8_t data[MAX_DATA_SIZE] = {0};     ///< Current command data
-size_t dataSize;                       ///< Size of the current command data
-Timer lastTimeSentTimer;               ///< Timer for the last time the command was sent
-size_t timesSent{};                    ///< Number of times the same command has been sent
-CommandQueue commandQueue;             ///< Queue containing all future commands to be sent
-std::optional<Command> currentCommand; ///< Current command being sent
+State state = State::IDLE;                                    ///< Current state of the command
+uint8_t data[MAX_DATA_SIZE] = {0};                            ///< Current command data
+size_t dataSize;                                              ///< Size of the current command data
+Timer lastTimeSentTimer;                                      ///< Timer for the last time the command was sent
+size_t timesSent{};                                           ///< Number of times the same command has been sent
+CommandQueue commandQueue;                                    ///< Queue containing all future commands to be sent
+std::optional<std::shared_ptr<QueuedCommand>> currentCommand; ///< Current command being sent
 
 void getNextCommand();
 void setupValveCommand(ValveCommandType valveType, BoardType boardType);
@@ -37,8 +37,8 @@ void setupReset();
 void finalizeCommandSetup(BoardCommand* cmd);
 } // namespace CommandControl
 
-void CommandControl::sendCommand(CommandType type, uint32_t value) {
-    commandQueue.enqueue(type, value);
+const std::shared_ptr<QueuedCommand> CommandControl::sendCommand(CommandType type, uint32_t value) {
+    return commandQueue.enqueue(type, value);
 }
 
 void CommandControl::processCommands() {
@@ -53,13 +53,17 @@ void CommandControl::processCommands() {
         lastTimeSentTimer.reset();
         BoardCommand* formattedData = reinterpret_cast<BoardCommand*>(data);
         if (!SerialTask::com.write(data, dataSize)) {
-            GCS_APP_LOG_ERROR("Command: Couldn't send command over serial communication.");
+            GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over serial communication.");
             break;
         }
         timesSent++;
         if (NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND <= timesSent) {
             state = State::IDLE;
-            currentCommand = std::nullopt;
+            if (currentCommand.has_value()) {
+                currentCommand.value()->processed = true;
+                currentCommand.value()->processed.notify_one();
+                currentCommand = std::nullopt;
+            }
             timesSent = 0;
         }
         break;
@@ -73,7 +77,7 @@ void CommandControl::getNextCommand() {
         return;
     }
 
-    switch (currentCommand.value().type) {
+    switch (currentCommand.value()->type) {
     case CommandType::NosValve:
         setupValveCommand(ValveCommandType::Nos, BoardType::Engine);
         break;
@@ -115,8 +119,8 @@ void CommandControl::setupValveCommand(ValveCommandType valveType, BoardType boa
         return;
     }
 
-    Command& command = currentCommand.value();
-    uint32_t percentageOpen = command.value;
+    std::shared_ptr<QueuedCommand> command = currentCommand.value();
+    uint32_t percentageOpen = command->value;
 
     if (percentageOpen > 100) {
         GCS_APP_LOG_WARN("CommandDispatch: Invalid valve percentage: {}. Must be between 0 and 100.", percentageOpen);
@@ -139,8 +143,8 @@ void CommandControl::setupHeatPadCommand(HeatPadCommandType heatPadtype, BoardTy
         return;
     }
 
-    Command& command = currentCommand.value();
-    uint32_t percentageOpen = command.value;
+    std::shared_ptr<QueuedCommand> command = currentCommand.value();
+    uint32_t percentageOpen = command->value;
 
     if (percentageOpen > 100) {
         GCS_APP_LOG_WARN("CommandDispatch: Invalid heat pad percentage: {}. Must be between 0 and 100.", percentageOpen);
@@ -163,8 +167,6 @@ void CommandControl::setupAbort() {
         return;
     }
 
-    Command& command = currentCommand.value();
-
     BoardCommand* boardCommand = reinterpret_cast<BoardCommand*>(data);
     boardCommand->fields.header.bits.commandCode = BOARD_COMMAND_CODE_ABORT;
     boardCommand->fields.header.bits.commandIndex = 0;
@@ -179,8 +181,6 @@ void CommandControl::setupReset() {
         GCS_APP_LOG_ERROR("CommandControl: Couldn't setup reset command, no command available.");
         return;
     }
-
-    Command& command = currentCommand.value();
 
     BoardCommand* boardCommand = reinterpret_cast<BoardCommand*>(data);
     boardCommand->fields.header.bits.commandCode = BOARD_COMMAND_CODE_RESET;

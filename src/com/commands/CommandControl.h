@@ -2,7 +2,9 @@
 
 #include "CommandTypes.h"
 
+#include <memory>
+
 namespace CommandControl {
-void sendCommand(CommandType type, uint32_t value);
+const std::shared_ptr<QueuedCommand> sendCommand(CommandType type, uint32_t value);
 void processCommands();
 } // namespace CommandControl
