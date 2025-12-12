@@ -30,6 +30,9 @@ public:
     void addListener(PlotDataUpdateListener* listener);
     void plot(bool showCompressedData) const;
     float recentAverageValue(size_t duration_ms) const;
+    float latestTimestamp() const;
+    float latestValue() const;
+    size_t getSize() const;
     const char* getName() const;
     const ThemedColor& getColor() const;
     LockedView makeLockedView() const;

@@ -11,5 +11,12 @@ public:
 private:
     void renderImpl() override;
 
+    float tankLoadCellADCValue{};
+    float tankLoadCellADCValuePostWrap{};
+    float tankLoadCellADCValuePostIPA{};
+
+    bool tankLoadCellADCValueSaved{};
+    bool tankLoadCellADCValuePostWrapSaved{};
+    bool tankLoadCellADCValuePostIPASaved{};
     SensorTestSequencer sensorTestSequencer;
 };

@@ -58,6 +58,10 @@ float SensorPlotData::averageRecentValue(size_t durationMs) const {
     return valuePlotData.recentAverageValue(durationMs);
 }
 
+size_t SensorPlotData::getSize() const {
+    return adcPlotData.getSize();
+}
+
 /**
  * @brief Get the name of the sensor plot data.
  * @returns The name of the sensor plot data.

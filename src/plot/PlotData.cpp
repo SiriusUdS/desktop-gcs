@@ -128,6 +128,24 @@ float PlotData::recentAverageValue(size_t duration_ms) const {
     return sum / count;
 }
 
+float PlotData::latestTimestamp() const {
+    std::lock_guard<std::mutex> lock(mtx);
+
+    return timeline.raw().back();
+}
+
+float PlotData::latestValue() const {
+    std::lock_guard<std::mutex> lock(mtx);
+
+    return values.raw().back();
+}
+
+size_t PlotData::getSize() const {
+    std::lock_guard<std::mutex> lock(mtx);
+
+    return timeline.raw().size();
+}
+
 /**
  * @brief Returns the name of the plot data.
  * @returns The name of the plot data.
