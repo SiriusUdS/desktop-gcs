@@ -12,4 +12,5 @@ struct Param {
     std::string iniKey;
 };
 
+// TODO: std::atomic<float>
 using FloatParam = Param<float>;
