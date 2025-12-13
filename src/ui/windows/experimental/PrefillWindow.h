@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Params.h"
 #include "SensorTestSequencer.h"
 #include "UIWindow.h"
 
@@ -9,14 +10,22 @@ public:
     const char* dockspace() const override;
 
 private:
+    struct TankLoadCellParam {
+        TankLoadCellParam(FloatParam& param, std::string label);
+
+        FloatParam& param;
+        bool saved{};
+        std::string label;
+        std::string saveButtonLabel;
+        std::string cancelButtonLabel;
+    };
+
     void renderImpl() override;
 
-    float tankLoadCellADCValue{};
-    float tankLoadCellADCValuePostWrap{};
-    float tankLoadCellADCValuePostIPA{};
+    void renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam);
 
-    bool tankLoadCellADCValueSaved{};
-    bool tankLoadCellADCValuePostWrapSaved{};
-    bool tankLoadCellADCValuePostIPASaved{};
+    TankLoadCellParam prewrapTankLoadCellParam{Params::TankLoadCell::prewrapADCValue, "Tank Load Cell ADC Value - Prewrap"};
+    TankLoadCellParam postwrapTankLoadCellParam{Params::TankLoadCell::postwrapADCValue, "Tank Load Cell ADC Value - Postwrap"};
+    TankLoadCellParam postIPATankLoadCellParam{Params::TankLoadCell::postIPAADCValue, "Tank Load Cell ADC Value - Post IPA"};
     SensorTestSequencer sensorTestSequencer;
 };

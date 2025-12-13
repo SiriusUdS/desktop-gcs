@@ -16,7 +16,7 @@
 #include "MonitoringWindow.h"
 #include "NOSPhaseDiagramWindow.h"
 #include "PacketCSVLogging.h"
-#include "Params.h"
+#include "ParamsIO.h"
 #include "PlotWindowCenter.h"
 #include "PrefillWindow.h"
 #include "ResultsWindow.h"
@@ -80,7 +80,7 @@ void Application::init() {
     windows.emplace_back(std::make_shared<MapWindow>());
     // windows.emplace_back(std::make_shared<NOSPhaseDiagramWindow>());
     windows.emplace_back(std::make_shared<RocketParametersWindow>());
-    // windows.emplace_back(std::make_shared<SerialComWindow>());
+    windows.emplace_back(std::make_shared<SerialComWindow>());
     // windows.emplace_back(std::make_shared<SwitchesWindow>());
     windows.emplace_back(std::make_shared<TankMassCalculatorWindow>());
     windows.emplace_back(std::make_shared<TankMassWindow>());
@@ -97,7 +97,7 @@ void Application::init() {
         window->loadState(iniStructure);
     }
 
-    Params::loadParams(iniStructure);
+    ParamsIO::loadParams(iniStructure);
 
     // TODO: Use constants for indexes and maybe move this elsewhere
     GSDataCenter::Thermistor_Motor_PlotData[2].addListenerValue(&tankMassPlotDataUpdater);
@@ -113,7 +113,7 @@ void Application::preNewFrame() {
 void Application::shutdown() {
     SerialTask::stop();
 
-    Params::saveParams(iniStructure);
+    ParamsIO::saveParams(iniStructure);
 
     PlotWindowCenter::saveState(iniStructure);
 

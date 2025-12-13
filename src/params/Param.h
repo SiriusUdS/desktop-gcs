@@ -11,3 +11,5 @@ struct Param {
     T defaultValue;
     std::string iniKey;
 };
+
+using FloatParam = Param<float>;

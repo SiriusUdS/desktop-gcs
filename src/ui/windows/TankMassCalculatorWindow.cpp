@@ -2,13 +2,13 @@
 
 #include "FontAwesome.h"
 #include "ImGuiConfig.h"
-#include "RocketParams.h"
+#include "Params.h"
 #include "TankMass.h"
 
 #include <imgui.h>
 
 void TankMassCalculatorWindow::renderImpl() {
-    ImGui::Text("Tank Volume (m^3): %f", RocketParams::NOSTankVolume_m3.currentValue);
+    ImGui::Text("Tank Volume (m^3): %f", Params::NOSTankVolume_m3.currentValue);
     ImGui::SameLine();
 
     const ImVec4 buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);

@@ -1,8 +1,13 @@
 #pragma once
 
-#include <ini.h>
+#include "Param.h"
 
 namespace Params {
-void loadParams(const mINI::INIStructure& ini);
-void saveParams(mINI::INIStructure& ini);
+extern FloatParam NOSTankVolume_m3;
+
+namespace TankLoadCell {
+extern FloatParam prewrapADCValue;
+extern FloatParam postwrapADCValue;
+extern FloatParam postIPAADCValue;
+} // namespace TankLoadCell
 } // namespace Params

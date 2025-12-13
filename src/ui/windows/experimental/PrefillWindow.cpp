@@ -133,84 +133,22 @@ void PrefillWindow::renderImpl() {
 
     ImGui::SeparatorText("Calibration");
 
-    /*const */ SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData[0];
-
     if (ImGui::BeginTable("PrefillTankLoadCellADCTable", 4, ImGuiTableFlags_SizingFixedFit)) {
         ImGui::TableSetupColumn("Name");
         ImGui::TableSetupColumn("Save");
         ImGui::TableSetupColumn("Cancel");
         ImGui::TableSetupColumn("ADC Value");
 
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Tank Load Cell ADC Value - Prewrap");
-
-        ImGui::TableSetColumnIndex(1);
-        ImGui::BeginDisabled(tankLoadCellADCValueSaved);
-        if (ImGui::Button("Save##SaveTankLoadCellValue") && tankLoadCellData.getSize()) {
-            tankLoadCellADCValue = tankLoadCellData.getAdcPlotData().latestValue();
-            tankLoadCellADCValueSaved = true;
-        }
-        ImGui::EndDisabled();
-
-        ImGui::TableSetColumnIndex(2);
-        ImGui::BeginDisabled(!tankLoadCellADCValueSaved);
-        if (ImGui::Button("Cancel##CancelTankLoadCellValue")) {
-            tankLoadCellADCValueSaved = false;
-        }
-        ImGui::EndDisabled();
-
-        ImGui::TableSetColumnIndex(3);
-        ImGui::Text("ADC: %.0f", tankLoadCellADCValue);
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Tank Load Cell ADC Value - Postwrap");
-
-        ImGui::TableSetColumnIndex(1);
-        ImGui::BeginDisabled(tankLoadCellADCValuePostWrapSaved);
-        if (ImGui::Button("Save##SaveTankLoadCellValuePostWrap") && tankLoadCellData.getSize()) {
-            tankLoadCellADCValuePostWrap = tankLoadCellData.getAdcPlotData().latestValue();
-            tankLoadCellADCValuePostWrapSaved = true;
-        }
-        ImGui::EndDisabled();
-
-        ImGui::TableSetColumnIndex(2);
-        ImGui::BeginDisabled(!tankLoadCellADCValuePostWrapSaved);
-        if (ImGui::Button("Cancel##CancelTankLoadCellValuePostWrap")) {
-            tankLoadCellADCValuePostWrapSaved = false;
-        }
-        ImGui::EndDisabled();
-
-        ImGui::TableSetColumnIndex(3);
-        ImGui::Text("ADC: %.0f", tankLoadCellADCValuePostWrap);
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Tank Load Cell ADC Value - Post IPA");
-
-        ImGui::TableSetColumnIndex(1);
-        ImGui::BeginDisabled(tankLoadCellADCValuePostIPASaved);
-        if (ImGui::Button("Save##SaveTankLoadCellValuePostIPA") && tankLoadCellData.getSize()) {
-            tankLoadCellADCValuePostIPA = tankLoadCellData.getAdcPlotData().latestValue();
-            tankLoadCellADCValuePostIPASaved = true;
-        }
-        ImGui::EndDisabled();
-
-        ImGui::TableSetColumnIndex(2);
-        ImGui::BeginDisabled(!tankLoadCellADCValuePostIPASaved);
-        if (ImGui::Button("Cancel##CancelTankLoadCellValuePostIPA")) {
-            tankLoadCellADCValuePostIPASaved = false;
-        }
-        ImGui::EndDisabled();
-
-        ImGui::TableSetColumnIndex(3);
-        ImGui::Text("ADC: %.0f", tankLoadCellADCValuePostIPA);
+        renderTankLoadCellParam(prewrapTankLoadCellParam);
+        renderTankLoadCellParam(postwrapTankLoadCellParam);
+        renderTankLoadCellParam(postIPATankLoadCellParam);
 
         ImGui::EndTable();
     }
 
     ImGui::SeparatorText("Tank Load Cell Plot");
+
+    /*const */ SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData[0]; // TODO: is this correct idx?
 
     const ImVec2 plotSize = {-1.0f, 500.0f};
 
@@ -224,4 +162,35 @@ void PrefillWindow::renderImpl() {
     static float t = 0.0f;
     tankLoadCellData.addData(t, 0, t);
     t += 100.0f;
+}
+
+void PrefillWindow::renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam) {
+    const SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData[0]; // TODO: is this correct idx?
+
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::Text(tankLoadCellParam.label.c_str());
+
+    ImGui::TableSetColumnIndex(1);
+    ImGui::BeginDisabled(tankLoadCellParam.saved);
+    if (ImGui::Button(tankLoadCellParam.saveButtonLabel.c_str()) && tankLoadCellData.getSize()) {
+        tankLoadCellParam.param.currentValue = tankLoadCellData.getAdcPlotData().latestValue();
+        tankLoadCellParam.saved = true;
+    }
+    ImGui::EndDisabled();
+
+    ImGui::TableSetColumnIndex(2);
+    ImGui::BeginDisabled(!tankLoadCellParam.saved);
+    if (ImGui::Button(tankLoadCellParam.cancelButtonLabel.c_str())) {
+        tankLoadCellParam.saved = false;
+    }
+    ImGui::EndDisabled();
+
+    ImGui::TableSetColumnIndex(3);
+    ImGui::Text("ADC: %.0f", tankLoadCellParam.param.currentValue);
+}
+
+PrefillWindow::TankLoadCellParam::TankLoadCellParam(FloatParam& param, std::string label) : param(param), label(label) {
+    saveButtonLabel = "Save##save_" + param.iniKey;
+    cancelButtonLabel = "Cancel##cancel_" + param.iniKey;
 }
