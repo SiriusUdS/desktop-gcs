@@ -155,7 +155,7 @@ void PrefillWindow::renderImpl() {
     ImPlot::SetNextAxesToFit();
     if (ImPlot::BeginPlot("Tank Load Cell (ADC)", plotSize, ImPlotFlags_NoInputs)) {
         ImPlot::SetupAxes("Timestamp (ms)", "ADC Value");
-        tankLoadCellData.plotAdc(true);
+        tankLoadCellData.plotAdc(false);
         ImPlot::EndPlot();
     }
 

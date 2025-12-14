@@ -4,9 +4,12 @@
 #include "Engine/EngineState.h"
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
+#include "PlotData.h"
+#include "SensorPlotData.h"
 #include "SwitchData.h"
 
 #include <imgui.h>
+#include <implot.h>
 
 const char* FillWindow::name() const {
     return "Fill";
@@ -23,6 +26,40 @@ void FillWindow::renderImpl() {
     const bool fillValveSliderEnabled = GSDataCenter::AllowFillSwitchData.isOn;
     const bool dumpValveSliderEnabled = GSDataCenter::AllowDumpSwitchData.isOn;
     const bool solenoidValveSliderEnabled = GSDataCenter::motorBoardState == ENGINE_STATE_UNSAFE;
+
+    ImGui::SeparatorText("Tank Data Plot");
+
+    const SensorPlotData& tankLoadCellPlotData = GSDataCenter::LoadCell_FillingStation_PlotData[0];         // TODO: Is this correct index?
+    const SensorPlotData& tankTransducerPlotData = GSDataCenter::PressureSensor_FillingStation_PlotData[0]; // TODO: Is this correct index?
+    const SensorPlotData& tankTempPlotData = GSDataCenter::Thermistor_FillingStation_PlotData[0];           // TODO: Is this correct index?
+    const PlotData& tankMassPlotData = GSDataCenter::NOSTankMass_PlotData;
+
+    if (ImPlot::BeginPlot("Tank Data", {-1.0f, 800.0f})) {
+        constexpr ImAxis weightAxis = ImAxis_Y1;
+        constexpr ImAxis pressureAxis = ImAxis_Y2;
+        constexpr ImAxis tempAxis = ImAxis_Y3;
+
+        ImPlot::SetupAxis(ImAxis_X1, "Timestamp (ms)");
+        ImPlot::SetupAxis(weightAxis, "Weight (lb)");
+        ImPlot::SetupAxis(pressureAxis, "Pressure (psi)");
+        ImPlot::SetupAxis(tempAxis, "Temperature (C)");
+
+        ImPlot::SetAxis(weightAxis);
+        tankLoadCellPlotData.plotValue(false);
+        tankMassPlotData.plot(false);
+
+        ImPlot::SetAxis(pressureAxis);
+        tankTransducerPlotData.plotValue(false);
+
+        ImPlot::SetAxis(tempAxis);
+        tankTempPlotData.plotValue(false);
+
+        ImPlot::EndPlot();
+    }
+
+    if (ImGui::Button("Test (Switch to prefill)")) {
+        ImGui::SetWindowFocus("Prefill");
+    }
 
     ImGui::SeparatorText("Valve Control");
 
