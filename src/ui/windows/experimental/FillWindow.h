@@ -1,10 +1,12 @@
 #pragma once
 
 #include "CommandTypes.h"
+#include "PlotLine.h"
 #include "UIWindow.h"
 
 class FillWindow : public UIWindow {
 public:
+    FillWindow();
     const char* name() const override;
     const char* dockspace() const override;
 
@@ -14,6 +16,11 @@ private:
         int lastSetOpenedValue_perc{};
         int lastOpenedValue_perc{};
     };
+
+    PlotLine tankLoadCellPlotLine;
+    PlotLine tankTransducerPlotLine;
+    PlotLine tankTempPlotLine;
+    PlotLine tankMassPlotLine;
 
     PercentageInput nosValveSlider;
     PercentageInput ipaValveSlider;

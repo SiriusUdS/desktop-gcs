@@ -2,7 +2,8 @@
 
 #include "FontConfig.h"
 #include "IniConfig.h"
-#include "SensorPlotData.h"
+#include "PlotLine.h"
+#include "SensorPlotLine.h"
 #include "StringUtils.h"
 
 #include <imgui.h>
@@ -15,10 +16,10 @@
  * @param name Name of the plot window.
  * @param xLabel Text to display along the X axis.
  * @param yLabel Text to display along the Y axis.
- * @param sensorPlotDataVec A vector of all the sensor plot data to be displayed in this window.
+ * @param sensorPlotDataVec A vector of all the plot lines to be displayed in this window.
  */
-PlotWindow::PlotWindow(const char* name, const char* xLabel, const char* yLabel, std::vector<SensorPlotData*> sensorPlotDataVec)
-    : name(name), xLabel(xLabel), yLabel(yLabel), sensorPlotDataVec(sensorPlotDataVec) {
+PlotWindow::PlotWindow(const char* name, const char* xLabel, const char* yLabel, std::vector<SensorPlotLine*> sensorPlotLineVec)
+    : name(name), xLabel(xLabel), yLabel(yLabel), sensorPlotLineVec(sensorPlotLineVec) {
     autofitIniId = std::string(name) + "_plot_window_auto_fit";
     showCompressedDataIniId = std::string(name) + "_plot_window_show_compressed_data";
     showAvgValuesId = std::string(name) + "_plot_window_show_avg_values";
@@ -54,8 +55,10 @@ void PlotWindow::render() {
     ImGui::SameLine();
 
     if (ImGui::Button("Clear data")) {
-        for (SensorPlotData* sensorPlotData : sensorPlotDataVec) {
-            sensorPlotData->clear();
+        for (SensorPlotLine* sensorPlotLine : sensorPlotLineVec) {
+            // TODO: fix later i guess lol
+            // sensorPlotLine->valuePlotLine.clear();
+            // sensorPlotLine->adcPlotLine.clear();
         }
     }
 
@@ -73,18 +76,13 @@ void PlotWindow::render() {
         static constexpr size_t recentAvgValueDurationMs = 2000;
         static constexpr size_t recentAvgValueDurationSec = recentAvgValueDurationMs / 1000;
 
-        for (size_t i = 0; i < sensorPlotDataVec.size(); i++) {
-            const SensorPlotData* data = sensorPlotDataVec[i];
-            if (dataType == VALUE) {
-                data->plotValue(showCompressedData);
-                if (showAvgValues) {
-                    showAvgRecentValue(data->getName(), data->averageRecentValue(recentAvgValueDurationMs), i);
-                }
-            } else {
-                data->plotAdc(showCompressedData);
-                if (showAvgValues) {
-                    showAvgRecentValue(data->getName(), data->averageRecentAdc(recentAvgValueDurationMs), i);
-                }
+        for (size_t i = 0; i < sensorPlotLineVec.size(); i++) {
+            const SensorPlotLine* sensorPlotLine = sensorPlotLineVec[i];
+            const PlotLine& plotLine = dataType == VALUE ? sensorPlotLine->valuePlotLine : sensorPlotLine->adcPlotLine;
+
+            plotLine.plot(showCompressedData);
+            if (showAvgValues) {
+                showAvgRecentValue(plotLine.getStyle().name, plotLine.getData().recentAverageValue(recentAvgValueDurationMs), i);
             }
         }
 

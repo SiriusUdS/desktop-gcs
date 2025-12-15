@@ -2,10 +2,20 @@
 
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
+#include "Params.h"
 #include "SensorPlotData.h"
+#include "ThemedColors.h"
 
 #include <imgui.h>
 #include <implot.h>
+
+PrefillWindow::PrefillWindow()
+    : prewrapTankLoadCellParam{Params::TankLoadCell::prewrapADCValue, "Tank Load Cell ADC Value - Prewrap"},
+      postwrapTankLoadCellParam{Params::TankLoadCell::postwrapADCValue, "Tank Load Cell ADC Value - Postwrap"},
+      postIPATankLoadCellParam{Params::TankLoadCell::postIPAADCValue, "Tank Load Cell ADC Value - Post IPA"},
+      tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData[0].getAdcPlotData(), // TODO: is this correct idx?
+                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)} {
+}
 
 const char* PrefillWindow::name() const {
     return "Prefill";
@@ -148,17 +158,17 @@ void PrefillWindow::renderImpl() {
 
     ImGui::SeparatorText("Tank Load Cell Plot");
 
-    /*const */ SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData[0]; // TODO: is this correct idx?
-
     const ImVec2 plotSize = {-1.0f, 500.0f};
 
     ImPlot::SetNextAxesToFit();
     if (ImPlot::BeginPlot("Tank Load Cell (ADC)", plotSize, ImPlotFlags_NoInputs)) {
         ImPlot::SetupAxes("Timestamp (ms)", "ADC Value");
-        tankLoadCellData.plotAdc(false);
+        tankLoadCellADCPlotLine.plot();
         ImPlot::EndPlot();
     }
 
+    // TODO: THIS IS A TEST
+    SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData[0];
     static float t = 0.0f;
     tankLoadCellData.addData(t, 0, t);
     t += 100.0f;
@@ -173,8 +183,8 @@ void PrefillWindow::renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam
 
     ImGui::TableSetColumnIndex(1);
     ImGui::BeginDisabled(tankLoadCellParam.saved);
-    if (ImGui::Button(tankLoadCellParam.saveButtonLabel.c_str()) && tankLoadCellData.getSize()) {
-        tankLoadCellParam.param.currentValue = tankLoadCellData.getAdcPlotData().latestValue();
+    if (ImGui::Button(tankLoadCellParam.saveButtonLabel.c_str()) && tankLoadCellData.getAdcPlotData().getSize()) {
+        tankLoadCellParam.param.currentValue = tankLoadCellData.getAdcPlotData().getValues().raw().back();
         tankLoadCellParam.saved = true;
     }
     ImGui::EndDisabled();

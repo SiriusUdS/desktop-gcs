@@ -6,21 +6,16 @@
 
 #include <implot.h>
 
-PlotDataView::PlotDataView(const PlotData& plotData) : plotData(plotData), color(plotData.getColor()) {
-}
-
-PlotDataView::PlotDataView(const PlotData& plotData, const ThemedColor& colorOverride) : plotData(plotData), color(colorOverride) {
+PlotDataView::PlotDataView(const PlotData& data, const PlotStyle& style) : data(data), style(style) {
 }
 
 void PlotDataView::plot(bool showCompressedData) {
-    PlotData::LockedView view = plotData.makeLockedView();
+    PlotData::LockedView view = data.makeLockedView();
     const std::vector<float>& timeline = showCompressedData ? view.getTimeline().compressed() : view.getTimeline().raw();
     const std::vector<float>& values = showCompressedData ? view.getValues().compressed() : view.getValues().raw();
-    const PlotStyle& style = view.getStyle();
-    const size_t size = timeline.size();
 
     DataSelector::Window window = getDataSelectorWindow(showCompressedData, timeline);
 
-    ImPlot::SetNextLineStyle(color.resolve(), style.weight);
-    ImPlot::PlotLine(style.name, timeline.data() + window.start, values.data() + window.start, static_cast<int>(window.size));
+    ImPlot::SetNextLineStyle(style.color.resolve(), style.weight);
+    ImPlot::PlotLine(style.name, timeline.data() + window.start, values.data() + window.start, static_cast<int>(timeline.size()));
 }

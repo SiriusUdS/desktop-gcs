@@ -1,37 +1,17 @@
 #include "GSDataCenter.h"
 
-#include "Engine/EngineSensors.h"
-#include "FillingStation/FillingStationSensors.h"
 #include "SensorPlotData.h"
 #include "SwitchData.h"
-#include "ThemedColors.h"
 #include "ValveData.h"
 
 namespace GSDataCenter {
-SensorPlotData Thermistor_Motor_PlotData[THERMISTOR_AMOUNT_PER_BOARD] = {{"Thermistor 1", ThemedColors::PlotLine::blue},
-                                                                         {"Thermistor 2", ThemedColors::PlotLine::red},
-                                                                         {"Tank Thermistor", ThemedColors::PlotLine::green},
-                                                                         {"Thermistor 4", ThemedColors::PlotLine::yellow},
-                                                                         {"Thermistor 5", ThemedColors::PlotLine::orange},
-                                                                         {"Thermistor 6", ThemedColors::PlotLine::cyan},
-                                                                         {"Thermistor 7", ThemedColors::PlotLine::purple},
-                                                                         {"Thermistor 8", ThemedColors::PlotLine::gray}};
-SensorPlotData PressureSensor_Motor_PlotData[PRESSURE_SENSOR_AMOUNT_PER_BOARD] = {{"Pressure Sensor 1 (Motor)", ThemedColors::PlotLine::blue},
-                                                                                  {"Pressure Sensor 2 (Motor)", ThemedColors::PlotLine::red}};
-SensorPlotData Thermistor_FillingStation_PlotData[THERMISTOR_AMOUNT_PER_BOARD] = {{"Thermistor 1", ThemedColors::PlotLine::blue},
-                                                                                  {"Thermistor 2", ThemedColors::PlotLine::red},
-                                                                                  {"Thermistor 3", ThemedColors::PlotLine::green},
-                                                                                  {"Thermistor 4", ThemedColors::PlotLine::yellow},
-                                                                                  {"Thermistor 5", ThemedColors::PlotLine::orange},
-                                                                                  {"Thermistor 6", ThemedColors::PlotLine::cyan},
-                                                                                  {"Thermistor 7", ThemedColors::PlotLine::purple},
-                                                                                  {"Thermistor 8", ThemedColors::PlotLine::gray}};
-SensorPlotData PressureSensor_FillingStation_PlotData[PRESSURE_SENSOR_AMOUNT_PER_BOARD] = {{"Pressure Sensor 1 (Fill)", ThemedColors::PlotLine::blue},
-                                                                                           {"Pressure Sensor 2 (Fill)", ThemedColors::PlotLine::red}};
-SensorPlotData LoadCell_FillingStation_PlotData[LOAD_CELL_AMOUNT] = {{"Motor Load Cell", ThemedColors::PlotLine::blue},
-                                                                     {"Tank Load Cell", ThemedColors::PlotLine::red}};
+SensorPlotData Thermistor_Motor_PlotData[THERMISTOR_AMOUNT_PER_BOARD];
+SensorPlotData PressureSensor_Motor_PlotData[PRESSURE_SENSOR_AMOUNT_PER_BOARD];
+SensorPlotData Thermistor_FillingStation_PlotData[THERMISTOR_AMOUNT_PER_BOARD];
+SensorPlotData PressureSensor_FillingStation_PlotData[PRESSURE_SENSOR_AMOUNT_PER_BOARD];
+SensorPlotData LoadCell_FillingStation_PlotData[LOAD_CELL_AMOUNT];
 
-PlotData NOSTankMass_PlotData{"NOS Tank Mass (Computed)", ThemedColors::PlotLine::blue};
+PlotData NOSTankMass_PlotData;
 
 SwitchData AllowDumpSwitchData;
 SwitchData AllowFillSwitchData;

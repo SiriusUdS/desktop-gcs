@@ -3,11 +3,37 @@
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
 #include "SensorPlotData.h"
+#include "ThemedColors.h"
 #include "VaporPressure.h"
 
 #include <imgui.h>
 #include <implot.h>
 #include <string>
+
+TankMassWindow::TankMassWindow()
+    : recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData[0].getValuePlotData(),
+                                 PlotStyle("Pressure Sensor 1 (Motor)", ThemedColors::PlotLine::blue),
+                                 RECENT_TIME_WINDOW_MS},
+      recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData[1].getValuePlotData(),
+                                 PlotStyle("Pressure Sensor 2 (Motor)", ThemedColors::PlotLine::blue),
+                                 RECENT_TIME_WINDOW_MS},
+      recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(),
+                                PlotStyle("Pressure Sensor 1 (Fill)", ThemedColors::PlotLine::green),
+                                RECENT_TIME_WINDOW_MS},
+      recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData[1].getValuePlotData(),
+                                PlotStyle("Pressure Sensor 2 (Fill)", ThemedColors::PlotLine::yellow),
+                                RECENT_TIME_WINDOW_MS},
+      recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData[2].getValuePlotData(),
+                            PlotStyle("Tank Thermistor", ThemedColors::PlotLine::blue),
+                            RECENT_TIME_WINDOW_MS},
+      recentEngineThrust{GSDataCenter::LoadCell_FillingStation_PlotData[0].getValuePlotData(),
+                         PlotStyle("Motor Load Cell", ThemedColors::PlotLine::blue),
+                         RECENT_TIME_WINDOW_MS},
+      recentTankMass{GSDataCenter::NOSTankMass_PlotData, PlotStyle("NOS Tank Mass", ThemedColors::PlotLine::blue), RECENT_TIME_WINDOW_MS},
+      recentTankLoadCell{GSDataCenter::LoadCell_FillingStation_PlotData[1].getValuePlotData(),
+                         PlotStyle("Tank Load Cell", ThemedColors::PlotLine::red),
+                         RECENT_TIME_WINDOW_MS} {
+}
 
 void TankMassWindow::init() {
     tankPressurePlotTitle = getRecentPlotTitle("Tank Pressure", RECENT_TIME_WINDOW_MS / 1000);

@@ -6,8 +6,8 @@
 
 #include <implot.h>
 
-PlotData::LockedView::LockedView(std::mutex& mtx, const DataSeries& timeline, const DataSeries& values, const PlotStyle& style)
-    : lock(mtx), timeline(timeline), values(values), style(style) {
+PlotData::LockedView::LockedView(std::mutex& mtx, const DataSeries& timeline, const DataSeries& values)
+    : lock(mtx), timeline(timeline), values(values) {
 }
 
 const DataSeries& PlotData::LockedView::getTimeline() const {
@@ -18,17 +18,10 @@ const DataSeries& PlotData::LockedView::getValues() const {
     return values;
 }
 
-const PlotStyle& PlotData::LockedView::getStyle() const {
-    return style;
-}
-
 /**
- * @brief Constructs a plot data from a name and a color of the plot data line
- * @param name Name of the plot data
- * @param color Color of the plot data line
+ * @brief Constructs a plot data object
  */
-PlotData::PlotData(const char* name, const ThemedColor& color)
-    : style{name, color, DEFAULT_PLOT_LINE_THICKNESS}, timeline(TARGET_COMPRESSED_DATA_SIZE), values(TARGET_COMPRESSED_DATA_SIZE) {
+PlotData::PlotData() : timeline(TARGET_COMPRESSED_DATA_SIZE), values(TARGET_COMPRESSED_DATA_SIZE) {
 }
 
 /**
@@ -40,7 +33,7 @@ void PlotData::addData(float timestamp, float value) {
     std::lock_guard<std::mutex> lock(mtx);
 
     if (timeline.raw().size() && timestamp < timeline.raw().back()) {
-        GCS_APP_LOG_WARN("PlotData: Received unordered data for plot data {}, clearing data.", style.name);
+        GCS_APP_LOG_WARN("PlotData: Received unordered data, clearing data.");
         timeline.clear();
         values.clear();
     }
@@ -81,21 +74,6 @@ void PlotData::addListener(PlotDataUpdateListener* listener) {
 }
 
 /**
- * @brief Display the plot line. This should be called after a "ImPlot::BeginPlot" call.
- * @param showCompressedData Plot compressed data to improve performances
- */
-void PlotData::plot(bool showCompressedData) const {
-    std::lock_guard<std::mutex> lock(mtx);
-
-    ImPlot::SetNextLineStyle(style.color.resolve(), style.weight);
-    if (showCompressedData) {
-        ImPlot::PlotLine(style.name, timeline.compressed().data(), values.compressed().data(), static_cast<int>(values.compressed().size()));
-    } else {
-        ImPlot::PlotLine(style.name, timeline.raw().data(), values.raw().data(), static_cast<int>(values.raw().size()));
-    }
-}
-
-/**
  * @brief Compute the average value of the data in the last x milliseconds.
  * @param duration_ms The duration in milliseconds in which we measure the recent average value.
  * @returns The recent average value.
@@ -128,16 +106,16 @@ float PlotData::recentAverageValue(size_t duration_ms) const {
     return sum / count;
 }
 
-float PlotData::latestTimestamp() const {
+const DataSeries& PlotData::getTimeline() const {
     std::lock_guard<std::mutex> lock(mtx);
 
-    return timeline.raw().back();
+    return timeline;
 }
 
-float PlotData::latestValue() const {
+const DataSeries& PlotData::getValues() const {
     std::lock_guard<std::mutex> lock(mtx);
 
-    return values.raw().back();
+    return values;
 }
 
 size_t PlotData::getSize() const {
@@ -146,26 +124,6 @@ size_t PlotData::getSize() const {
     return timeline.raw().size();
 }
 
-/**
- * @brief Returns the name of the plot data.
- * @returns The name of the plot data.
- */
-const char* PlotData::getName() const {
-    std::lock_guard<std::mutex> lock(mtx);
-
-    return style.name;
-}
-
-/**
- * @brief Returns the color of the plot line.
- * @returns The color of the plot line.
- */
-const ThemedColor& PlotData::getColor() const {
-    std::lock_guard<std::mutex> lock(mtx);
-
-    return style.color;
-}
-
 PlotData::LockedView PlotData::makeLockedView() const {
-    return LockedView(mtx, timeline, values, style);
+    return LockedView(mtx, timeline, values);
 }

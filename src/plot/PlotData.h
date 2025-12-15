@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DataSeries.h"
-#include "PlotStyle.h"
 
 #include <mutex>
 
@@ -11,30 +10,25 @@ class PlotData {
 public:
     class LockedView {
     public:
-        LockedView(std::mutex& mtx, const DataSeries& timeline, const DataSeries& values, const PlotStyle& style);
+        LockedView(std::mutex& mtx, const DataSeries& timeline, const DataSeries& values);
         const DataSeries& getTimeline() const;
         const DataSeries& getValues() const;
-        const PlotStyle& getStyle() const;
 
     private:
         const std::lock_guard<std::mutex> lock;
         const DataSeries& timeline;
         const DataSeries& values;
-        const PlotStyle& style;
     };
 
 public:
-    PlotData(const char* name, const ThemedColor& color);
+    PlotData();
     void addData(float timestamp, float value);
     void clear();
     void addListener(PlotDataUpdateListener* listener);
-    void plot(bool showCompressedData) const;
     float recentAverageValue(size_t duration_ms) const;
-    float latestTimestamp() const;
-    float latestValue() const;
+    const DataSeries& getTimeline() const;
+    const DataSeries& getValues() const;
     size_t getSize() const;
-    const char* getName() const;
-    const ThemedColor& getColor() const;
     LockedView makeLockedView() const;
 
 private:
@@ -43,11 +37,8 @@ private:
     static constexpr size_t MAX_COMPRESSED_DATA_SIZE = 20'000;
     static constexpr size_t TARGET_COMPRESSED_DATA_SIZE = 10'000;
 
-    static constexpr float DEFAULT_PLOT_LINE_THICKNESS = 4;
-
     DataSeries timeline;
     DataSeries values;
-    PlotStyle style;
     std::vector<PlotDataUpdateListener*> listeners;
     mutable std::mutex mtx;
 };

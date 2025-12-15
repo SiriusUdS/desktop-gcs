@@ -1,11 +1,13 @@
 #pragma once
 
-#include "Params.h"
+#include "Param.h"
+#include "PlotLine.h"
 #include "SensorTestSequencer.h"
 #include "UIWindow.h"
 
 class PrefillWindow : public UIWindow {
 public:
+    PrefillWindow();
     const char* name() const override;
     const char* dockspace() const override;
 
@@ -24,8 +26,9 @@ private:
 
     void renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam);
 
-    TankLoadCellParam prewrapTankLoadCellParam{Params::TankLoadCell::prewrapADCValue, "Tank Load Cell ADC Value - Prewrap"};
-    TankLoadCellParam postwrapTankLoadCellParam{Params::TankLoadCell::postwrapADCValue, "Tank Load Cell ADC Value - Postwrap"};
-    TankLoadCellParam postIPATankLoadCellParam{Params::TankLoadCell::postIPAADCValue, "Tank Load Cell ADC Value - Post IPA"};
     SensorTestSequencer sensorTestSequencer;
+    TankLoadCellParam prewrapTankLoadCellParam;
+    TankLoadCellParam postwrapTankLoadCellParam;
+    TankLoadCellParam postIPATankLoadCellParam;
+    PlotLine tankLoadCellADCPlotLine;
 };

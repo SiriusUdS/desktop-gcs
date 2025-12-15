@@ -1,10 +1,13 @@
 #pragma once
 
+#include "SensorPlotData.h"
+
 #include <implot.h>
 #include <ini.h>
 #include <vector>
 
-class SensorPlotData;
+class PlotLine;
+struct SensorPlotLine;
 
 /**
  * @class PlotWindow
@@ -12,7 +15,7 @@ class SensorPlotData;
  */
 class PlotWindow {
 public:
-    PlotWindow(const char* name, const char* xLabel, const char* yLabel, std::vector<SensorPlotData*> sensorPlotDataVec);
+    PlotWindow(const char* name, const char* xLabel, const char* yLabel, std::vector<SensorPlotLine*> sensorPlotLineVec);
     void render();
     void loadState(const mINI::INIStructure& ini);
     void saveState(mINI::INIStructure& ini);
@@ -25,7 +28,7 @@ private:
     void showAvgRecentValue(const char* name, float value, size_t idx);
 
     std::string name, xLabel, yLabel, autofitIniId, showCompressedDataIniId, showAvgValuesId, dataTypeIniId;
-    std::vector<SensorPlotData*> sensorPlotDataVec;
+    std::vector<SensorPlotLine*> sensorPlotLineVec;
     ImPlotFlags flags{};
     bool autofit{};
     bool showCompressedData{};

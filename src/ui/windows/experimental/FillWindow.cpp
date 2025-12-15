@@ -7,9 +7,21 @@
 #include "PlotData.h"
 #include "SensorPlotData.h"
 #include "SwitchData.h"
+#include "ThemedColors.h"
 
 #include <imgui.h>
 #include <implot.h>
+
+FillWindow::FillWindow()
+    : tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData[0].getValuePlotData(),
+                           PlotStyle("Tank Load Cell", ThemedColors::PlotLine::blue)}, // TODO: Is this correct index?
+      tankTransducerPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(),
+                             PlotStyle("Tank Pressure", ThemedColors::PlotLine::red)}, // TODO: Is this correct index?
+      tankTempPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData[0].getValuePlotData(),
+                       PlotStyle("Tank Temperature", ThemedColors::PlotLine::green)},                              // TODO: Is this correct index?
+      tankMassPlotLine{GSDataCenter::NOSTankMass_PlotData, PlotStyle("Tank Mass", ThemedColors::PlotLine::yellow)} // TODO: Is this correct index?
+{
+}
 
 const char* FillWindow::name() const {
     return "Fill";
@@ -29,11 +41,6 @@ void FillWindow::renderImpl() {
 
     ImGui::SeparatorText("Tank Data Plot");
 
-    const SensorPlotData& tankLoadCellPlotData = GSDataCenter::LoadCell_FillingStation_PlotData[0];         // TODO: Is this correct index?
-    const SensorPlotData& tankTransducerPlotData = GSDataCenter::PressureSensor_FillingStation_PlotData[0]; // TODO: Is this correct index?
-    const SensorPlotData& tankTempPlotData = GSDataCenter::Thermistor_FillingStation_PlotData[0];           // TODO: Is this correct index?
-    const PlotData& tankMassPlotData = GSDataCenter::NOSTankMass_PlotData;
-
     if (ImPlot::BeginPlot("Tank Data", {-1.0f, 800.0f})) {
         constexpr ImAxis weightAxis = ImAxis_Y1;
         constexpr ImAxis pressureAxis = ImAxis_Y2;
@@ -45,14 +52,14 @@ void FillWindow::renderImpl() {
         ImPlot::SetupAxis(tempAxis, "Temperature (C)");
 
         ImPlot::SetAxis(weightAxis);
-        tankLoadCellPlotData.plotValue(false);
-        tankMassPlotData.plot(false);
+        tankLoadCellPlotLine.plot();
+        tankMassPlotLine.plot();
 
         ImPlot::SetAxis(pressureAxis);
-        tankTransducerPlotData.plotValue(false);
+        tankTransducerPlotLine.plot();
 
         ImPlot::SetAxis(tempAxis);
-        tankTempPlotData.plotValue(false);
+        tankTempPlotLine.plot();
 
         ImPlot::EndPlot();
     }

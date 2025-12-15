@@ -1,13 +1,11 @@
 #pragma once
 
-#include "GSDataCenter.h"
 #include "RecentPlotDataView.h"
-#include "SensorPlotData.h"
-#include "ThemedColors.h"
 #include "UIWindow.h"
 
 class TankMassWindow : public UIWindow {
 public:
+    TankMassWindow();
     void init() override;
     void renderImpl() override;
     const char* name() const override;
@@ -26,18 +24,12 @@ private:
     std::string tankMassPlotTitle;
 
     // TODO: Replace these indexes with constants
-    RecentPlotDataView recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_MS};
-    RecentPlotDataView recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_MS};
-    RecentPlotDataView recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(),
-                                                 ThemedColors::PlotLine::green,
-                                                 RECENT_TIME_WINDOW_MS};
-    RecentPlotDataView recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData[1].getValuePlotData(),
-                                                 ThemedColors::PlotLine::yellow,
-                                                 RECENT_TIME_WINDOW_MS};
-    RecentPlotDataView recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData[2].getValuePlotData(),
-                                             ThemedColors::PlotLine::blue,
-                                             RECENT_TIME_WINDOW_MS};
-    RecentPlotDataView recentEngineThrust{GSDataCenter::LoadCell_FillingStation_PlotData[0].getValuePlotData(), RECENT_TIME_WINDOW_MS};
-    RecentPlotDataView recentTankMass{GSDataCenter::NOSTankMass_PlotData, RECENT_TIME_WINDOW_MS};
-    RecentPlotDataView recentTankLoadCell{GSDataCenter::LoadCell_FillingStation_PlotData[1].getValuePlotData(), RECENT_TIME_WINDOW_MS};
+    RecentPlotDataView recentMotorPressureSensor1;
+    RecentPlotDataView recentMotorPressureSensor2;
+    RecentPlotDataView recentFillPressureSensor1;
+    RecentPlotDataView recentFillPressureSensor2;
+    RecentPlotDataView recentTankTemperature;
+    RecentPlotDataView recentEngineThrust;
+    RecentPlotDataView recentTankMass;
+    RecentPlotDataView recentTankLoadCell;
 };
