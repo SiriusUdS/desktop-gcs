@@ -9,11 +9,9 @@ std::vector<HelloImGui::DockableWindow> createDockableWindows();
 void loadState(const mINI::INIStructure& iniStructure);
 void saveState(mINI::INIStructure& iniStructure);
 
-// TODO: Fix lator
-
-// extern PlotWindow thermistorMotorPlot;
-// extern PlotWindow pressureSensorMotorPlot;
-// extern PlotWindow thermistorFillingStationPlot;
-// extern PlotWindow pressureSensorFillingStationPlot;
-// extern PlotWindow loadCellFillingStationPlot;
+extern PlotWindow thermistorMotorPlot;
+extern PlotWindow pressureSensorMotorPlot;
+extern PlotWindow thermistorFillingStationPlot;
+extern PlotWindow pressureSensorFillingStationPlot;
+extern PlotWindow loadCellFillingStationPlot;
 } // namespace PlotWindowCenter
