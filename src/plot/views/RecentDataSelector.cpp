@@ -24,3 +24,15 @@ RecentDataSelector::Window RecentDataSelector::getWindow(const std::vector<float
 
     return Window{start, size - start};
 }
+
+void RecentDataSelector::onClear(const PlotData* plotData) {
+    start = 0;
+}
+
+void RecentDataSelector::onCompress(const PlotData* plotData) {
+    start = 0;
+}
+
+void RecentDataSelector::onEraseOld(const PlotData* plotData) {
+    start = 0;
+}

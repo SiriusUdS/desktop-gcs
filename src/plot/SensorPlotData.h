@@ -12,6 +12,7 @@ struct ThemedColor;
 class SensorPlotData {
 public:
     void addData(float adc, float value, float timestamp);
+    void addListenerAdc(PlotDataUpdateListener* listener);
     void addListenerValue(PlotDataUpdateListener* listener);
     void clear();
     const PlotData& getAdcPlotData() const;

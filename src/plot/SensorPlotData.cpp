@@ -8,6 +8,10 @@ void SensorPlotData::addData(float adc, float value, float timestamp) {
     valuePlotData.addData(timestamp, value);
 }
 
+void SensorPlotData::addListenerAdc(PlotDataUpdateListener* listener) {
+    adcPlotData.addListener(listener);
+}
+
 void SensorPlotData::addListenerValue(PlotDataUpdateListener* listener) {
     valuePlotData.addListener(listener);
 }

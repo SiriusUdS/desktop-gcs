@@ -9,7 +9,7 @@ class PlotDataView {
 public:
     PlotDataView(const PlotData& data, const PlotStyle& style);
 
-    void plot(bool showCompressedData);
+    void plot(bool showCompressedData = false);
 
 protected:
     virtual DataSelector::Window getDataSelectorWindow(bool getCompressedData, const std::vector<float>& timeline) = 0;

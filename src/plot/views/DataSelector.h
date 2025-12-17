@@ -1,8 +1,10 @@
 #pragma once
 
+#include "PlotDataUpdateListener.h"
+
 #include <vector>
 
-class DataSelector {
+class DataSelector : public PlotDataUpdateListener {
 public:
     struct Window {
         size_t start;

@@ -48,11 +48,19 @@ void PlotData::addData(float timestamp, float value) {
     if (values.raw().size() > MAX_ORIGINAL_DATA_SIZE) {
         timeline.eraseOld(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
         values.eraseOld(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
+
+        for (PlotDataUpdateListener* listener : listeners) {
+            listener->onEraseOld(this);
+        }
     }
 
     if (values.compressed().size() > MAX_COMPRESSED_DATA_SIZE) {
         timeline.compress();
         values.compress();
+
+        for (PlotDataUpdateListener* listener : listeners) {
+            listener->onCompress(this);
+        }
     }
 }
 
@@ -64,6 +72,10 @@ void PlotData::clear() {
 
     timeline.clear();
     values.clear();
+
+    for (PlotDataUpdateListener* listener : listeners) {
+        listener->onClear(this);
+    }
 }
 
 void PlotData::addListener(PlotDataUpdateListener* listener) {

@@ -17,5 +17,5 @@ void PlotDataView::plot(bool showCompressedData) {
     DataSelector::Window window = getDataSelectorWindow(showCompressedData, timeline);
 
     ImPlot::SetNextLineStyle(style.color.resolve(), style.weight);
-    ImPlot::PlotLine(style.name, timeline.data() + window.start, values.data() + window.start, static_cast<int>(timeline.size()));
+    ImPlot::PlotLine(style.name, timeline.data() + window.start, values.data() + window.start, static_cast<int>(window.size));
 }
