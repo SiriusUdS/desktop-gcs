@@ -69,8 +69,8 @@ void Application::init() {
     iniFile.read(iniStructure);
 
     PacketCSVLogging::init();
-
     PlotWindowCenter::loadState(iniStructure);
+    ParamsIO::loadParams(iniStructure);
 
     loggingWindow = std::make_shared<LoggingWindow>();
 
@@ -97,8 +97,6 @@ void Application::init() {
         window->loadState(iniStructure);
     }
 
-    ParamsIO::loadParams(iniStructure);
-
     // TODO: Use constants for indexes and maybe move this elsewhere
     GSDataCenter::Thermistor_Motor_PlotData[2].addListenerValue(&tankMassPlotDataUpdater);
     GSDataCenter::PressureSensor_Motor_PlotData[0].addListenerValue(&tankMassPlotDataUpdater);
@@ -112,9 +110,7 @@ void Application::preNewFrame() {
 
 void Application::shutdown() {
     SerialTask::stop();
-
     ParamsIO::saveParams(iniStructure);
-
     PlotWindowCenter::saveState(iniStructure);
 
     for (const auto& window : windows) {

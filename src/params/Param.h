@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <string>
 
 template <typename T>
@@ -7,10 +8,13 @@ struct Param {
     Param(T defaultValue, std::string iniKey) : currentValue{defaultValue}, defaultValue{defaultValue}, iniKey{iniKey} {
     }
 
-    T currentValue;
-    T defaultValue;
+    void reset() {
+        currentValue = defaultValue.load();
+    }
+
+    std::atomic<T> currentValue;
+    std::atomic<T> defaultValue;
     std::string iniKey;
 };
 
-// TODO: std::atomic<float>
 using FloatParam = Param<float>;

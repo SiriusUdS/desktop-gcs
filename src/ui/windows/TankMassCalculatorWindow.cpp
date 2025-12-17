@@ -16,7 +16,7 @@ const char* TankMassCalculatorWindow::dockspace() const {
 }
 
 void TankMassCalculatorWindow::renderImpl() {
-    ImGui::Text("Tank Volume (m^3): %f", Params::NOSTankVolume_m3.currentValue);
+    ImGui::Text("Tank Volume (m^3): %f", Params::NOSTankVolume_m3.currentValue.load());
     ImGui::SameLine();
 
     const ImVec4 buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);

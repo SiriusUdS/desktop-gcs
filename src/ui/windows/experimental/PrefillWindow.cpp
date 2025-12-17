@@ -197,7 +197,7 @@ void PrefillWindow::renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam
     ImGui::EndDisabled();
 
     ImGui::TableSetColumnIndex(3);
-    ImGui::Text("ADC: %.0f", tankLoadCellParam.param.currentValue);
+    ImGui::Text("ADC: %.0f", tankLoadCellParam.param.currentValue.load());
 }
 
 PrefillWindow::TankLoadCellParam::TankLoadCellParam(FloatParam& param, std::string label) : param(param), label(label) {
