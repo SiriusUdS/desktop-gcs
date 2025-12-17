@@ -5,7 +5,6 @@
 
 class ControlsWindow : public UIWindow {
 public:
-    void renderImpl() override;
     const char* name() const override;
     const char* dockspace() const override;
 
@@ -29,6 +28,7 @@ private:
     PercentageInput fillHeatPadSlider;
     PercentageInput dumpHeatPadSlider;
 
+    void renderImpl() override;
     void renderPercentageInput(const char* name,
                                PercentageInput& slider,
                                CommandType commandType,

@@ -26,7 +26,6 @@ public:
     virtual const char* dockspace() const = 0;
 
 protected:
-    // TODO: Make sure renderImpl and lazyInit are protected in all child classes
     virtual void lazyInit() {
     }
     virtual void renderImpl() = 0;

@@ -17,6 +17,14 @@ private:
         int lastOpenedValue_perc{};
     };
 
+    void renderImpl() override;
+    void renderPercentageInputRow(const char* name,
+                                  PercentageInput& input,
+                                  CommandType commandType,
+                                  const char* tooltipDisabled = "",
+                                  bool inputEnabled = true) const;
+    void addDisabledTooltip(const char* tooltipDisabled, bool inputEnabled) const;
+
     PlotLine tankLoadCellPlotLine;
     PlotLine tankTransducerPlotLine;
     PlotLine tankTempPlotLine;
@@ -30,13 +38,4 @@ private:
     PercentageInput ipaHeatPadSlider;
     PercentageInput fillHeatPadSlider;
     PercentageInput dumpHeatPadSlider;
-
-    void renderImpl() override;
-
-    void renderPercentageInputRow(const char* name,
-                                  PercentageInput& input,
-                                  CommandType commandType,
-                                  const char* tooltipDisabled = "",
-                                  bool inputEnabled = true) const;
-    void addDisabledTooltip(const char* tooltipDisabled, bool inputEnabled) const;
 };

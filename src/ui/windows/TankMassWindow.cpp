@@ -42,6 +42,14 @@ void TankMassWindow::init() {
     tankMassPlotTitle = getRecentPlotTitle("Tank Mass", RECENT_TIME_WINDOW_MS / 1000);
 }
 
+const char* TankMassWindow::name() const {
+    return "Tank Mass";
+}
+
+const char* TankMassWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::PLOT;
+}
+
 void TankMassWindow::renderImpl() {
     constexpr double TEMP_VALUE = 1.0;
 
@@ -109,14 +117,6 @@ void TankMassWindow::renderImpl() {
 
         ImGui::EndTable();
     }
-}
-
-const char* TankMassWindow::name() const {
-    return "Tank Mass";
-}
-
-const char* TankMassWindow::dockspace() const {
-    return ImGuiConfig::Dockspace::PLOT;
 }
 
 std::string TankMassWindow::getRecentPlotTitle(std::string title, size_t seconds) {

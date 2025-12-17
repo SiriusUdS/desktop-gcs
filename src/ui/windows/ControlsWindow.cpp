@@ -12,6 +12,14 @@
 
 #include <imgui.h>
 
+const char* ControlsWindow::name() const {
+    return "Controls";
+}
+
+const char* ControlsWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
 void ControlsWindow::renderImpl() {
     if (ImGui::CollapsingHeader("Valves")) {
         const bool nosAndIpaValveSliderEnabled = GSDataCenter::motorBoardState == ENGINE_STATE_UNSAFE && GSDataCenter::ArmServoSwitchData.isOn
@@ -70,14 +78,6 @@ void ControlsWindow::renderImpl() {
             CommandControl::sendCommand(CommandType::Abort, 0);
         }
     }
-}
-
-const char* ControlsWindow::name() const {
-    return "Controls";
-}
-
-const char* ControlsWindow::dockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void ControlsWindow::renderPercentageInput(const char* name,

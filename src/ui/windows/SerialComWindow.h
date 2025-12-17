@@ -8,8 +8,6 @@
 class SerialComWindow : public UIWindow {
 public:
     SerialComWindow();
-
-    void renderImpl() override;
     void loadState(const mINI::INIStructure& ini) override;
     void saveState(mINI::INIStructure& ini) const override;
     const char* name() const override;
@@ -20,6 +18,7 @@ private:
 
     static const char* INI_RECV_BUFFER_DISPLAY_MODE;
 
+    void renderImpl() override;
     void renderBoardComStateTableRow(const char* boardName, BoardComStateMonitor::State state) const;
     void renderPacketRateTableRow(const char* packetName, double rate) const;
     void recvBufferContentModal();

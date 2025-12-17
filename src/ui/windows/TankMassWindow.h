@@ -7,11 +7,11 @@ class TankMassWindow : public UIWindow {
 public:
     TankMassWindow();
     void init() override;
-    void renderImpl() override;
     const char* name() const override;
     const char* dockspace() const override;
 
 private:
+    void renderImpl() override;
     // TODO: Put this in string utils
     std::string getRecentPlotTitle(std::string title, size_t seconds);
 

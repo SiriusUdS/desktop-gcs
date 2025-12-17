@@ -12,6 +12,14 @@
 
 #include <imgui.h>
 
+const char* BoardsWindow::name() const {
+    return "Boards";
+}
+
+const char* BoardsWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
 void BoardsWindow::renderImpl() {
     if (ImGui::CollapsingHeader("State")) {
         const char* motorBoardStateName = "Unknown";
@@ -94,14 +102,6 @@ void BoardsWindow::renderImpl() {
         ImGui::SameLine();
         renderStorageErrorStatusName(GSDataCenter::fillingStationBoardStorageErrorStatus);
     }
-}
-
-const char* BoardsWindow::name() const {
-    return "Boards";
-}
-
-const char* BoardsWindow::dockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void BoardsWindow::renderBoardTableRow(const char* name, const char* boardStateName, BoardComStateMonitor::State comState) const {

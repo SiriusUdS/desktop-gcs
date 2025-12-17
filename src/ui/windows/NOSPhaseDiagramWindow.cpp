@@ -37,6 +37,14 @@ void NOSPhaseDiagramWindow::init() {
     }
 }
 
+const char* NOSPhaseDiagramWindow::name() const {
+    return "NOS Phase Diagram";
+}
+
+const char* NOSPhaseDiagramWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::PLOT;
+}
+
 void NOSPhaseDiagramWindow::renderImpl() {
     ImPlot::SetNextAxesToFit();
     if (ImPlot::BeginPlot("NOS Phase Diagram", ImGui::GetContentRegionAvail(), ImPlotFlags_NoInputs)) {
@@ -72,12 +80,4 @@ void NOSPhaseDiagramWindow::renderImpl() {
 
         ImPlot::EndPlot();
     }
-}
-
-const char* NOSPhaseDiagramWindow::name() const {
-    return "NOS Phase Diagram";
-}
-
-const char* NOSPhaseDiagramWindow::dockspace() const {
-    return ImGuiConfig::Dockspace::PLOT;
 }

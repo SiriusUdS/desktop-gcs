@@ -5,11 +5,11 @@
 
 class LaunchWindow : public UIWindow {
 public:
-    void lazyInit() override;
     const char* name() const override;
     const char* dockspace() const override;
 
 private:
+    void lazyInit() override;
     void renderImpl() override;
 
     void initFillStationStateMachine();

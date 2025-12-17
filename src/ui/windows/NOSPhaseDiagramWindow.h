@@ -7,12 +7,13 @@
 class NOSPhaseDiagramWindow : public UIWindow {
 public:
     void init() override;
-    void renderImpl() override;
     const char* name() const override;
     const char* dockspace() const override;
 
 private:
     using PT_Point = ImVec2; // Point type for Pressure-Temperature diagram
+
+    void renderImpl() override;
 
     static const PT_Point triplePoint;
     static const PT_Point criticalPoint;

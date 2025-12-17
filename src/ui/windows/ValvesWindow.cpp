@@ -7,6 +7,14 @@
 #include <imgui.h>
 #include <string>
 
+const char* ValvesWindow::name() const {
+    return "Valves";
+}
+
+const char* ValvesWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
 void ValvesWindow::renderImpl() {
     if (ImGui::BeginTable("ValveStateTable", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
         ImGui::TableSetupColumn("Valve");
@@ -23,14 +31,6 @@ void ValvesWindow::renderImpl() {
 
         ImGui::EndTable();
     }
-}
-
-const char* ValvesWindow::name() const {
-    return "Valves";
-}
-
-const char* ValvesWindow::dockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void ValvesWindow::renderValveStateRow(const char* label, ValveData& data) const {

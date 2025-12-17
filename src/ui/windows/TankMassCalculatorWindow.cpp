@@ -7,6 +7,14 @@
 
 #include <imgui.h>
 
+const char* TankMassCalculatorWindow::name() const {
+    return "Tank Mass Calculator";
+}
+
+const char* TankMassCalculatorWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
 void TankMassCalculatorWindow::renderImpl() {
     ImGui::Text("Tank Volume (m^3): %f", Params::NOSTankVolume_m3.currentValue);
     ImGui::SameLine();
@@ -36,12 +44,4 @@ void TankMassCalculatorWindow::renderImpl() {
     } else {
         ImGui::Text("%f", tankMass_lb);
     }
-}
-
-const char* TankMassCalculatorWindow::name() const {
-    return "Tank Mass Calculator";
-}
-
-const char* TankMassCalculatorWindow::dockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }

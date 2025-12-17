@@ -12,17 +12,17 @@ using AnchorEdgeSide = StateMachineRenderer::AnchorEdgeSide;
 using ArrowheadDir = StateMachineRenderer::ArrowheadDir;
 using Label = StateMachineRenderer::Label;
 
-void LaunchWindow::lazyInit() {
-    initFillStationStateMachine();
-    initMotorStateMachine();
-}
-
 const char* LaunchWindow::name() const {
     return "Launch";
 }
 
 const char* LaunchWindow::dockspace() const {
     return ImGuiConfig::Dockspace::MAP;
+}
+
+void LaunchWindow::lazyInit() {
+    initFillStationStateMachine();
+    initMotorStateMachine();
 }
 
 void LaunchWindow::renderImpl() {

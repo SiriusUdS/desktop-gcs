@@ -29,6 +29,28 @@ void MapWindow::init() {
     updateMarkStyle();
 }
 
+void MapWindow::loadState(const mINI::INIStructure& ini) {
+    mapPlot->loadState(ini);
+    if (ini.has(IniConfig::GCS_SECTION)) {
+        if (ini.get(IniConfig::GCS_SECTION).has(INI_MAP_WINDOW_MAP_VIEW)) {
+            mapView = std::stoi(ini.get(IniConfig::GCS_SECTION).get(INI_MAP_WINDOW_MAP_VIEW));
+        }
+    }
+}
+
+void MapWindow::saveState(mINI::INIStructure& ini) const {
+    mapPlot->saveState(ini);
+    ini[IniConfig::GCS_SECTION].set(INI_MAP_WINDOW_MAP_VIEW, std::to_string(mapView));
+}
+
+const char* MapWindow::name() const {
+    return "Map";
+}
+
+const char* MapWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
 void MapWindow::renderImpl() {
     constexpr const size_t GCS_MAP_MAX_TILES_DOWNLOAD = 100'000;
 
@@ -146,28 +168,6 @@ void MapWindow::renderImpl() {
     }
 
     mapPlot->paint();
-}
-
-void MapWindow::loadState(const mINI::INIStructure& ini) {
-    mapPlot->loadState(ini);
-    if (ini.has(IniConfig::GCS_SECTION)) {
-        if (ini.get(IniConfig::GCS_SECTION).has(INI_MAP_WINDOW_MAP_VIEW)) {
-            mapView = std::stoi(ini.get(IniConfig::GCS_SECTION).get(INI_MAP_WINDOW_MAP_VIEW));
-        }
-    }
-}
-
-void MapWindow::saveState(mINI::INIStructure& ini) const {
-    mapPlot->saveState(ini);
-    ini[IniConfig::GCS_SECTION].set(INI_MAP_WINDOW_MAP_VIEW, std::to_string(mapView));
-}
-
-const char* MapWindow::name() const {
-    return "Map";
-}
-
-const char* MapWindow::dockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void MapWindow::addMark(const GeoCoords& coords, const std::string& name) {

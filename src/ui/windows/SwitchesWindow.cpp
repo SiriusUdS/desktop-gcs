@@ -7,6 +7,14 @@
 
 #include <imgui.h>
 
+const char* SwitchesWindow::name() const {
+    return "Switches";
+}
+
+const char* SwitchesWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
 void SwitchesWindow::renderImpl() {
     renderSwitch(GSDataCenter::AllowDumpSwitchData, "Allow Dump");
     renderSwitch(GSDataCenter::AllowFillSwitchData, "Allow Fill");
@@ -15,14 +23,6 @@ void SwitchesWindow::renderImpl() {
     renderSwitch(GSDataCenter::EmergencyStopButtonData, "Emergency Stop");
     renderSwitch(GSDataCenter::FireIgniterButtonData, "Fire Igniter");
     renderSwitch(GSDataCenter::ValveStartButtonData, "Valve Start");
-}
-
-const char* SwitchesWindow::name() const {
-    return "Switches";
-}
-
-const char* SwitchesWindow::dockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void SwitchesWindow::renderSwitch(const SwitchData& data, const char* name) const {

@@ -23,7 +23,6 @@ private:
     };
 
     void renderImpl() override;
-
     void renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam);
 
     SensorTestSequencer sensorTestSequencer;

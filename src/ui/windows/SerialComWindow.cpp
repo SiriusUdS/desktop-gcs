@@ -19,6 +19,26 @@ const char* SerialComWindow::INI_RECV_BUFFER_DISPLAY_MODE = "recv_buffer_display
 SerialComWindow::SerialComWindow() : recvBufferContentDisplay(SerialConfig::PACKET_CIRCULAR_BUFFER_SIZE) {
 }
 
+void SerialComWindow::loadState(const mINI::INIStructure& ini) {
+    if (ini.has(IniConfig::GCS_SECTION)) {
+        if (ini.get(IniConfig::GCS_SECTION).has(INI_RECV_BUFFER_DISPLAY_MODE)) {
+            recvBufferDisplayMode = std::stoi(ini.get(IniConfig::GCS_SECTION).get(INI_RECV_BUFFER_DISPLAY_MODE));
+        }
+    }
+}
+
+void SerialComWindow::saveState(mINI::INIStructure& ini) const {
+    ini[IniConfig::GCS_SECTION].set(INI_RECV_BUFFER_DISPLAY_MODE, std::to_string(recvBufferDisplayMode));
+}
+
+const char* SerialComWindow::name() const {
+    return "Serial COM";
+}
+
+const char* SerialComWindow::dockspace() const {
+    return ImGuiConfig::Dockspace::MAP;
+}
+
 void SerialComWindow::renderImpl() {
     if (ImGui::CollapsingHeader("Board COM")) {
         std::string comPortStr = SerialTask::comPortSelector.available() ? SerialTask::comPortSelector.current() : "None available";
@@ -176,26 +196,6 @@ void SerialComWindow::renderImpl() {
     }
 
     recvBufferContentModal();
-}
-
-void SerialComWindow::loadState(const mINI::INIStructure& ini) {
-    if (ini.has(IniConfig::GCS_SECTION)) {
-        if (ini.get(IniConfig::GCS_SECTION).has(INI_RECV_BUFFER_DISPLAY_MODE)) {
-            recvBufferDisplayMode = std::stoi(ini.get(IniConfig::GCS_SECTION).get(INI_RECV_BUFFER_DISPLAY_MODE));
-        }
-    }
-}
-
-void SerialComWindow::saveState(mINI::INIStructure& ini) const {
-    ini[IniConfig::GCS_SECTION].set(INI_RECV_BUFFER_DISPLAY_MODE, std::to_string(recvBufferDisplayMode));
-}
-
-const char* SerialComWindow::name() const {
-    return "Serial COM";
-}
-
-const char* SerialComWindow::dockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void SerialComWindow::renderBoardComStateTableRow(const char* boardName, BoardComStateMonitor::State state) const {

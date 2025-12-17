@@ -12,7 +12,6 @@
 class MapWindow : public UIWindow {
 public:
     void init() override;
-    void renderImpl() override;
     void loadState(const mINI::INIStructure& ini) override;
     void saveState(mINI::INIStructure& ini) const override;
     const char* name() const override;
@@ -21,6 +20,7 @@ public:
 private:
     enum MapView { MAP_VIEW = 0, SATELLITE_VIEW = 1 };
 
+    void renderImpl() override;
     void addMark(const GeoCoords& coords, const std::string& name);
     std::string getFsPathFromMapView(int mapView) const;
     void startTileProviderConnectivityTest();
