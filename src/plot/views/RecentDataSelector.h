@@ -4,7 +4,7 @@
 
 class RecentDataSelector : public DataSelector {
 public:
-    RecentDataSelector(size_t timelapseWindow_ms);
+    RecentDataSelector(const PlotData* data, size_t timelapseWindow_ms);
     Window getWindow(const std::vector<float>& timeline) override;
 
     // PlotDataUpdateListener method overrides

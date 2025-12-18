@@ -15,7 +15,7 @@ TankMassWindow::TankMassWindow()
                                  PlotStyle("Pressure Sensor 1 (Motor)", ThemedColors::PlotLine::blue),
                                  RECENT_TIME_WINDOW_MS},
       recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData[1].getValuePlotData(),
-                                 PlotStyle("Pressure Sensor 2 (Motor)", ThemedColors::PlotLine::blue),
+                                 PlotStyle("Pressure Sensor 2 (Motor)", ThemedColors::PlotLine::red),
                                  RECENT_TIME_WINDOW_MS},
       recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(),
                                 PlotStyle("Pressure Sensor 1 (Fill)", ThemedColors::PlotLine::green),

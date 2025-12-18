@@ -1,12 +1,18 @@
 #pragma once
 
-class PlotData;
+#include "PlotData.h"
 
-// TODO: SUBSCRIBE TO PLOTDATA WHEN OBJECT CREATED (CONSTRUCTOR)
 class PlotDataUpdateListener {
 public:
-    virtual void onSubscribe(const PlotData* plotData) {
+    PlotDataUpdateListener(std::vector<const PlotData*> dataVec) : dv(dataVec) {
     }
+
+    void subscribe() {
+        for (const PlotData* data : dv) {
+            data->addListener(this);
+        }
+    }
+
     virtual void onAddData(const PlotData* plotData, float timestamp, float value) {
     }
     virtual void onClear(const PlotData* plotData) {
@@ -15,4 +21,7 @@ public:
     }
     virtual void onEraseOld(const PlotData* plotData) {
     }
+
+private:
+    std::vector<const PlotData*> dv;
 };

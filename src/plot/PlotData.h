@@ -24,7 +24,7 @@ public:
     PlotData();
     void addData(float timestamp, float value);
     void clear();
-    void addListener(PlotDataUpdateListener* listener);
+    void addListener(PlotDataUpdateListener* listener) const;
     float recentAverageValue(size_t duration_ms) const;
     const DataSeries& getTimeline() const;
     const DataSeries& getValues() const;
@@ -39,6 +39,6 @@ private:
 
     DataSeries timeline;
     DataSeries values;
-    std::vector<PlotDataUpdateListener*> listeners;
+    mutable std::vector<PlotDataUpdateListener*> listeners;
     mutable std::mutex mtx;
 };

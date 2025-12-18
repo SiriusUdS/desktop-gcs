@@ -6,6 +6,9 @@
 
 class DataSelector : public PlotDataUpdateListener {
 public:
+    DataSelector(const PlotData* data) : PlotDataUpdateListener({data}) {
+    }
+
     struct Window {
         size_t start;
         size_t size;

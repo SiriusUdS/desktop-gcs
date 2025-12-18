@@ -8,7 +8,7 @@
 
 class TankMassPlotDataUpdater : public PlotDataUpdateListener {
 public:
-    void onSubscribe(const PlotData* plotData) override;
+    TankMassPlotDataUpdater(std::vector<const PlotData*> dataVec);
     void onAddData(const PlotData* plotData, float timestamp, float value) override;
 
 private:

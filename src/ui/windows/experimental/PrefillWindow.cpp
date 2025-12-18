@@ -169,8 +169,12 @@ void PrefillWindow::renderImpl() {
 
     // TODO: THIS IS A TEST
     SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData[0];
+    SensorPlotData& d1 = GSDataCenter::Thermistor_Motor_PlotData[2];
+    SensorPlotData& d2 = GSDataCenter::PressureSensor_Motor_PlotData[0];
     static float t = 0.0f;
-    tankLoadCellData.addData(t, 0, t);
+    tankLoadCellData.addData(t, t, t);
+    d1.addData(t, t, t);
+    d2.addData(t, t, t);
     t += 100.0f;
 }
 

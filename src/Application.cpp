@@ -39,7 +39,9 @@
 namespace Application {
 mINI::INIFile iniFile("sirius_gcs.ini");
 mINI::INIStructure iniStructure;
-TankMassPlotDataUpdater tankMassPlotDataUpdater;
+// TODO: Use constants for indexes, make sure they're the right ones
+TankMassPlotDataUpdater tankMassPlotDataUpdater{
+  {&GSDataCenter::Thermistor_Motor_PlotData[2].getValuePlotData(), &GSDataCenter::PressureSensor_Motor_PlotData[0].getValuePlotData()}};
 std::vector<std::shared_ptr<UIWindow>> windows;
 std::shared_ptr<LoggingWindow> loggingWindow;
 } // namespace Application
@@ -97,9 +99,7 @@ void Application::init() {
         window->loadState(iniStructure);
     }
 
-    // TODO: Use constants for indexes and maybe move this elsewhere
-    GSDataCenter::Thermistor_Motor_PlotData[2].addListenerValue(&tankMassPlotDataUpdater);
-    GSDataCenter::PressureSensor_Motor_PlotData[0].addListenerValue(&tankMassPlotDataUpdater);
+    tankMassPlotDataUpdater.subscribe();
 
     SerialTask::start();
 }

@@ -78,11 +78,10 @@ void PlotData::clear() {
     }
 }
 
-void PlotData::addListener(PlotDataUpdateListener* listener) {
+void PlotData::addListener(PlotDataUpdateListener* listener) const {
     std::lock_guard<std::mutex> lock(mtx);
 
     listeners.push_back(listener);
-    listener->onSubscribe(this);
 }
 
 /**
