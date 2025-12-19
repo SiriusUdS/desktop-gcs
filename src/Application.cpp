@@ -19,6 +19,7 @@
 #include "ParamsIO.h"
 #include "PlotWindowCenter.h"
 #include "PrefillWindow.h"
+#include "PrelaunchWindow.h"
 #include "ResultsWindow.h"
 #include "RocketParametersWindow.h"
 #include "SensorPlotData.h"
@@ -90,6 +91,7 @@ void Application::init() {
 
     windows.emplace_back(std::make_shared<PrefillWindow>());
     windows.emplace_back(std::make_shared<FillWindow>());
+    windows.emplace_back(std::make_shared<PrelaunchWindow>());
     windows.emplace_back(std::make_shared<LaunchWindow>());
     windows.emplace_back(std::make_shared<MonitoringWindow>());
     windows.emplace_back(std::make_shared<ResultsWindow>());
