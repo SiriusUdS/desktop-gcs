@@ -14,7 +14,7 @@ public:
         float stateRectBorderThickness{2.0f};
         float stateRectRounding{10.0f};
         float stateRectLabelFontSize{32.0f};
-        float windowPadding{20.0f};
+        float windowPadding{10.0f};
     };
 
     struct StateRect {
@@ -55,7 +55,7 @@ public:
     void addStateRect(StateRect rect);
     void addArrow(Arrow arrow);
     void addLabel(Label label);
-    void render(ImVec2 size, bool drawDebugRegions = false);
+    void render(ImVec2 size = {-1.0f, 0.0f}, bool drawDebugRegions = false);
 
     // State rect to state rect
     Arrow createArrow(const StateRect& rect1,
@@ -76,6 +76,7 @@ public:
     Params params;
 
 private:
+    ImVec2 handleSizeOptions(ImVec2 size);
     void computeAvailableSpace(const ImVec2& size);
     void computeMiddlePoint();
     void computeBoundaries();

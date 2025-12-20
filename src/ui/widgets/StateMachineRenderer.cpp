@@ -23,9 +23,10 @@ void StateMachineRenderer::addLabel(Label label) {
 
 void StateMachineRenderer::render(ImVec2 size, bool drawDebugRegions) {
     // TODO: Make these functions return values instead of having extra attributes
+    computeBoundaries();
+    size = handleSizeOptions(size);
     computeAvailableSpace(size);
     computeMiddlePoint();
-    computeBoundaries();
     computeOffsetPosition();
     computeSizeScale();
 
@@ -79,8 +80,26 @@ StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& r
     return createArrowFromAnchorPoints(p1, rectAnchorEdge, p2, pathType, routeOffset);
 }
 
+ImVec2 StateMachineRenderer::handleSizeOptions(ImVec2 size) {
+    ImVec2 contentRegionAvail = ImGui::GetContentRegionAvail();
+
+    if (size.x == -1.0f) {
+        size.x = contentRegionAvail.x;
+    } else if (size.x == 0.0f) {
+        size.x = bottomRightBoundary.x - topLeftBoundary.x;
+    }
+
+    if (size.y == -1.0f) {
+        size.y = contentRegionAvail.y;
+    } else if (size.y == 0.0f) {
+        size.y = bottomRightBoundary.y - topLeftBoundary.y;
+    }
+
+    return size;
+}
+
 void StateMachineRenderer::computeAvailableSpace(const ImVec2& size) {
-    availableSpace = {size.x - params.windowPadding * 2, size.y - params.windowPadding * 2};
+    availableSpace = {std::max(size.x - params.windowPadding * 2.0f, 0.0f), std::max(size.y - params.windowPadding * 2.0f, 0.0f)};
 }
 
 void StateMachineRenderer::computeMiddlePoint() {

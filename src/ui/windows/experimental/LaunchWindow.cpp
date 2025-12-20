@@ -26,16 +26,21 @@ void LaunchWindow::lazyInit() {
 }
 
 void LaunchWindow::renderImpl() {
-    ImVec2 windowSize = ImGui::GetContentRegionAvail();
+    ImGui::SeparatorText("State Machines");
+
     float stateMachineHeight = 600.0f;
 
-    if (ImGui::BeginTable("Plots", 2)) {
+    if (ImGui::BeginTable("Plots", 2, ImGuiTableFlags_Borders)) {
+        ImGui::TableSetupColumn("Filling station control state machine");
+        ImGui::TableSetupColumn("Engine control state machine");
+        ImGui::TableHeadersRow();
+
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
-        fsStateMachine.render({windowSize.x / 2, stateMachineHeight});
+        fsStateMachine.render({-1.0f, stateMachineHeight});
 
         ImGui::TableSetColumnIndex(1);
-        motorStateMachine.render({windowSize.x / 2, stateMachineHeight});
+        motorStateMachine.render({-1.0f, stateMachineHeight});
 
         ImGui::EndTable();
     }
