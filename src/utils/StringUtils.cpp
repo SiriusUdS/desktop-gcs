@@ -12,6 +12,10 @@ void StringUtils::convertStringToIniId(std::string& s) {
     }
 }
 
+std::string StringUtils::getRecentPlotLineTitle(std::string title, size_t seconds) {
+    return title + " (last " + std::to_string(seconds) + " seconds)";
+}
+
 #ifdef _WIN32
 std::string StringUtils::wcharToString(const WCHAR* wstr) {
     if (wstr == nullptr)

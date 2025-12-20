@@ -3,6 +3,7 @@
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
 #include "SensorPlotData.h"
+#include "StringUtils.h"
 #include "ThemedColors.h"
 #include "VaporPressure.h"
 
@@ -36,10 +37,10 @@ TankMassWindow::TankMassWindow()
 }
 
 void TankMassWindow::init() {
-    tankPressurePlotTitle = getRecentPlotTitle("Tank Pressure", RECENT_TIME_WINDOW_MS / 1000);
-    tankTemperaturePlotTitle = getRecentPlotTitle("Tank Temperature", RECENT_TIME_WINDOW_MS / 1000);
-    engineThrustPlotTitle = getRecentPlotTitle("Engine Thrust", RECENT_TIME_WINDOW_MS / 1000);
-    tankMassPlotTitle = getRecentPlotTitle("Tank Mass", RECENT_TIME_WINDOW_MS / 1000);
+    tankPressurePlotTitle = StringUtils::getRecentPlotLineTitle("Tank Pressure", RECENT_TIME_WINDOW_MS / 1000);
+    tankTemperaturePlotTitle = StringUtils::getRecentPlotLineTitle("Tank Temperature", RECENT_TIME_WINDOW_MS / 1000);
+    engineThrustPlotTitle = StringUtils::getRecentPlotLineTitle("Engine Thrust", RECENT_TIME_WINDOW_MS / 1000);
+    tankMassPlotTitle = StringUtils::getRecentPlotLineTitle("Tank Mass", RECENT_TIME_WINDOW_MS / 1000);
 }
 
 const char* TankMassWindow::name() const {
@@ -124,8 +125,4 @@ void TankMassWindow::renderImpl() {
 
         ImGui::EndTable();
     }
-}
-
-std::string TankMassWindow::getRecentPlotTitle(std::string title, size_t seconds) {
-    return title + " (last " + std::to_string(seconds) + " seconds)";
 }

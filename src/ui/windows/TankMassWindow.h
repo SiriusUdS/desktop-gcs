@@ -12,8 +12,6 @@ public:
 
 private:
     void renderImpl() override;
-    // TODO: Put this in string utils
-    std::string getRecentPlotTitle(std::string title, size_t seconds);
 
     static const size_t RECENT_TIME_WINDOW_MS = 60'000;
 

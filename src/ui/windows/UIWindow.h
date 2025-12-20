@@ -15,7 +15,6 @@ public:
         renderImpl();
     }
 
-    // TODO: Document difference between init and lazyInit
     virtual void init() {
     }
     virtual void loadState(const mINI::INIStructure& ini) {

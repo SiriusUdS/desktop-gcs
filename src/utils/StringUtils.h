@@ -8,6 +8,7 @@
 
 namespace StringUtils {
 void convertStringToIniId(std::string& s);
+std::string getRecentPlotLineTitle(std::string title, size_t seconds);
 
 #ifdef _WIN32
 std::string wcharToString(const WCHAR* wstr);

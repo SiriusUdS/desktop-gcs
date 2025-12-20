@@ -41,7 +41,6 @@
 namespace Application {
 mINI::INIFile iniFile("sirius_gcs.ini");
 mINI::INIStructure iniStructure;
-// TODO: Use constants for indexes, make sure they're the right ones
 TankMassPlotDataUpdater tankMassPlotDataUpdater{
   {&GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData(), &GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData()}};
 std::vector<std::shared_ptr<UIWindow>> windows;
