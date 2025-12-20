@@ -13,14 +13,13 @@
 #include <implot.h>
 
 FillWindow::FillWindow()
-    : tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData[0].getValuePlotData(),
-                           PlotStyle("Tank Load Cell", ThemedColors::PlotLine::blue)}, // TODO: Is this correct index?
-      tankTransducerPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(),
-                             PlotStyle("Tank Pressure", ThemedColors::PlotLine::red)}, // TODO: Is this correct index?
-      tankTempPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData[0].getValuePlotData(),
-                       PlotStyle("Tank Temperature", ThemedColors::PlotLine::green)},                              // TODO: Is this correct index?
-      tankMassPlotLine{GSDataCenter::NOSTankMass_PlotData, PlotStyle("Tank Mass", ThemedColors::PlotLine::yellow)} // TODO: Is this correct index?
-{
+    : tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
+                           PlotStyle("Tank Load Cell", ThemedColors::PlotLine::blue)},
+      tankTransducerPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getValuePlotData(), // TODO: Is this correct index?
+                             PlotStyle("Tank Pressure", ThemedColors::PlotLine::red)},
+      tankTempPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.t1().getValuePlotData(), // TODO: Is this correct index?
+                       PlotStyle("Tank Temperature", ThemedColors::PlotLine::green)},
+      tankMassPlotLine{GSDataCenter::NOSTankMass_PlotData, PlotStyle("Tank Mass", ThemedColors::PlotLine::yellow)} {
 }
 
 const char* FillWindow::name() const {

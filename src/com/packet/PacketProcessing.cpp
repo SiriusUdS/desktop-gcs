@@ -28,19 +28,20 @@ bool processFillingStationTelemetryPacket();
 bool processGSControlPacket();
 bool processEngineStatusPacket();
 bool processFillingStationStatusPacket();
-void computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId);
-void computePressureSensorValues(uint16_t pressureSensorAdcValues[GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD], uint16_t boardId);
-void computeLoadCellValues(uint16_t loadCellAdcValues[GSDataCenter::LOAD_CELL_AMOUNT]);
-void addPlotData(SensorPlotData* plotData, uint16_t* adcValues, float* computedValues, size_t amount, float timestamp);
+void computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId);
+void computePressureSensorValues(uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD], uint16_t boardId);
+void computeLoadCellValues(uint16_t loadCellAdcValues[GSDataCenterConfig::LOAD_CELL_AMOUNT]);
+template <size_t N>
+void addPlotData(std::array<SensorPlotData, N>& plotData, uint16_t* adcValues, float* computedValues, float timestamp);
 bool validateIncomingPacketSize(size_t targetPacketSize, const char* packetName);
 
 size_t packetSize{};
 uint8_t packetBuf[SerialConfig::MAX_PACKET_SIZE];
 
 // TODO: Think about declaring these arrays in their respective functions instead of declaring them globally to improve code clarity
-float thermistorValues_C[GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD]{};
-float pressureSensorValues_psi[GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD]{};
-float loadCellValues_lb[GSDataCenter::LOAD_CELL_AMOUNT]{};
+float thermistorValues_C[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD]{};
+float pressureSensorValues_psi[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD]{};
+float loadCellValues_lb[GSDataCenterConfig::LOAD_CELL_AMOUNT]{};
 } // namespace PacketProcessing
 
 void PacketProcessing::processIncomingPackets() {
@@ -130,16 +131,14 @@ bool PacketProcessing::processEngineTelemetryPacket() {
     computeThermistorValues(thermistorAdcValues, ENGINE_BOARD_ID);
     computePressureSensorValues(pressureSensorAdcValues, ENGINE_BOARD_ID);
 
-    addPlotData(GSDataCenter::Thermistor_Motor_PlotData,
-                thermistorAdcValues,
-                thermistorValues_C,
-                GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD,
-                timestamp);
-    addPlotData(GSDataCenter::PressureSensor_Motor_PlotData,
-                pressureSensorAdcValues,
-                pressureSensorValues_psi,
-                GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD,
-                timestamp);
+    addPlotData<GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD>(GSDataCenter::Thermistor_Motor_PlotData.data,
+                                                                 thermistorAdcValues,
+                                                                 thermistorValues_C,
+                                                                 timestamp);
+    addPlotData<GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD>(GSDataCenter::PressureSensor_Motor_PlotData.data,
+                                                                      pressureSensorAdcValues,
+                                                                      pressureSensorValues_psi,
+                                                                      timestamp);
 
     SerialTask::packetRateMonitor.trackPacket();
     SerialTask::engineTelemetryPacketRateMonitor.trackPacket();
@@ -171,17 +170,18 @@ bool PacketProcessing::processFillingStationTelemetryPacket() {
     computePressureSensorValues(pressureSensorAdcValues, FILLING_STATION_BOARD_ID);
     computeLoadCellValues(loadCellAdcValues);
 
-    addPlotData(GSDataCenter::Thermistor_FillingStation_PlotData,
-                thermistorAdcValues,
-                thermistorValues_C,
-                GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD,
-                timestamp);
-    addPlotData(GSDataCenter::PressureSensor_FillingStation_PlotData,
-                pressureSensorAdcValues,
-                pressureSensorValues_psi,
-                GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD,
-                timestamp);
-    addPlotData(GSDataCenter::LoadCell_FillingStation_PlotData, loadCellAdcValues, loadCellValues_lb, GSDataCenter::LOAD_CELL_AMOUNT, timestamp);
+    addPlotData<GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD>(GSDataCenter::Thermistor_FillingStation_PlotData.data,
+                                                                 thermistorAdcValues,
+                                                                 thermistorValues_C,
+                                                                 timestamp);
+    addPlotData<GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD>(GSDataCenter::PressureSensor_FillingStation_PlotData.data,
+                                                                      pressureSensorAdcValues,
+                                                                      pressureSensorValues_psi,
+                                                                      timestamp);
+    addPlotData<GSDataCenterConfig::LOAD_CELL_AMOUNT>(GSDataCenter::LoadCell_FillingStation_PlotData.data,
+                                                      loadCellAdcValues,
+                                                      loadCellValues_lb,
+                                                      timestamp);
 
     SerialTask::packetRateMonitor.trackPacket();
     SerialTask::fillingStationTelemetryPacketRateMonitor.trackPacket();
@@ -309,46 +309,33 @@ bool PacketProcessing::processFillingStationStatusPacket() {
     return true;
 }
 
-void PacketProcessing::computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId) {
-    for (size_t i = 0; i < GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD; i++) {
+void PacketProcessing::computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId) {
+    for (size_t i = 0; i < GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD; i++) {
         float adcValue = static_cast<float>(thermistorAdcValues[i]);
         thermistorValues_C[i] = TemperatureSensor::adcToTemperature_C(adcValue);
     }
-
-    if (boardId == ENGINE_BOARD_ID) {
-        constexpr size_t tankThermistorValueIdx = 2;
-        // TODO: This is temp
-        GSDataCenter::tankTemperature_C = thermistorValues_C[tankThermistorValueIdx];
-    }
 }
 
-void PacketProcessing::computePressureSensorValues(uint16_t pressureSensorAdcValues[GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
+void PacketProcessing::computePressureSensorValues(uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
                                                    uint16_t boardId) {
     uint8_t indexOffset = boardId == ENGINE_BOARD_ID ? 2 : 0;
-    for (size_t i = 0; i < GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD; i++) {
+    for (size_t i = 0; i < GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD; i++) {
         float adcValue = static_cast<float>(pressureSensorAdcValues[i]);
         uint16_t sensorIndex = static_cast<uint16_t>(i + indexOffset);
         pressureSensorValues_psi[i] = PressureTransducer::adcToPressure_psi(adcValue, sensorIndex);
     }
-
-    if (boardId == ENGINE_BOARD_ID) {
-        constexpr size_t pressureSensorValueIdx = 0; // TODO: Is this the good index?
-        GSDataCenter::tankPressure_psi = pressureSensorValues_psi[pressureSensorValueIdx];
-    }
 }
 
-void PacketProcessing::computeLoadCellValues(uint16_t loadCellAdcValues[GSDataCenter::LOAD_CELL_AMOUNT]) {
-    for (size_t i = 0; i < GSDataCenter::LOAD_CELL_AMOUNT; i++) {
+void PacketProcessing::computeLoadCellValues(uint16_t loadCellAdcValues[GSDataCenterConfig::LOAD_CELL_AMOUNT]) {
+    for (size_t i = 0; i < GSDataCenterConfig::LOAD_CELL_AMOUNT; i++) {
         float adcValue = static_cast<float>(loadCellAdcValues[i]);
         loadCellValues_lb[i] = LoadCell::adcToWeight_lb(adcValue, 0); // TODO: Change this index later?
     }
-
-    // TODO: This is temp .?
-    GSDataCenter::tankLoadCell_lb = loadCellAdcValues[1];
 }
 
-void PacketProcessing::addPlotData(SensorPlotData* plotData, uint16_t* adcValues, float* computedValues, size_t amount, float timestamp) {
-    for (size_t i = 0; i < amount; i++) {
+template <size_t N>
+void PacketProcessing::addPlotData(std::array<SensorPlotData, N>& plotData, uint16_t* adcValues, float* computedValues, float timestamp) {
+    for (size_t i = 0; i < N; i++) {
         float adcValue = static_cast<float>(adcValues[i]);
         plotData[i].addData(adcValue, computedValues[i], timestamp);
     }

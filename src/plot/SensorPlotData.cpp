@@ -24,6 +24,10 @@ void SensorPlotData::clear() {
     valuePlotData.clear();
 }
 
+size_t SensorPlotData::getSize() const {
+    return valuePlotData.getSize();
+}
+
 const PlotData& SensorPlotData::getAdcPlotData() const {
     return adcPlotData;
 }

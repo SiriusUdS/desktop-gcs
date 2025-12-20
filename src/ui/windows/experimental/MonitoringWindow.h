@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GSDataCenter.h"
+#include "GSDataCenterConfig.h"
 #include "PlotLine.h"
 #include "UIWindow.h"
 
@@ -17,5 +17,5 @@ private:
 
     PlotLine thrustLoadCellPlotLine;
 
-    std::array<PlotLine, GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD> motorThermistorPlotLines;
+    std::array<PlotLine, GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD> motorThermistorPlotLines;
 };

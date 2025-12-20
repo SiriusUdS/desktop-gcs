@@ -11,26 +11,26 @@
 #include <string>
 
 TankMassWindow::TankMassWindow()
-    : recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData[0].getValuePlotData(),
+    : recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData(),
                                  PlotStyle("Pressure Sensor 1 (Motor)", ThemedColors::PlotLine::blue),
                                  RECENT_TIME_WINDOW_MS},
-      recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData[1].getValuePlotData(),
+      recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData.p2().getValuePlotData(),
                                  PlotStyle("Pressure Sensor 2 (Motor)", ThemedColors::PlotLine::red),
                                  RECENT_TIME_WINDOW_MS},
-      recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData[0].getValuePlotData(),
+      recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getValuePlotData(),
                                 PlotStyle("Pressure Sensor 1 (Fill)", ThemedColors::PlotLine::green),
                                 RECENT_TIME_WINDOW_MS},
-      recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData[1].getValuePlotData(),
+      recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData.p2().getValuePlotData(),
                                 PlotStyle("Pressure Sensor 2 (Fill)", ThemedColors::PlotLine::yellow),
                                 RECENT_TIME_WINDOW_MS},
-      recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData[2].getValuePlotData(),
+      recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData(),
                             PlotStyle("Tank Thermistor", ThemedColors::PlotLine::blue),
                             RECENT_TIME_WINDOW_MS},
-      recentEngineThrust{GSDataCenter::LoadCell_FillingStation_PlotData[0].getValuePlotData(),
+      recentEngineThrust{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
                          PlotStyle("Motor Load Cell", ThemedColors::PlotLine::blue),
                          RECENT_TIME_WINDOW_MS},
       recentTankMass{GSDataCenter::NOSTankMass_PlotData, PlotStyle("NOS Tank Mass", ThemedColors::PlotLine::blue), RECENT_TIME_WINDOW_MS},
-      recentTankLoadCell{GSDataCenter::LoadCell_FillingStation_PlotData[1].getValuePlotData(),
+      recentTankLoadCell{GSDataCenter::LoadCell_FillingStation_PlotData.tank().getValuePlotData(),
                          PlotStyle("Tank Load Cell", ThemedColors::PlotLine::red),
                          RECENT_TIME_WINDOW_MS} {
 }
@@ -64,13 +64,20 @@ void TankMassWindow::renderImpl() {
         ImGui::TableSetupColumn("Plots");
         ImGui::TableNextRow();
 
-        const double vaporPressure_psi = VaporPressure::vaporPressureNOS_psi(GSDataCenter::tankTemperature_C);
-        const std::string phaseStr = GSDataCenter::tankPressure_psi > vaporPressure_psi ? "Liquid" : "Gas";
+        float tankTemperature_C = GSDataCenter::Thermistor_Motor_PlotData.tank().getSize()
+                                    ? GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData().getValues().raw().back()
+                                    : 0;
+        float tankPressure_psi = GSDataCenter::PressureSensor_Motor_PlotData.tank().getSize()
+                                   ? GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData().getValues().raw().back()
+                                   : 0;
+        float tankMass_lb = GSDataCenter::NOSTankMass_PlotData.getSize() ? GSDataCenter::NOSTankMass_PlotData.getValues().raw().back() : 0;
+        const double vaporPressure_psi = VaporPressure::vaporPressureNOS_psi(tankTemperature_C);
+        const std::string phaseStr = tankPressure_psi > vaporPressure_psi ? "Liquid" : "Gas";
 
         ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Temp Tank (C): %f", GSDataCenter::tankTemperature_C.load());
-        ImGui::Text("PT Tank (psi): %f", GSDataCenter::tankPressure_psi.load());
-        ImGui::Text("LC Tank (lb): %f", GSDataCenter::tankLoadCell_lb.load());
+        ImGui::Text("Temp Tank (C): %f", tankTemperature_C);
+        ImGui::Text("PT Tank (psi): %f", tankPressure_psi);
+        ImGui::Text("LC Tank (lb): %f", tankMass_lb);
         ImGui::Text("Phase: %s", phaseStr.c_str());
 
         ImGui::TableSetColumnIndex(1);

@@ -74,8 +74,12 @@ void NOSPhaseDiagramWindow::renderImpl() {
 
         const ImVec4 textColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
         ImPlot::SetNextMarkerStyle(ImPlotMarker_Square, 12.0f, textColor, 2.0f, textColor); // Black
-        float tankTemperature_C = GSDataCenter::tankTemperature_C;
-        float tankPressure_psi = GSDataCenter::tankPressure_psi;
+        float tankTemperature_C = GSDataCenter::Thermistor_Motor_PlotData.tank().getSize()
+                                    ? GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData().getValues().raw().back()
+                                    : 0;
+        float tankPressure_psi = GSDataCenter::PressureSensor_Motor_PlotData.tank().getSize()
+                                   ? GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData().getValues().raw().back()
+                                   : 0;
         ImPlot::PlotScatter("Current state", &tankTemperature_C, &tankPressure_psi, 1);
 
         ImPlot::EndPlot();

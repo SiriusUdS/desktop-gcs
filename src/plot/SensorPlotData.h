@@ -15,6 +15,7 @@ public:
     void addListenerAdc(PlotDataUpdateListener* listener);
     void addListenerValue(PlotDataUpdateListener* listener);
     void clear();
+    size_t getSize() const;
     const PlotData& getAdcPlotData() const;
     const PlotData& getValuePlotData() const;
 

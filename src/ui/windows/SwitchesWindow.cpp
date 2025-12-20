@@ -3,7 +3,6 @@
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
 #include "OnOff.h"
-#include "SwitchData.h"
 
 #include <imgui.h>
 

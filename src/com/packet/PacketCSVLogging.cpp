@@ -117,10 +117,10 @@ void PacketCSVLogging::init() {
 }
 
 void PacketCSVLogging::logEngineTelemetryPacket(float timestamp,
-                                                uint16_t thermistorAdcValues[GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD],
-                                                float thermistorValues[GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD],
-                                                uint16_t pressureSensorAdcValues[GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
-                                                float pressureSensorValues[GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD]) {
+                                                uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD],
+                                                float thermistorValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD],
+                                                uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
+                                                float pressureSensorValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD]) {
     if (!dataLogDirExists) {
         return;
     }
@@ -133,14 +133,14 @@ void PacketCSVLogging::logEngineTelemetryPacket(float timestamp,
     engineTelemetryLogger.setValue(0, timestamp);
 
     size_t columnOffset = 1;
-    for (size_t i = 0; i < GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD; i++) {
+    for (size_t i = 0; i < GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD; i++) {
         const size_t offset = columnOffset + i * 2;
         engineTelemetryLogger.setValue(offset, thermistorAdcValues[i]);
         engineTelemetryLogger.setValue(offset + 1, thermistorValues[i]);
     }
 
-    columnOffset += GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD * 2;
-    for (size_t i = 0; i < GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD; i++) {
+    columnOffset += GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD * 2;
+    for (size_t i = 0; i < GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD; i++) {
         const size_t offset = columnOffset + i * 2;
         engineTelemetryLogger.setValue(offset, pressureSensorAdcValues[i]);
         engineTelemetryLogger.setValue(offset + 1, pressureSensorValues[i]);
@@ -150,12 +150,12 @@ void PacketCSVLogging::logEngineTelemetryPacket(float timestamp,
 }
 
 void PacketCSVLogging::logFillingStationTelemetryPacket(float timestamp,
-                                                        uint16_t thermistorAdcValues[GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD],
-                                                        float thermistorValues[GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD],
-                                                        uint16_t pressureSensorAdcValues[GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
-                                                        float pressureSensorValues[GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
-                                                        uint16_t loadCellAdcValues[GSDataCenter::LOAD_CELL_AMOUNT],
-                                                        float loadCellValues[GSDataCenter::LOAD_CELL_AMOUNT]) {
+                                                        uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD],
+                                                        float thermistorValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD],
+                                                        uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
+                                                        float pressureSensorValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
+                                                        uint16_t loadCellAdcValues[GSDataCenterConfig::LOAD_CELL_AMOUNT],
+                                                        float loadCellValues[GSDataCenterConfig::LOAD_CELL_AMOUNT]) {
     if (!dataLogDirExists) {
         return;
     }
@@ -168,21 +168,21 @@ void PacketCSVLogging::logFillingStationTelemetryPacket(float timestamp,
     fillingStationTelemetryLogger.setValue(0, timestamp);
 
     size_t columnOffset = 1;
-    for (size_t i = 0; i < GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD; i++) {
+    for (size_t i = 0; i < GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD; i++) {
         const size_t offset = columnOffset + i * 2;
         fillingStationTelemetryLogger.setValue(offset, thermistorAdcValues[i]);
         fillingStationTelemetryLogger.setValue(offset + 1, thermistorValues[i]);
     }
 
-    columnOffset += GSDataCenter::THERMISTOR_AMOUNT_PER_BOARD * 2;
-    for (size_t i = 0; i < GSDataCenter::PRESSURE_SENSOR_AMOUNT_PER_BOARD; i++) {
+    columnOffset += GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD * 2;
+    for (size_t i = 0; i < GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD; i++) {
         const size_t offset = columnOffset + i * 2;
         fillingStationTelemetryLogger.setValue(offset, pressureSensorAdcValues[i]);
         fillingStationTelemetryLogger.setValue(offset + 1, pressureSensorValues[i]);
     }
 
-    columnOffset += GSDataCenter::LOAD_CELL_AMOUNT * 2;
-    for (size_t i = 0; i < GSDataCenter::LOAD_CELL_AMOUNT; i++) {
+    columnOffset += GSDataCenterConfig::LOAD_CELL_AMOUNT * 2;
+    for (size_t i = 0; i < GSDataCenterConfig::LOAD_CELL_AMOUNT; i++) {
         const size_t offset = columnOffset + i * 2;
         fillingStationTelemetryLogger.setValue(offset, loadCellAdcValues[i]);
         fillingStationTelemetryLogger.setValue(offset + 1, loadCellValues[i]);

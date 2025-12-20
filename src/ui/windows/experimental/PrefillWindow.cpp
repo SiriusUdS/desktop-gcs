@@ -13,7 +13,7 @@ PrefillWindow::PrefillWindow()
     : prewrapTankLoadCellParam{Params::TankLoadCell::prewrapADCValue, "Tank Load Cell ADC Value - Prewrap"},
       postwrapTankLoadCellParam{Params::TankLoadCell::postwrapADCValue, "Tank Load Cell ADC Value - Postwrap"},
       postIPATankLoadCellParam{Params::TankLoadCell::postIPAADCValue, "Tank Load Cell ADC Value - Post IPA"},
-      tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData[0].getAdcPlotData(), // TODO: is this correct idx?
+      tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
                               PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)} {
 }
 
@@ -168,9 +168,9 @@ void PrefillWindow::renderImpl() {
     }
 
     // TODO: THIS IS A TEST
-    SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData[0];
-    SensorPlotData& d1 = GSDataCenter::Thermistor_Motor_PlotData[2];
-    SensorPlotData& d2 = GSDataCenter::PressureSensor_Motor_PlotData[0];
+    SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.motor();
+    SensorPlotData& d1 = GSDataCenter::Thermistor_Motor_PlotData.tank();
+    SensorPlotData& d2 = GSDataCenter::PressureSensor_Motor_PlotData.tank();
     static float t = 0.0f;
     tankLoadCellData.addData(t, t, t);
     d1.addData(t, t, t);
@@ -179,7 +179,7 @@ void PrefillWindow::renderImpl() {
 }
 
 void PrefillWindow::renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam) {
-    const SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData[0]; // TODO: is this correct idx?
+    const SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.motor(); // TODO: is this correct idx?
 
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);

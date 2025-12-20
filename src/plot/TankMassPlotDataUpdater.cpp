@@ -51,9 +51,8 @@ void TankMassPlotDataUpdater::onAddData(const PlotData* plotData, float timestam
         return;
     }
 
-    // TODO: Put indexes in constants and make sure they're the right ones
-    const PlotData* tankTempPlotData = &GSDataCenter::Thermistor_Motor_PlotData[2].getValuePlotData();
-    const PlotData* tankPressurePlotData = &GSDataCenter::PressureSensor_Motor_PlotData[0].getValuePlotData();
+    const PlotData* tankTempPlotData = &GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData();
+    const PlotData* tankPressurePlotData = &GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData();
 
     auto tankTempPlotDataUpdateIt = plotDataUpdateMap.find(tankTempPlotData);
     if (tankTempPlotDataUpdateIt == plotDataUpdateMap.end()) {
