@@ -20,7 +20,7 @@ public:
     struct StateRect {
         ImVec2 position;
         ImVec2 size;
-        bool active{};
+        bool& active;
         const char* label{""};
     };
 

@@ -15,6 +15,23 @@ private:
     void initFillStationStateMachine();
     void initMotorStateMachine();
 
+    bool fsInitStateActive{true};
+    bool fsSafeStateActive{};
+    bool fsTestStateActive{};
+    bool fsAbortStateActive{};
+    bool fsErrorStateActive{};
+    bool fsUnsafeStateActive{};
+    bool fsIgniteStateActive{};
+
+    bool motorInitStateActive{true};
+    bool motorSafeStateActive{};
+    bool motorTestStateActive{};
+    bool motorAbortStateActive{};
+    bool motorErrorStateActive{};
+    bool motorUnsafeStateActive{};
+    bool motorIgniteStateActive{};
+    bool motorFireStateActive{};
+
     StateMachineRenderer fsStateMachine;
     StateMachineRenderer motorStateMachine;
 };
