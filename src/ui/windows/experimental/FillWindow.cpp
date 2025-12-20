@@ -63,10 +63,6 @@ void FillWindow::renderImpl() {
         ImPlot::EndPlot();
     }
 
-    if (ImGui::Button("Test (Switch to prefill)")) {
-        ImGui::SetWindowFocus("Prefill");
-    }
-
     ImGui::SeparatorText("Valve Control");
 
     if (ImGui::BeginTable("fill_valve_control_table", 4, ImGuiTableFlags_SizingFixedFit)) {

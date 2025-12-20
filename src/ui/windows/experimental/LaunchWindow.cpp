@@ -28,7 +28,7 @@ void LaunchWindow::lazyInit() {
 void LaunchWindow::renderImpl() {
     ImGui::SeparatorText("State Machines");
 
-    float stateMachineHeight = 600.0f;
+    constexpr float stateMachineHeight = 600.0f;
 
     if (ImGui::BeginTable("Plots", 2, ImGuiTableFlags_Borders)) {
         ImGui::TableSetupColumn("Filling station control state machine");
@@ -44,6 +44,16 @@ void LaunchWindow::renderImpl() {
 
         ImGui::EndTable();
     }
+
+    if (!inLaunchState && motorFireStateActive) {
+        inLaunchState = true;
+        ImGui::SetWindowFocus("Monitoring"); // TODO: Access window name from monitoring class
+    } else if (!motorFireStateActive) {
+        inLaunchState = false;
+    }
+
+    ImGui::TextWrapped(
+      "* Once the Engine control state machine has reached the FIRE state, the application will automatically switch to the Monitoring window.");
 }
 
 void LaunchWindow::initFillStationStateMachine() {

@@ -32,6 +32,8 @@ private:
     bool motorIgniteStateActive{};
     bool motorFireStateActive{};
 
+    bool inLaunchState{};
+
     StateMachineRenderer fsStateMachine;
     StateMachineRenderer motorStateMachine;
 };
