@@ -1,3 +1,13 @@
+require "premake-ecc/ecc"
+
+VCPKG_ROOT = "vcpkg"
+VCPKG_TRIPLET = "x64-windows"
+VKPKG_INCLUDE = path.join(VCPKG_ROOT, "installed", VCPKG_TRIPLET, "include")
+VCPKG_DEBUG_BIN   = path.join(VCPKG_ROOT, "installed", VCPKG_TRIPLET, "debug", "bin")
+VCPKG_DEBUG_LIB = path.join(VCPKG_ROOT, "installed", VCPKG_TRIPLET, "debug", "lib")
+VCPKG_RELEASE_BIN = path.join(VCPKG_ROOT, "installed", VCPKG_TRIPLET, "bin")
+VCPKG_RELEASE_LIB = path.join(VCPKG_ROOT, "installed", VCPKG_TRIPLET, "lib")
+
 workspace "sirius-gcs"
     architecture "x64"
     configurations { "Debug", "Release" }
@@ -10,6 +20,7 @@ workspace "sirius-gcs"
     objdir "out/obj"
 
     includedirs {
+        VKPKG_INCLUDE,
         "src",
         "src/com",
         "src/com/commands",
@@ -47,8 +58,52 @@ workspace "sirius-gcs"
     filter "configurations:Debug"
         symbols "On"
 
+        libdirs {
+            VCPKG_DEBUG_LIB
+        }
+
+        links {
+            "CoolPropd",
+            "fmtd",
+            "glad",
+            "glfw3dll",
+            "hello_imgui",
+            "imguid",
+            "implotd",
+            "libcurl-d",
+            "spdlogd",
+            "stb_hello_imgui",
+            "zlibd"
+        }
+
+        postbuildcommands {
+            '{COPY} "' .. VCPKG_DEBUG_BIN .. '/*.dll" "%{cfg.targetdir}"'
+        }
+
     filter "configurations:Release"
         optimize "On"
+
+        libdirs {
+            VCPKG_RELEASE_LIB
+        }
+
+        links {
+            "CoolProp",
+            "fmt",
+            "glad",
+            "glfw3dll",
+            "hello_imgui",
+            "imgui",
+            "implot",
+            "libcurl",
+            "spdlog",
+            "stb_hello_imgui",
+            "zlib"
+        }
+
+        postbuildcommands {
+            '{COPY} "' .. VCPKG_RELEASE_BIN .. '/*.dll" "%{cfg.targetdir}"'
+        }
 
     filter "system:windows"
         buildoptions {
