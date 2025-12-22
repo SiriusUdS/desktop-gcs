@@ -40,39 +40,39 @@ const char* SerialComWindow::dockspace() const {
 }
 
 void SerialComWindow::renderImpl() {
-    if (ImGui::CollapsingHeader("Board COM")) {
-        std::string comPortStr = SerialTask::comPortSelector.available() ? SerialTask::comPortSelector.current() : "None available";
-        ImGui::Text("COM port: %s", comPortStr.c_str());
+    ImGui::SeparatorText("Board COM");
 
-        if (ImGui::BeginTable("BoardComStatesTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
-            ImGui::TableSetupColumn("Board");
-            ImGui::TableSetupColumn("COM State");
-            ImGui::TableHeadersRow();
+    std::string comPortStr = SerialTask::comPortSelector.available() ? SerialTask::comPortSelector.current() : "None available";
+    ImGui::Text("COM port: %s", comPortStr.c_str());
 
-            renderBoardComStateTableRow("Motor", SerialTask::motorBoardComStateMonitor.getState());
-            renderBoardComStateTableRow("Filling Station", SerialTask::fillingStationBoardComStateMonitor.getState());
-            renderBoardComStateTableRow("GS Control", SerialTask::gsControlBoardComStateMonitor.getState());
-            ImGui::EndTable();
-        }
+    if (ImGui::BeginTable("BoardComStatesTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+        ImGui::TableSetupColumn("Board");
+        ImGui::TableSetupColumn("COM State");
+        ImGui::TableHeadersRow();
+
+        renderBoardComStateTableRow("Motor", SerialTask::motorBoardComStateMonitor.getState());
+        renderBoardComStateTableRow("Filling Station", SerialTask::fillingStationBoardComStateMonitor.getState());
+        renderBoardComStateTableRow("GS Control", SerialTask::gsControlBoardComStateMonitor.getState());
+        ImGui::EndTable();
     }
 
-    if (ImGui::CollapsingHeader("Packet rates")) {
-        if (ImGui::BeginTable("PacketRatesTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
-            ImGui::TableSetupColumn("Packet Type");
-            ImGui::TableSetupColumn("Packets/s");
-            ImGui::TableHeadersRow();
+    ImGui::SeparatorText("Packet rates");
 
-            renderPacketRateTableRow("Engine telemetry", SerialTask::engineTelemetryPacketRateMonitor.getRatePerSecond());
-            renderPacketRateTableRow("Filling station telemetry", SerialTask::fillingStationTelemetryPacketRateMonitor.getRatePerSecond());
-            renderPacketRateTableRow("GS control", SerialTask::gsControlPacketRateMonitor.getRatePerSecond());
-            renderPacketRateTableRow("Engine status", SerialTask::engineStatusPacketRateMonitor.getRatePerSecond());
-            renderPacketRateTableRow("Filling station status", SerialTask::fillingStationStatusPacketRateMonitor.getRatePerSecond());
-            ImGui::PushFont(FontConfig::boldMainFont);
-            renderPacketRateTableRow("Total", SerialTask::packetRateMonitor.getRatePerSecond());
-            ImGui::PopFont();
+    if (ImGui::BeginTable("PacketRatesTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+        ImGui::TableSetupColumn("Packet Type");
+        ImGui::TableSetupColumn("Packets/s");
+        ImGui::TableHeadersRow();
 
-            ImGui::EndTable();
-        }
+        renderPacketRateTableRow("Engine telemetry", SerialTask::engineTelemetryPacketRateMonitor.getRatePerSecond());
+        renderPacketRateTableRow("Filling station telemetry", SerialTask::fillingStationTelemetryPacketRateMonitor.getRatePerSecond());
+        renderPacketRateTableRow("GS control", SerialTask::gsControlPacketRateMonitor.getRatePerSecond());
+        renderPacketRateTableRow("Engine status", SerialTask::engineStatusPacketRateMonitor.getRatePerSecond());
+        renderPacketRateTableRow("Filling station status", SerialTask::fillingStationStatusPacketRateMonitor.getRatePerSecond());
+        ImGui::PushFont(FontConfig::boldMainFont);
+        renderPacketRateTableRow("Total", SerialTask::packetRateMonitor.getRatePerSecond());
+        ImGui::PopFont();
+
+        ImGui::EndTable();
     }
 
     std::string lastReceivedMotorBoardCommandName = "UNKNOWN";
@@ -162,37 +162,35 @@ void SerialComWindow::renderImpl() {
         break;
     }
 
-    if (ImGui::CollapsingHeader("Misc")) {
-        ImGui::PushFont(FontConfig::boldMainFont);
-        ImGui::Text("Launch steps");
-        ImGui::PopFont();
+    ImGui::SeparatorText("Misc");
 
-        ImGui::Text("Ignite timestamp (ms): %d", GSDataCenter::igniteTimestamp_ms.load());
-        ImGui::Text("Launch timestamp (ms): %d", GSDataCenter::launchTimestamp_ms.load());
+    ImGui::PushFont(FontConfig::boldMainFont);
+    ImGui::Text("Launch steps");
+    ImGui::PopFont();
 
-        ImGui::Separator();
+    ImGui::Text("Ignite timestamp (ms): %d", GSDataCenter::igniteTimestamp_ms.load());
+    ImGui::Text("Launch timestamp (ms): %d", GSDataCenter::launchTimestamp_ms.load());
 
-        ImGui::PushFont(FontConfig::boldMainFont);
-        ImGui::Text("Last commands");
-        ImGui::PopFont();
+    ImGui::PushFont(FontConfig::boldMainFont);
+    ImGui::Text("Last commands");
+    ImGui::PopFont();
 
-        ImGui::Text("Last command received by motor board: %s", lastReceivedMotorBoardCommandName.c_str());
-        ImGui::Text("Last command received by filling station board: %s", lastReceivedFillingStationBoardCommandName.c_str());
+    ImGui::Text("Last command received by motor board: %s", lastReceivedMotorBoardCommandName.c_str());
+    ImGui::Text("Last command received by filling station board: %s", lastReceivedFillingStationBoardCommandName.c_str());
 
-        ImGui::Text("Last command GS sent to boards: %s", lastBoardSentCommandName.c_str());
+    ImGui::Text("Last command GS sent to boards: %s", lastBoardSentCommandName.c_str());
 
-        ImGui::Text("Time since last command received by motor board (ms): %d", GSDataCenter::timeSinceLastCommandMotorBoard_ms.load());
-        ImGui::Text("Time since last command received by filling station board (ms): %d",
-                    GSDataCenter::timeSinceLastCommandFillingStationBoard_ms.load());
+    ImGui::Text("Time since last command received by motor board (ms): %d", GSDataCenter::timeSinceLastCommandMotorBoard_ms.load());
+    ImGui::Text("Time since last command received by filling station board (ms): %d",
+                GSDataCenter::timeSinceLastCommandFillingStationBoard_ms.load());
 
-        // ImGui::Text("Last command sent to GS timestamp (ms): %d", GSDataCenter::lastReceivedGSCommandTimestamp_ms);
-        // ImGui::Text("Last GCS command received timestamp (ms): %d", GSDataCenter::lastSentCommandTimestamp_ms);
-    }
+    // ImGui::Text("Last command sent to GS timestamp (ms): %d", GSDataCenter::lastReceivedGSCommandTimestamp_ms);
+    // ImGui::Text("Last GCS command received timestamp (ms): %d", GSDataCenter::lastSentCommandTimestamp_ms);
 
-    if (ImGui::CollapsingHeader("RECV Buffer")) {
-        if (ImGui::Button("View RECV buffer content")) {
-            ImGui::OpenPopup("RECV Buffer Content");
-        }
+    ImGui::SeparatorText("RECV Buffer");
+
+    if (ImGui::Button("View RECV buffer content")) {
+        ImGui::OpenPopup("RECV Buffer Content");
     }
 
     recvBufferContentModal();
@@ -218,15 +216,15 @@ void SerialComWindow::renderBoardComStateTableRow(const char* boardName, BoardCo
 
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
-    ImGui::Text(boardName);
+    ImGui::Text("%s", boardName);
     ImGui::TableSetColumnIndex(1);
-    ImGui::Text(comStateText);
+    ImGui::Text("%s", comStateText);
 }
 
 void SerialComWindow::renderPacketRateTableRow(const char* packetName, double rate) const {
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
-    ImGui::Text(packetName);
+    ImGui::Text("%s", packetName);
     ImGui::TableSetColumnIndex(1);
     ImGui::Text("%.1f", rate);
 }
