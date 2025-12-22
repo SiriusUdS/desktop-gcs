@@ -2,7 +2,6 @@
 
 #include "ImGuiConfig.h"
 
-#include <algorithm>
 #include <imgui.h>
 
 using StateRect = StateMachineRenderer::StateRect;
@@ -62,16 +61,16 @@ void LaunchWindow::initFillStationStateMachine() {
     ImVec2 rectSize{180, 40};
     ImVec2 halfRectSize{rectSize.x / 2.0f, rectSize.y / 2.0f};
 
-    StateRect initState{.position{-350, 0}, .size{rectSize}, .active{fsInitStateActive}, .label{"INIT"}};
-    StateRect safeState{.position{0, 0}, .size{rectSize}, .active{fsSafeStateActive}, .label{"SAFE"}};
-    StateRect testState{.position{0, -110}, .size{rectSize}, .active{fsTestStateActive}, .label{"TEST"}};
-    StateRect abortState{.position{300, -110}, .size{rectSize}, .active{fsAbortStateActive}, .label{"ABORT"}};
-    StateRect errorState{.position{-175, 110}, .size{rectSize}, .active{fsErrorStateActive}, .label{"ERROR"}};
-    StateRect unsafeState{.position{175, 110}, .size{rectSize}, .active{fsUnsafeStateActive}, .label{"UNSAFE"}};
-    StateRect igniteState{.position{175, 220}, .size{rectSize}, .active{fsIgniteStateActive}, .label{"IGNITE"}};
+    StateRect initState{.position{-350, 0}, .size{rectSize}, .active{fsInitStateActive}, .label = "INIT"};
+    StateRect safeState{.position{0, 0}, .size{rectSize}, .active{fsSafeStateActive}, .label = "SAFE"};
+    StateRect testState{.position{0, -110}, .size{rectSize}, .active{fsTestStateActive}, .label = "TEST"};
+    StateRect abortState{.position{300, -110}, .size{rectSize}, .active{fsAbortStateActive}, .label = "ABORT"};
+    StateRect errorState{.position{-175, 110}, .size{rectSize}, .active{fsErrorStateActive}, .label = "ERROR"};
+    StateRect unsafeState{.position{175, 110}, .size{rectSize}, .active{fsUnsafeStateActive}, .label = "UNSAFE"};
+    StateRect igniteState{.position{175, 220}, .size{rectSize}, .active{fsIgniteStateActive}, .label = "IGNITE"};
 
-    Label testToErrorLabel{.position{-300, -110}, .text{"To ERROR"}};
-    Label igniteToSafeLabel{.position{-75, 220}, .text{"To SAFE"}};
+    Label testToErrorLabel{.position{-300, -110}, .text = "To ERROR"};
+    Label igniteToSafeLabel{.position{-75, 220}, .text = "To SAFE"};
 
     Arrow initToSafeArrow = fsStateMachine.createArrow(initState, {AnchorEdgeSide::RIGHT}, safeState, {AnchorEdgeSide::LEFT});
     initToSafeArrow.label = "[Init Completed]";
@@ -162,18 +161,18 @@ void LaunchWindow::initMotorStateMachine() {
     ImVec2 rectSize{180, 40};
     ImVec2 halfRectSize{rectSize.x / 2.0f, rectSize.y / 2.0f};
 
-    StateRect initState{.position{-350, 0}, .size{rectSize}, .active{motorInitStateActive}, .label{"INIT"}};
-    StateRect safeState{.position{0, 0}, .size{rectSize}, .active{motorSafeStateActive}, .label{"SAFE"}};
-    StateRect testState{.position{0, -110}, .size{rectSize}, .active{motorTestStateActive}, .label{"TEST"}};
-    StateRect abortState{.position{300, -110}, .size{rectSize}, .active{motorAbortStateActive}, .label{"ABORT"}};
-    StateRect errorState{.position{-175, 110}, .size{rectSize}, .active{motorErrorStateActive}, .label{"ERROR"}};
-    StateRect unsafeState{.position{175, 110}, .size{rectSize}, .active{motorUnsafeStateActive}, .label{"UNSAFE"}};
-    StateRect igniteState{.position{175, 220}, .size{rectSize}, .active{motorIgniteStateActive}, .label{"IGNITE"}};
-    StateRect fireState{.position{175, 330}, .size{rectSize}, .active{motorFireStateActive}, .label{"FIRE"}};
+    StateRect initState{.position{-350, 0}, .size{rectSize}, .active{motorInitStateActive}, .label = "INIT"};
+    StateRect safeState{.position{0, 0}, .size{rectSize}, .active{motorSafeStateActive}, .label = "SAFE"};
+    StateRect testState{.position{0, -110}, .size{rectSize}, .active{motorTestStateActive}, .label = "TEST"};
+    StateRect abortState{.position{300, -110}, .size{rectSize}, .active{motorAbortStateActive}, .label = "ABORT"};
+    StateRect errorState{.position{-175, 110}, .size{rectSize}, .active{motorErrorStateActive}, .label = "ERROR"};
+    StateRect unsafeState{.position{175, 110}, .size{rectSize}, .active{motorUnsafeStateActive}, .label = "UNSAFE"};
+    StateRect igniteState{.position{175, 220}, .size{rectSize}, .active{motorIgniteStateActive}, .label = "IGNITE"};
+    StateRect fireState{.position{175, 330}, .size{rectSize}, .active{motorFireStateActive}, .label = "FIRE"};
 
-    Label testToErrorLabel{.position{-300, -110}, .text{"To ERROR"}};
-    Label igniteToSafeLabel{.position{-75, 220}, .text{"To SAFE"}};
-    Label fireToSafeLabel{.position{-75, 330}, .text{"To SAFE"}};
+    Label testToErrorLabel{.position{-300, -110}, .text = "To ERROR"};
+    Label igniteToSafeLabel{.position{-75, 220}, .text = "To SAFE"};
+    Label fireToSafeLabel{.position{-75, 330}, .text = "To SAFE"};
 
     Arrow initToSafeArrow = motorStateMachine.createArrow(initState, {AnchorEdgeSide::RIGHT}, safeState, {AnchorEdgeSide::LEFT});
     initToSafeArrow.label = "[Init Completed]";

@@ -22,13 +22,12 @@ void StateMachineRenderer::addLabel(Label label) {
 }
 
 void StateMachineRenderer::render(ImVec2 size, bool drawDebugRegions) {
-    // TODO: Make these functions return values instead of having extra attributes
-    computeBoundaries();
+    updateBoundaries();
     size = handleSizeOptions(size);
-    computeAvailableSpace(size);
-    computeMiddlePoint();
-    computeOffsetPosition();
-    computeSizeScale();
+    availableSpace = computeAvailableSpace(size);
+    middlePoint = computeMiddlePoint();
+    offsetPosition = computeOffsetPosition();
+    sizeScale = computeSizeScale();
 
     for (const auto& rect : rects) {
         drawStateRect(rect);
@@ -80,34 +79,7 @@ StateMachineRenderer::Arrow StateMachineRenderer::createArrow(const StateRect& r
     return createArrowFromAnchorPoints(p1, rectAnchorEdge, p2, pathType, routeOffset);
 }
 
-ImVec2 StateMachineRenderer::handleSizeOptions(ImVec2 size) {
-    ImVec2 contentRegionAvail = ImGui::GetContentRegionAvail();
-
-    if (size.x == -1.0f) {
-        size.x = contentRegionAvail.x;
-    } else if (size.x == 0.0f) {
-        size.x = bottomRightBoundary.x - topLeftBoundary.x;
-    }
-
-    if (size.y == -1.0f) {
-        size.y = contentRegionAvail.y;
-    } else if (size.y == 0.0f) {
-        size.y = bottomRightBoundary.y - topLeftBoundary.y;
-    }
-
-    return size;
-}
-
-void StateMachineRenderer::computeAvailableSpace(const ImVec2& size) {
-    availableSpace = {std::max(size.x - params.windowPadding * 2.0f, 0.0f), std::max(size.y - params.windowPadding * 2.0f, 0.0f)};
-}
-
-void StateMachineRenderer::computeMiddlePoint() {
-    ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-    middlePoint = {cursorPos.x + params.windowPadding + availableSpace.x / 2, cursorPos.y + params.windowPadding + availableSpace.y / 2};
-}
-
-void StateMachineRenderer::computeBoundaries() {
+void StateMachineRenderer::updateBoundaries() {
     if (rects.empty()) {
         topLeftBoundary = {0, 0};
         bottomRightBoundary = {0, 0};
@@ -155,22 +127,48 @@ void StateMachineRenderer::computeBoundaries() {
     bottomRightBoundary = bottomRight;
 }
 
-void StateMachineRenderer::computeOffsetPosition() {
-    ImVec2 stateMachineMiddlePoint = {(topLeftBoundary.x + bottomRightBoundary.x) / 2, (topLeftBoundary.y + bottomRightBoundary.y) / 2};
-    offsetPosition = {-stateMachineMiddlePoint.x, -stateMachineMiddlePoint.y};
+ImVec2 StateMachineRenderer::handleSizeOptions(ImVec2 size) {
+    ImVec2 contentRegionAvail = ImGui::GetContentRegionAvail();
+
+    if (size.x == -1.0f) {
+        size.x = contentRegionAvail.x;
+    } else if (size.x == 0.0f) {
+        size.x = bottomRightBoundary.x - topLeftBoundary.x;
+    }
+
+    if (size.y == -1.0f) {
+        size.y = contentRegionAvail.y;
+    } else if (size.y == 0.0f) {
+        size.y = bottomRightBoundary.y - topLeftBoundary.y;
+    }
+
+    return size;
 }
 
-void StateMachineRenderer::computeSizeScale() {
+ImVec2 StateMachineRenderer::computeAvailableSpace(const ImVec2& size) {
+    return {std::max(size.x - params.windowPadding * 2.0f, 0.0f), std::max(size.y - params.windowPadding * 2.0f, 0.0f)};
+}
+
+ImVec2 StateMachineRenderer::computeMiddlePoint() {
+    ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+    return {cursorPos.x + params.windowPadding + availableSpace.x / 2, cursorPos.y + params.windowPadding + availableSpace.y / 2};
+}
+
+ImVec2 StateMachineRenderer::computeOffsetPosition() {
+    ImVec2 stateMachineMiddlePoint = {(topLeftBoundary.x + bottomRightBoundary.x) / 2, (topLeftBoundary.y + bottomRightBoundary.y) / 2};
+    return {-stateMachineMiddlePoint.x, -stateMachineMiddlePoint.y};
+}
+
+float StateMachineRenderer::computeSizeScale() {
     if (rects.empty()) {
-        sizeScale = 1;
-        return;
+        return 1;
     }
 
     ImVec2 stateMachineSize = {bottomRightBoundary.x - topLeftBoundary.x, bottomRightBoundary.y - topLeftBoundary.y};
     ImVec2 excessSize = {std::max(0.0f, stateMachineSize.x - availableSpace.x), std::max(0.0f, stateMachineSize.y - availableSpace.y)};
     ImVec2 excessRatio = {excessSize.x == 0 ? 0 : excessSize.x / stateMachineSize.x, excessSize.y == 0 ? 0 : excessSize.y / stateMachineSize.y};
 
-    sizeScale = 1 - std::max(excessRatio.x, excessRatio.y);
+    return 1 - std::max(excessRatio.x, excessRatio.y);
 }
 
 void StateMachineRenderer::drawStateRect(const StateRect& rect) {
@@ -364,7 +362,7 @@ void StateMachineRenderer::drawDebugMiddlePoint(const ImVec2& size) {
     float radius = 10.0f;
     ImColor color = IM_COL32(0, 0, 255, 255);
     ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-    ImVec2 midPoint = {cursorPos.x + size.x / 2, cursorPos.y + size.y / 2}; // TODO: Use computeMiddlePoint in the future
+    ImVec2 midPoint = computeMiddlePoint();
 
     drawList->AddCircleFilled(midPoint, radius, color);
 }

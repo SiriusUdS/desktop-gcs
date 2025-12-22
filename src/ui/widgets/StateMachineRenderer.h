@@ -76,12 +76,12 @@ public:
     Params params;
 
 private:
+    void updateBoundaries();
     ImVec2 handleSizeOptions(ImVec2 size);
-    void computeAvailableSpace(const ImVec2& size);
-    void computeMiddlePoint();
-    void computeBoundaries();
-    void computeOffsetPosition();
-    void computeSizeScale();
+    ImVec2 computeAvailableSpace(const ImVec2& size);
+    ImVec2 computeMiddlePoint();
+    ImVec2 computeOffsetPosition();
+    float computeSizeScale();
 
     void drawStateRect(const StateRect& rect);
     void drawArrow(const Arrow& arrow);

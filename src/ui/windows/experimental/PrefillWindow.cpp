@@ -168,22 +168,22 @@ void PrefillWindow::renderImpl() {
     }
 
     // TODO: THIS IS A TEST
-    SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.motor();
+    SensorPlotData& motorLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.motor();
     SensorPlotData& d1 = GSDataCenter::Thermistor_Motor_PlotData.tank();
     SensorPlotData& d2 = GSDataCenter::PressureSensor_Motor_PlotData.tank();
     static float t = 0.0f;
-    tankLoadCellData.addData(t, t, t);
+    motorLoadCellData.addData(t, t, t);
     d1.addData(t, t, t);
     d2.addData(t, t, t);
     t += 100.0f;
 }
 
 void PrefillWindow::renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam) {
-    const SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.motor(); // TODO: is this correct idx?
+    const SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.tank();
 
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
-    ImGui::Text(tankLoadCellParam.label.c_str());
+    ImGui::Text("%s", tankLoadCellParam.label.c_str());
 
     ImGui::TableSetColumnIndex(1);
     ImGui::BeginDisabled(tankLoadCellParam.saved);
