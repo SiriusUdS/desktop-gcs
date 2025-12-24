@@ -8,7 +8,6 @@
 #include "ImGuiConfig.h"
 #include "SerialCom.h"
 #include "SerialTask.h"
-#include "Storage/StorageErrorStatus.h"
 
 #include <imgui.h>
 
@@ -124,11 +123,11 @@ void BoardsWindow::renderBoardTableRow(const char* name, const char* boardStateN
 
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
-    ImGui::Text(name);
+    ImGui::Text("%s", name);
     ImGui::TableSetColumnIndex(1);
-    ImGui::Text(boardStateName);
+    ImGui::Text("%s", boardStateName);
     ImGui::TableSetColumnIndex(2);
-    ImGui::Text(comStateText);
+    ImGui::Text("%s", comStateText);
 }
 
 void BoardsWindow::renderStorageErrorStatusName(uint16_t storageErrorStatus) const {

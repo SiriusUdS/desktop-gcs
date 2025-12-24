@@ -5,7 +5,6 @@
 #include "ValveData.h"
 
 #include <imgui.h>
-#include <string>
 
 const char* ValvesWindow::name() const {
     return "Valves";
@@ -36,7 +35,7 @@ void ValvesWindow::renderImpl() {
 void ValvesWindow::renderValveStateRow(const char* label, ValveData& data) const {
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
-    ImGui::Text(label);
+    ImGui::Text("%s", label);
 
     ImGui::TableSetColumnIndex(1);
     ImGui::Text(data.isIdle ? "Yes" : "No");

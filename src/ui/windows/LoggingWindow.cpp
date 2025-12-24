@@ -3,12 +3,10 @@
 #include "FontAwesome.h"
 #include "ImGuiConfig.h"
 #include "IniConfig.h"
-#include "Logging.h"
 #include "ThemedColors.h"
 #include "ToggleButton.h"
 
 #include <ini.h>
-#include <mutex>
 
 LoggingWindow::LoggingWindow() : logBuffer{filter, showDebug, showInfo, showWarn, showError} {
 }
