@@ -40,6 +40,7 @@ void FillWindow::renderImpl() {
 
     ImGui::SeparatorText("Tank Data Plot");
 
+    ImPlot::SetNextAxesToFit();
     if (ImPlot::BeginPlot("Tank Data", {-1.0f, 800.0f})) {
         constexpr ImAxis weightAxis = ImAxis_Y1;
         constexpr ImAxis pressureAxis = ImAxis_Y2;

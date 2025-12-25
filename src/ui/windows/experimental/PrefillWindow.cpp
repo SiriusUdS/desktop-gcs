@@ -14,7 +14,9 @@ PrefillWindow::PrefillWindow()
       postwrapTankLoadCellParam{Params::TankLoadCell::postwrapADCValue, "Tank Load Cell ADC Value - Postwrap"},
       postIPATankLoadCellParam{Params::TankLoadCell::postIPAADCValue, "Tank Load Cell ADC Value - Post IPA"},
       tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
-                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)} {
+                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)},
+      tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
+                           PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red)} {
 }
 
 const char* PrefillWindow::name() const {
@@ -162,8 +164,19 @@ void PrefillWindow::renderImpl() {
 
     ImPlot::SetNextAxesToFit();
     if (ImPlot::BeginPlot("Tank Load Cell (ADC)", plotSize, ImPlotFlags_NoInputs)) {
-        ImPlot::SetupAxes("Timestamp (ms)", "ADC Value");
+        constexpr ImAxis adcValueAxis = ImAxis_Y1;
+        constexpr ImAxis weightAxis = ImAxis_Y2;
+
+        ImPlot::SetupAxis(ImAxis_X1, "Timestamp (ms)");
+        ImPlot::SetupAxis(adcValueAxis, "ADC Value");
+        ImPlot::SetupAxis(weightAxis, "Weight (lb)");
+
+        ImPlot::SetAxis(adcValueAxis);
         tankLoadCellADCPlotLine.plot();
+
+        ImPlot::SetAxis(weightAxis);
+        tankLoadCellPlotLine.plot();
+
         ImPlot::EndPlot();
     }
 

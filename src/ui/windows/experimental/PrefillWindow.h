@@ -30,4 +30,5 @@ private:
     TankLoadCellParam postwrapTankLoadCellParam;
     TankLoadCellParam postIPATankLoadCellParam;
     PlotLine tankLoadCellADCPlotLine;
+    PlotLine tankLoadCellPlotLine;
 };
