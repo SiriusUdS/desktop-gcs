@@ -37,6 +37,7 @@ workspace "sirius-gcs"
         "src/params",
         "src/plot",
         "src/plot/views",
+        "src/state",
         "src/utils",
         "src/ui/theme",
         "src/ui/widgets",

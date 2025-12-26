@@ -1,5 +1,7 @@
 #include "LogBuffer.h"
 
+#include "ThemedColors.h"
+
 LogBuffer::LogBuffer(const ImGuiTextFilter& filter, const bool& showDebug, const bool& showInfo, const bool& showWarn, const bool& showError)
     : filter(filter), showDebug(showDebug), showInfo(showInfo), showWarn(showWarn), showError(showError) {
     clear();
@@ -42,14 +44,15 @@ void LogBuffer::render() {
             const int lineIdx = visibleLines[lineNo];
             const char* lineStart = bufBegin + lineOffsets[lineIdx];
             const char* lineEnd = (lineIdx + 1 < lineOffsets.size()) ? (bufBegin + lineOffsets[lineIdx + 1]) : bufEnd;
-            ImVec4 color(1.0f, 1.0f, 1.0f, 1.0f);
+            ImVec4 color;
 
             // clang-format off
             switch (logLevels[lineIdx]) {
-                case spdlog::level::debug: color = ImVec4(0.2f, 0.6f, 1.0f, 1.0f); break;
-                case spdlog::level::info:  color = ImVec4(0.0f, 0.8f, 0.0f, 1.0f); break;
-                case spdlog::level::warn:  color = ImVec4(0.65f, 0.65f, 0.0f, 1.0f); break;
-                case spdlog::level::err:   color = ImVec4(1.0f, 0.3f, 0.3f, 1.0f); break;
+                case spdlog::level::debug: color = ThemedColors::Text::green.resolve(); break;
+                case spdlog::level::info:  color = ThemedColors::Text::blue.resolve(); break;
+                case spdlog::level::warn:  color = ThemedColors::Text::yellow.resolve(); break;
+                case spdlog::level::err:   color = ThemedColors::Text::red.resolve(); break;
+                default: color = ImGui::GetStyleColorVec4(ImGuiCol_Text); break;
             }
             // clang-format on
 

@@ -26,4 +26,11 @@ const ThemedColor activeState{.lightTheme{170, 255, 170}, .darkTheme{0, 110, 0}}
 const ThemedColor inactiveState{.lightTheme{255, 170, 170}, .darkTheme{140, 0, 0}};
 const ThemedColor arrow{.lightTheme{0, 0, 0}, .darkTheme{255, 255, 255}};
 } // namespace StateMachine
+
+namespace Text {
+const ThemedColor red{.lightTheme{200, 40, 40}, .darkTheme{255, 70, 70}};
+const ThemedColor yellow{.lightTheme{190, 170, 20}, .darkTheme{255, 230, 60}};
+const ThemedColor green{.lightTheme{0, 150, 50}, .darkTheme{0, 200, 50}};
+const ThemedColor blue{.lightTheme{40, 80, 185}, .darkTheme{100, 150, 255}};
+} // namespace Text
 } // namespace ThemedColors

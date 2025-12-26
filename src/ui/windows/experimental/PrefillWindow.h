@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ConfigParam.h"
 #include "PlotLine.h"
 #include "SensorTestSequencer.h"
+#include "SessionState.h"
 #include "UIWindow.h"
 
 class PrefillWindow : public UIWindow {
@@ -13,10 +13,10 @@ public:
 
 private:
     struct TankLoadCellParam {
-        TankLoadCellParam(FloatConfigParam& param, std::string label);
+        TankLoadCellParam(SessionState& state, std::string label);
 
         float readValue{};
-        FloatConfigParam& param;
+        SessionState& state;
         bool saved{};
         std::string label;
         std::string readButtonLabel;

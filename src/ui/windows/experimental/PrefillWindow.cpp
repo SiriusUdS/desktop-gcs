@@ -1,18 +1,18 @@
 #include "PrefillWindow.h"
 
-#include "ConfigParams.h"
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
+#include "UiState.h"
 
 #include <imgui.h>
 #include <implot.h>
 
 PrefillWindow::PrefillWindow()
-    : prewrapTankLoadCellParam{ConfigParams::TankLoadCell::prewrapADCValue, "Tank Load Cell ADC Value - Prewrap"},
-      postwrapTankLoadCellParam{ConfigParams::TankLoadCell::postwrapADCValue, "Tank Load Cell ADC Value - Postwrap"},
-      postIPATankLoadCellParam{ConfigParams::TankLoadCell::postIPAADCValue, "Tank Load Cell ADC Value - Post IPA"},
+    : prewrapTankLoadCellParam{UiState::TankLoadCell::prewrapADCValue, "Prewrap"},
+      postwrapTankLoadCellParam{UiState::TankLoadCell::postwrapADCValue, "Postwrap"},
+      postIPATankLoadCellParam{UiState::TankLoadCell::postIPAADCValue, "Post IPA"},
       tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
                               PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)},
       tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
@@ -145,12 +145,9 @@ void PrefillWindow::renderImpl() {
 
     ImGui::SeparatorText("Calibration");
 
-    if (ImGui::BeginTable("PrefillTankLoadCellADCTable", 6, ImGuiTableFlags_SizingFixedFit)) {
-        ImGui::TableSetupColumn("Name");
-        ImGui::TableSetupColumn("Save");
-        ImGui::TableSetupColumn("Cancel");
-        ImGui::TableSetupColumn("ADC Value");
+    ImGui::Text("Tank Load Cell ADC Values");
 
+    if (ImGui::BeginTable("PrefillTankLoadCellADCTable", 6, ImGuiTableFlags_SizingFixedFit)) {
         renderTankLoadCellParam(prewrapTankLoadCellParam);
         renderTankLoadCellParam(postwrapTankLoadCellParam);
         renderTankLoadCellParam(postIPATankLoadCellParam);
@@ -210,7 +207,7 @@ void PrefillWindow::renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam
     ImGui::TableSetColumnIndex(2);
     ImGui::BeginDisabled(tankLoadCellParam.saved);
     if (ImGui::Button(tankLoadCellParam.saveButtonLabel.c_str())) {
-        tankLoadCellParam.param.currentValue = tankLoadCellParam.readValue;
+        tankLoadCellParam.state.value = tankLoadCellParam.readValue;
         tankLoadCellParam.saved = true;
     }
     ImGui::EndDisabled();
@@ -224,14 +221,23 @@ void PrefillWindow::renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam
     ImGui::EndDisabled();
 
     ImGui::TableSetColumnIndex(4);
-    ImGui::Text("Read ADC: %.0f", tankLoadCellParam.readValue);
+    ImGui::Text("ADC Value: %.0f", tankLoadCellParam.readValue);
 
     ImGui::TableSetColumnIndex(5);
-    ImGui::Text("Saved ADC: %.0f", tankLoadCellParam.param.currentValue.load());
+    if (tankLoadCellParam.saved) {
+        ImVec4 color = ThemedColors::Text::green.resolve();
+        ImGui::PushStyleColor(ImGuiCol_Text, color);
+        ImGui::Text("SAVED");
+    } else {
+        ImVec4 color = ThemedColors::Text::red.resolve();
+        ImGui::PushStyleColor(ImGuiCol_Text, color);
+        ImGui::Text("UNSAVED");
+    }
+    ImGui::PopStyleColor();
 }
 
-PrefillWindow::TankLoadCellParam::TankLoadCellParam(FloatConfigParam& param, std::string label) : param(param), label(label) {
-    readButtonLabel = "Read##read_" + param.iniKey;
-    saveButtonLabel = "Save##save_" + param.iniKey;
-    cancelButtonLabel = "Cancel##cancel_" + param.iniKey;
+PrefillWindow::TankLoadCellParam::TankLoadCellParam(SessionState& state, std::string label) : state(state), label(label) {
+    readButtonLabel = "Read##read_" + state.id;
+    saveButtonLabel = "Save##save_" + state.id;
+    cancelButtonLabel = "Cancel##cancel_" + state.id;
 }
