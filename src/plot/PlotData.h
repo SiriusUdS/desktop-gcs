@@ -20,12 +20,15 @@ public:
         const DataSeries& values;
     };
 
+private:
+    static constexpr size_t DEFAULT_RECENT_AVG_VAL_DURATION_MS = 1000;
+
 public:
     PlotData();
     void addData(float timestamp, float value);
     void clear();
     void addListener(PlotDataUpdateListener* listener) const;
-    float recentAverageValue(size_t duration_ms) const;
+    float recentAverageValue(size_t duration_ms = DEFAULT_RECENT_AVG_VAL_DURATION_MS) const;
     const DataSeries& getTimeline() const;
     const DataSeries& getValues() const;
     size_t getSize() const;

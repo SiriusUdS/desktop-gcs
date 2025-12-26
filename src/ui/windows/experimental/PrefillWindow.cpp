@@ -145,7 +145,7 @@ void PrefillWindow::renderImpl() {
 
     ImGui::SeparatorText("Calibration");
 
-    if (ImGui::BeginTable("PrefillTankLoadCellADCTable", 4, ImGuiTableFlags_SizingFixedFit)) {
+    if (ImGui::BeginTable("PrefillTankLoadCellADCTable", 6, ImGuiTableFlags_SizingFixedFit)) {
         ImGui::TableSetupColumn("Name");
         ImGui::TableSetupColumn("Save");
         ImGui::TableSetupColumn("Cancel");
@@ -181,10 +181,12 @@ void PrefillWindow::renderImpl() {
     }
 
     // TODO: THIS IS A TEST
+    SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.tank();
     SensorPlotData& motorLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.motor();
     SensorPlotData& d1 = GSDataCenter::Thermistor_Motor_PlotData.tank();
     SensorPlotData& d2 = GSDataCenter::PressureSensor_Motor_PlotData.tank();
     static float t = 0.0f;
+    tankLoadCellData.addData(t, t, t);
     motorLoadCellData.addData(t, t, t);
     d1.addData(t, t, t);
     d2.addData(t, t, t);
@@ -200,24 +202,36 @@ void PrefillWindow::renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam
 
     ImGui::TableSetColumnIndex(1);
     ImGui::BeginDisabled(tankLoadCellParam.saved);
-    if (ImGui::Button(tankLoadCellParam.saveButtonLabel.c_str()) && tankLoadCellData.getAdcPlotData().getSize()) {
-        tankLoadCellParam.param.currentValue = tankLoadCellData.getAdcPlotData().getValues().raw().back();
-        tankLoadCellParam.saved = true;
+    if (ImGui::Button(tankLoadCellParam.readButtonLabel.c_str())) {
+        tankLoadCellParam.readValue = tankLoadCellData.getValuePlotData().recentAverageValue();
     }
     ImGui::EndDisabled();
 
     ImGui::TableSetColumnIndex(2);
-    ImGui::BeginDisabled(!tankLoadCellParam.saved);
-    if (ImGui::Button(tankLoadCellParam.cancelButtonLabel.c_str())) {
-        tankLoadCellParam.saved = false;
+    ImGui::BeginDisabled(tankLoadCellParam.saved);
+    if (ImGui::Button(tankLoadCellParam.saveButtonLabel.c_str())) {
+        tankLoadCellParam.param.currentValue = tankLoadCellParam.readValue;
+        tankLoadCellParam.saved = true;
     }
     ImGui::EndDisabled();
 
     ImGui::TableSetColumnIndex(3);
-    ImGui::Text("ADC: %.0f", tankLoadCellParam.param.currentValue.load());
+    ImGui::BeginDisabled(!tankLoadCellParam.saved);
+    if (ImGui::Button(tankLoadCellParam.cancelButtonLabel.c_str())) {
+        tankLoadCellParam.saved = false;
+        tankLoadCellParam.readValue = 0;
+    }
+    ImGui::EndDisabled();
+
+    ImGui::TableSetColumnIndex(4);
+    ImGui::Text("Read ADC: %.0f", tankLoadCellParam.readValue);
+
+    ImGui::TableSetColumnIndex(5);
+    ImGui::Text("Saved ADC: %.0f", tankLoadCellParam.param.currentValue.load());
 }
 
 PrefillWindow::TankLoadCellParam::TankLoadCellParam(FloatParam& param, std::string label) : param(param), label(label) {
+    readButtonLabel = "Read##read_" + param.iniKey;
     saveButtonLabel = "Save##save_" + param.iniKey;
     cancelButtonLabel = "Cancel##cancel_" + param.iniKey;
 }

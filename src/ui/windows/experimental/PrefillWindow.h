@@ -15,9 +15,11 @@ private:
     struct TankLoadCellParam {
         TankLoadCellParam(FloatParam& param, std::string label);
 
+        float readValue{};
         FloatParam& param;
         bool saved{};
         std::string label;
+        std::string readButtonLabel;
         std::string saveButtonLabel;
         std::string cancelButtonLabel;
     };
