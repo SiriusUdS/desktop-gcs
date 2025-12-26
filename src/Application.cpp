@@ -5,6 +5,7 @@
 // clang-format on
 
 #include "BoardsWindow.h"
+#include "ConfigParamsIO.h"
 #include "ControlsWindow.h"
 #include "FillWindow.h"
 #include "FontConfig.h"
@@ -17,7 +18,6 @@
 #include "MonitoringWindow.h"
 #include "NOSPhaseDiagramWindow.h"
 #include "PacketCSVLogging.h"
-#include "ParamsIO.h"
 #include "PlotWindowCenter.h"
 #include "PrefillWindow.h"
 #include "PrelaunchWindow.h"
@@ -73,7 +73,7 @@ void Application::init() {
 
     PacketCSVLogging::init();
     PlotWindowCenter::loadState(iniStructure);
-    ParamsIO::loadParams(iniStructure);
+    ConfigParamsIO::loadParams(iniStructure);
 
     loggingWindow = std::make_shared<LoggingWindow>();
 
@@ -112,7 +112,7 @@ void Application::preNewFrame() {
 
 void Application::shutdown() {
     SerialTask::stop();
-    ParamsIO::saveParams(iniStructure);
+    ConfigParamsIO::saveParams(iniStructure);
     PlotWindowCenter::saveState(iniStructure);
 
     for (const auto& window : windows) {

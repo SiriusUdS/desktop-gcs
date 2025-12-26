@@ -1,8 +1,8 @@
 #include "PrefillWindow.h"
 
+#include "ConfigParams.h"
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
-#include "Params.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
 
@@ -10,9 +10,9 @@
 #include <implot.h>
 
 PrefillWindow::PrefillWindow()
-    : prewrapTankLoadCellParam{Params::TankLoadCell::prewrapADCValue, "Tank Load Cell ADC Value - Prewrap"},
-      postwrapTankLoadCellParam{Params::TankLoadCell::postwrapADCValue, "Tank Load Cell ADC Value - Postwrap"},
-      postIPATankLoadCellParam{Params::TankLoadCell::postIPAADCValue, "Tank Load Cell ADC Value - Post IPA"},
+    : prewrapTankLoadCellParam{ConfigParams::TankLoadCell::prewrapADCValue, "Tank Load Cell ADC Value - Prewrap"},
+      postwrapTankLoadCellParam{ConfigParams::TankLoadCell::postwrapADCValue, "Tank Load Cell ADC Value - Postwrap"},
+      postIPATankLoadCellParam{ConfigParams::TankLoadCell::postIPAADCValue, "Tank Load Cell ADC Value - Post IPA"},
       tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
                               PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)},
       tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
@@ -230,7 +230,7 @@ void PrefillWindow::renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam
     ImGui::Text("Saved ADC: %.0f", tankLoadCellParam.param.currentValue.load());
 }
 
-PrefillWindow::TankLoadCellParam::TankLoadCellParam(FloatParam& param, std::string label) : param(param), label(label) {
+PrefillWindow::TankLoadCellParam::TankLoadCellParam(FloatConfigParam& param, std::string label) : param(param), label(label) {
     readButtonLabel = "Read##read_" + param.iniKey;
     saveButtonLabel = "Save##save_" + param.iniKey;
     cancelButtonLabel = "Cancel##cancel_" + param.iniKey;

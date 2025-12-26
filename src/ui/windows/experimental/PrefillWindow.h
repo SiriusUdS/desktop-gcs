@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Param.h"
+#include "ConfigParam.h"
 #include "PlotLine.h"
 #include "SensorTestSequencer.h"
 #include "UIWindow.h"
@@ -13,10 +13,10 @@ public:
 
 private:
     struct TankLoadCellParam {
-        TankLoadCellParam(FloatParam& param, std::string label);
+        TankLoadCellParam(FloatConfigParam& param, std::string label);
 
         float readValue{};
-        FloatParam& param;
+        FloatConfigParam& param;
         bool saved{};
         std::string label;
         std::string readButtonLabel;

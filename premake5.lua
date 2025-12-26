@@ -29,6 +29,7 @@ workspace "sirius-gcs"
         "src/com/packet",
         "src/com/serial",
         "src/config",
+        "src/config/param",
         "src/data",
         "src/data/data_conversion",
         "src/logging",

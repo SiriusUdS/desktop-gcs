@@ -1,8 +1,8 @@
 #include "TankMassCalculatorWindow.h"
 
+#include "ConfigParams.h"
 #include "FontAwesome.h"
 #include "ImGuiConfig.h"
-#include "Params.h"
 #include "TankMass.h"
 
 #include <imgui.h>
@@ -16,7 +16,7 @@ const char* TankMassCalculatorWindow::dockspace() const {
 }
 
 void TankMassCalculatorWindow::renderImpl() {
-    ImGui::Text("Tank Volume (m^3): %f", Params::NOSTankVolume_m3.currentValue.load());
+    ImGui::Text("Tank Volume (m^3): %f", ConfigParams::NOSTankVolume_m3.currentValue.load());
     ImGui::SameLine();
 
     const ImVec4 buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
