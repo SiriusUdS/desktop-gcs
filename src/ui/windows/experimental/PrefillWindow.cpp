@@ -2,6 +2,7 @@
 
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
+#include "SavableSessionState.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
 #include "UiState.h"
@@ -10,9 +11,9 @@
 #include <implot.h>
 
 PrefillWindow::PrefillWindow()
-    : prewrapTankLoadCellParam{UiState::TankLoadCell::prewrapADCValue, "Prewrap"},
-      postwrapTankLoadCellParam{UiState::TankLoadCell::postwrapADCValue, "Postwrap"},
-      postIPATankLoadCellParam{UiState::TankLoadCell::postIPAADCValue, "Post IPA"},
+    : prewrapTankLoadCellState{UiState::TankLoadCell::prewrapADCValue, "Prewrap"},
+      postwrapTankLoadCellState{UiState::TankLoadCell::postwrapADCValue, "Postwrap"},
+      postIPATankLoadCellState{UiState::TankLoadCell::postIPAADCValue, "Post IPA"},
       tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
                               PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)},
       tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
@@ -148,9 +149,12 @@ void PrefillWindow::renderImpl() {
     ImGui::Text("Tank Load Cell ADC Values");
 
     if (ImGui::BeginTable("PrefillTankLoadCellADCTable", 6, ImGuiTableFlags_SizingFixedFit)) {
-        renderTankLoadCellParam(prewrapTankLoadCellParam);
-        renderTankLoadCellParam(postwrapTankLoadCellParam);
-        renderTankLoadCellParam(postIPATankLoadCellParam);
+        const SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.tank();
+        const float avgAdcValue = tankLoadCellData.getAdcPlotData().recentAverageValue();
+
+        prewrapTankLoadCellState.renderAsRow(avgAdcValue);
+        postwrapTankLoadCellState.renderAsRow(avgAdcValue);
+        postIPATankLoadCellState.renderAsRow(avgAdcValue);
 
         ImGui::EndTable();
     }
@@ -188,56 +192,4 @@ void PrefillWindow::renderImpl() {
     d1.addData(t, t, t);
     d2.addData(t, t, t);
     t += 100.0f;
-}
-
-void PrefillWindow::renderTankLoadCellParam(TankLoadCellParam& tankLoadCellParam) {
-    const SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.tank();
-
-    ImGui::TableNextRow();
-    ImGui::TableSetColumnIndex(0);
-    ImGui::Text("%s", tankLoadCellParam.label.c_str());
-
-    ImGui::TableSetColumnIndex(1);
-    ImGui::BeginDisabled(tankLoadCellParam.saved);
-    if (ImGui::Button(tankLoadCellParam.readButtonLabel.c_str())) {
-        tankLoadCellParam.readValue = tankLoadCellData.getValuePlotData().recentAverageValue();
-    }
-    ImGui::EndDisabled();
-
-    ImGui::TableSetColumnIndex(2);
-    ImGui::BeginDisabled(tankLoadCellParam.saved);
-    if (ImGui::Button(tankLoadCellParam.saveButtonLabel.c_str())) {
-        tankLoadCellParam.state.value = tankLoadCellParam.readValue;
-        tankLoadCellParam.saved = true;
-    }
-    ImGui::EndDisabled();
-
-    ImGui::TableSetColumnIndex(3);
-    ImGui::BeginDisabled(!tankLoadCellParam.saved);
-    if (ImGui::Button(tankLoadCellParam.cancelButtonLabel.c_str())) {
-        tankLoadCellParam.saved = false;
-        tankLoadCellParam.readValue = 0;
-    }
-    ImGui::EndDisabled();
-
-    ImGui::TableSetColumnIndex(4);
-    ImGui::Text("ADC Value: %.0f", tankLoadCellParam.readValue);
-
-    ImGui::TableSetColumnIndex(5);
-    if (tankLoadCellParam.saved) {
-        ImVec4 color = ThemedColors::Text::green.resolve();
-        ImGui::PushStyleColor(ImGuiCol_Text, color);
-        ImGui::Text("SAVED");
-    } else {
-        ImVec4 color = ThemedColors::Text::red.resolve();
-        ImGui::PushStyleColor(ImGuiCol_Text, color);
-        ImGui::Text("UNSAVED");
-    }
-    ImGui::PopStyleColor();
-}
-
-PrefillWindow::TankLoadCellParam::TankLoadCellParam(SessionState& state, std::string label) : state(state), label(label) {
-    readButtonLabel = "Read##read_" + state.id;
-    saveButtonLabel = "Save##save_" + state.id;
-    cancelButtonLabel = "Cancel##cancel_" + state.id;
 }

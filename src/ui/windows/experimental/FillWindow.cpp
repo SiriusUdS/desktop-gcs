@@ -4,7 +4,6 @@
 #include "Engine/EngineState.h"
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
-#include "PlotData.h"
 #include "SensorPlotData.h"
 #include "SwitchData.h"
 #include "ThemedColors.h"
@@ -41,7 +40,7 @@ void FillWindow::renderImpl() {
     ImGui::SeparatorText("Tank Data Plot");
 
     ImPlot::SetNextAxesToFit();
-    if (ImPlot::BeginPlot("Tank Data", {-1.0f, 800.0f})) {
+    if (ImPlot::BeginPlot("Tank Data", {-1.0f, 800.0f}, ImPlotFlags_NoInputs)) {
         constexpr ImAxis weightAxis = ImAxis_Y1;
         constexpr ImAxis pressureAxis = ImAxis_Y2;
         constexpr ImAxis tempAxis = ImAxis_Y3;
