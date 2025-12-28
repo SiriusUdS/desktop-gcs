@@ -5,7 +5,6 @@
 #include "Telecommunication/TelemetryPacket.h"
 
 namespace PacketCSVLogging {
-void init();
 void logEngineTelemetryPacket(float timestamp,
                               uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD],
                               float thermistorValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD],

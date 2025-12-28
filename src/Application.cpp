@@ -17,7 +17,6 @@
 #include "MapWindow.h"
 #include "MonitoringWindow.h"
 #include "NOSPhaseDiagramWindow.h"
-#include "PacketCSVLogging.h"
 #include "PlotWindowCenter.h"
 #include "PrefillWindow.h"
 #include "PrelaunchWindow.h"
@@ -71,7 +70,6 @@ void Application::init() {
 
     iniFile.read(iniStructure);
 
-    PacketCSVLogging::init();
     PlotWindowCenter::loadState(iniStructure);
     ConfigParamsIO::loadParams(iniStructure);
 

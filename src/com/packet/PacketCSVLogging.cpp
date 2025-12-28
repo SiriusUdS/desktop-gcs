@@ -3,7 +3,6 @@
 #include "Logging.h"
 #include "SerialConfig.h"
 
-#include <chrono>
 #include <ctime>
 #include <filesystem>
 #include <iomanip>
@@ -11,7 +10,15 @@
 #include <string>
 
 namespace PacketCSVLogging {
+void createDataLogDir();
 std::string getCurrentDateTimeForDir();
+void initEngineTelemetryLogger();
+void initFillingStationTelemetryLogger();
+void initGsControlLogger();
+void initEngineStatusLogger();
+void initFillingStationStatusLogger();
+
+std::string dataLogDir;
 
 CSVLogger engineTelemetryLogger;
 CSVLogger fillingStationTelemetryLogger;
@@ -19,108 +26,26 @@ CSVLogger gsControlLogger;
 CSVLogger engineStatusLogger;
 CSVLogger fillingStationStatusLogger;
 
+bool triedCreatingDataLogDir{};
 bool dataLogDirExists{};
+
+bool engineTelemetryHasInit{};
+bool fillingStationTelemetryHasInit{};
+bool gsControlHasInit{};
+bool engineStatusHasInit{};
+bool fillingStationStatusHasInit{};
 } // namespace PacketCSVLogging
-
-void PacketCSVLogging::init() {
-    std::string dataLogDir = "logs/data/" + getCurrentDateTimeForDir();
-
-    try {
-        std::filesystem::create_directories(dataLogDir);
-        dataLogDirExists = true;
-    } catch (const std::filesystem::filesystem_error& e) {
-        GCS_APP_LOG_ERROR("PacketCSVLogging: Failed to create directory '{}': {}", dataLogDir, e.what());
-        return;
-    }
-
-    engineTelemetryLogger.openFile(dataLogDir + "/EngineTelemetry.log");
-    engineTelemetryLogger.addColumn("Timestamp");
-    engineTelemetryLogger.addColumn("Thermistor 1 (ADC)");
-    engineTelemetryLogger.addColumn("Thermistor 1 (C)");
-    engineTelemetryLogger.addColumn("Thermistor 2 (ADC)");
-    engineTelemetryLogger.addColumn("Thermistor 2 (C)");
-    engineTelemetryLogger.addColumn("Thermistor 3 (ADC)");
-    engineTelemetryLogger.addColumn("Thermistor 3 (C)");
-    engineTelemetryLogger.addColumn("Thermistor 4 (ADC)");
-    engineTelemetryLogger.addColumn("Thermistor 4 (C)");
-    engineTelemetryLogger.addColumn("Thermistor 5 (ADC)");
-    engineTelemetryLogger.addColumn("Thermistor 5 (C)");
-    engineTelemetryLogger.addColumn("Thermistor 6 (ADC)");
-    engineTelemetryLogger.addColumn("Thermistor 6 (C)");
-    engineTelemetryLogger.addColumn("Thermistor 7 (ADC)");
-    engineTelemetryLogger.addColumn("Thermistor 7 (C)");
-    engineTelemetryLogger.addColumn("Thermistor 8 (ADC)");
-    engineTelemetryLogger.addColumn("Thermistor 8 (C)");
-    engineTelemetryLogger.addColumn("Pressure Sensor 1 (ADC)");
-    engineTelemetryLogger.addColumn("Pressure Sensor 1 (psi)");
-    engineTelemetryLogger.addColumn("Pressure Sensor 2 (ADC)");
-    engineTelemetryLogger.addColumn("Pressure Sensor 2 (psi)");
-
-    fillingStationTelemetryLogger.openFile(dataLogDir + "/FillingStationTelemetry.log");
-    fillingStationTelemetryLogger.addColumn("Timestamp");
-    fillingStationTelemetryLogger.addColumn("Thermistor 1 (ADC)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 1 (C)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 2 (ADC)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 2 (C)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 3 (ADC)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 3 (C)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 4 (ADC)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 4 (C)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 5 (ADC)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 5 (C)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 6 (ADC)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 6 (C)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 7 (ADC)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 7 (C)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 8 (ADC)");
-    fillingStationTelemetryLogger.addColumn("Thermistor 8 (C)");
-    fillingStationTelemetryLogger.addColumn("Pressure Sensor 1 (ADC)");
-    fillingStationTelemetryLogger.addColumn("Pressure Sensor 1 (psi)");
-    fillingStationTelemetryLogger.addColumn("Pressure Sensor 2 (ADC)");
-    fillingStationTelemetryLogger.addColumn("Pressure Sensor 2 (psi)");
-    fillingStationTelemetryLogger.addColumn("Motor Load Cell (ADC)");
-    fillingStationTelemetryLogger.addColumn("Motor Load Cell (lb)");
-    fillingStationTelemetryLogger.addColumn("Tank Load Cell (ADC)");
-    fillingStationTelemetryLogger.addColumn("Tank Load Cell (lb)");
-
-    gsControlLogger.openFile(dataLogDir + "/GSControl.log");
-    gsControlLogger.addColumn("Timestamp");
-    gsControlLogger.addColumn("Allow Dump");
-    gsControlLogger.addColumn("Allow Fill");
-    gsControlLogger.addColumn("Arm Igniter");
-    gsControlLogger.addColumn("Arm Servo");
-    gsControlLogger.addColumn("Emergency Stop");
-    gsControlLogger.addColumn("Fire Igniter");
-    gsControlLogger.addColumn("Valve Start");
-
-    engineStatusLogger.openFile(dataLogDir + "/EngineStatus.log");
-    engineStatusLogger.addColumn("Timestamp");
-    engineStatusLogger.addColumn("Ignite Timestamp");
-    engineStatusLogger.addColumn("Launch Timestamp");
-    engineStatusLogger.addColumn("NOS Valve Idle");
-    engineStatusLogger.addColumn("NOS Valve Closed Switch High");
-    engineStatusLogger.addColumn("NOS Valve Opened Switch High");
-    engineStatusLogger.addColumn("IPA Valve Idle");
-    engineStatusLogger.addColumn("IPA Valve Closed Switch High");
-    engineStatusLogger.addColumn("IPA Valve Opened Switch High");
-    engineStatusLogger.addColumn("Storage Error Status");
-
-    fillingStationStatusLogger.openFile(dataLogDir + "/FillingStationStatus.log");
-    fillingStationStatusLogger.addColumn("Timestamp");
-    fillingStationStatusLogger.addColumn("Fill Valve Idle");
-    fillingStationStatusLogger.addColumn("Fill Valve Closed Switch High");
-    fillingStationStatusLogger.addColumn("Fill Valve Opened Switch High");
-    fillingStationStatusLogger.addColumn("Dump Valve Idle");
-    fillingStationStatusLogger.addColumn("Dump Valve Closed Switch High");
-    fillingStationStatusLogger.addColumn("Dump Valve Opened Switch High");
-    fillingStationStatusLogger.addColumn("Storage Error Status");
-}
 
 void PacketCSVLogging::logEngineTelemetryPacket(float timestamp,
                                                 uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD],
                                                 float thermistorValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD],
                                                 uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
                                                 float pressureSensorValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD]) {
+    if (!engineTelemetryHasInit) {
+        initEngineTelemetryLogger();
+        engineTelemetryHasInit = true;
+    }
+
     if (!dataLogDirExists) {
         return;
     }
@@ -156,6 +81,11 @@ void PacketCSVLogging::logFillingStationTelemetryPacket(float timestamp,
                                                         float pressureSensorValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
                                                         uint16_t loadCellAdcValues[GSDataCenterConfig::LOAD_CELL_AMOUNT],
                                                         float loadCellValues[GSDataCenterConfig::LOAD_CELL_AMOUNT]) {
+    if (!fillingStationTelemetryHasInit) {
+        initFillingStationTelemetryLogger();
+        fillingStationTelemetryHasInit = true;
+    }
+
     if (!dataLogDirExists) {
         return;
     }
@@ -192,6 +122,11 @@ void PacketCSVLogging::logFillingStationTelemetryPacket(float timestamp,
 }
 
 void PacketCSVLogging::logGSControlPacket(const GSControlStatusPacket* packet) {
+    if (!gsControlHasInit) {
+        initGsControlLogger();
+        gsControlHasInit = true;
+    }
+
     if (!dataLogDirExists) {
         return;
     }
@@ -215,6 +150,11 @@ void PacketCSVLogging::logGSControlPacket(const GSControlStatusPacket* packet) {
 }
 
 void PacketCSVLogging::logEngineStatusPacket(const EngineStatusPacket* packet) {
+    if (!engineStatusHasInit) {
+        initEngineStatusLogger();
+        engineStatusHasInit = true;
+    }
+
     if (!dataLogDirExists) {
         return;
     }
@@ -241,6 +181,11 @@ void PacketCSVLogging::logEngineStatusPacket(const EngineStatusPacket* packet) {
 }
 
 void PacketCSVLogging::logFillingStationStatusPacket(const FillingStationStatusPacket* packet) {
+    if (!fillingStationStatusHasInit) {
+        initFillingStationStatusLogger();
+        fillingStationStatusHasInit = true;
+    }
+
     if (!dataLogDirExists) {
         return;
     }
@@ -264,6 +209,18 @@ void PacketCSVLogging::logFillingStationStatusPacket(const FillingStationStatusP
     fillingStationStatusLogger.log();
 }
 
+void PacketCSVLogging::createDataLogDir() {
+    dataLogDir = "logs/data/" + getCurrentDateTimeForDir();
+    triedCreatingDataLogDir = true;
+
+    try {
+        std::filesystem::create_directories(dataLogDir);
+        dataLogDirExists = true;
+    } catch (const std::filesystem::filesystem_error& e) {
+        GCS_APP_LOG_ERROR("PacketCSVLogging: Failed to create directory '{}': {}", dataLogDir, e.what());
+    }
+}
+
 std::string PacketCSVLogging::getCurrentDateTimeForDir() {
     std::time_t now = std::time(nullptr);
     std::tm tm{};
@@ -275,4 +232,116 @@ std::string PacketCSVLogging::getCurrentDateTimeForDir() {
     std::ostringstream oss;
     oss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S");
     return oss.str();
+}
+
+void PacketCSVLogging::initEngineTelemetryLogger() {
+    if (!triedCreatingDataLogDir) {
+        createDataLogDir();
+    }
+
+    engineTelemetryLogger.openFile(dataLogDir + "/EngineTelemetry.log");
+    engineTelemetryLogger.addColumn("Timestamp");
+    engineTelemetryLogger.addColumn("Thermistor 1 (ADC)");
+    engineTelemetryLogger.addColumn("Thermistor 1 (C)");
+    engineTelemetryLogger.addColumn("Thermistor 2 (ADC)");
+    engineTelemetryLogger.addColumn("Thermistor 2 (C)");
+    engineTelemetryLogger.addColumn("Thermistor 3 (ADC)");
+    engineTelemetryLogger.addColumn("Thermistor 3 (C)");
+    engineTelemetryLogger.addColumn("Thermistor 4 (ADC)");
+    engineTelemetryLogger.addColumn("Thermistor 4 (C)");
+    engineTelemetryLogger.addColumn("Thermistor 5 (ADC)");
+    engineTelemetryLogger.addColumn("Thermistor 5 (C)");
+    engineTelemetryLogger.addColumn("Thermistor 6 (ADC)");
+    engineTelemetryLogger.addColumn("Thermistor 6 (C)");
+    engineTelemetryLogger.addColumn("Thermistor 7 (ADC)");
+    engineTelemetryLogger.addColumn("Thermistor 7 (C)");
+    engineTelemetryLogger.addColumn("Thermistor 8 (ADC)");
+    engineTelemetryLogger.addColumn("Thermistor 8 (C)");
+    engineTelemetryLogger.addColumn("Pressure Sensor 1 (ADC)");
+    engineTelemetryLogger.addColumn("Pressure Sensor 1 (psi)");
+    engineTelemetryLogger.addColumn("Pressure Sensor 2 (ADC)");
+    engineTelemetryLogger.addColumn("Pressure Sensor 2 (psi)");
+}
+
+void PacketCSVLogging::initFillingStationTelemetryLogger() {
+    if (!triedCreatingDataLogDir) {
+        createDataLogDir();
+    }
+
+    fillingStationTelemetryLogger.openFile(dataLogDir + "/FillingStationTelemetry.log");
+    fillingStationTelemetryLogger.addColumn("Timestamp");
+    fillingStationTelemetryLogger.addColumn("Thermistor 1 (ADC)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 1 (C)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 2 (ADC)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 2 (C)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 3 (ADC)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 3 (C)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 4 (ADC)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 4 (C)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 5 (ADC)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 5 (C)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 6 (ADC)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 6 (C)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 7 (ADC)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 7 (C)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 8 (ADC)");
+    fillingStationTelemetryLogger.addColumn("Thermistor 8 (C)");
+    fillingStationTelemetryLogger.addColumn("Pressure Sensor 1 (ADC)");
+    fillingStationTelemetryLogger.addColumn("Pressure Sensor 1 (psi)");
+    fillingStationTelemetryLogger.addColumn("Pressure Sensor 2 (ADC)");
+    fillingStationTelemetryLogger.addColumn("Pressure Sensor 2 (psi)");
+    fillingStationTelemetryLogger.addColumn("Motor Load Cell (ADC)");
+    fillingStationTelemetryLogger.addColumn("Motor Load Cell (lb)");
+    fillingStationTelemetryLogger.addColumn("Tank Load Cell (ADC)");
+    fillingStationTelemetryLogger.addColumn("Tank Load Cell (lb)");
+}
+
+void PacketCSVLogging::initGsControlLogger() {
+    if (!triedCreatingDataLogDir) {
+        createDataLogDir();
+    }
+
+    gsControlLogger.openFile(dataLogDir + "/GSControl.log");
+    gsControlLogger.addColumn("Timestamp");
+    gsControlLogger.addColumn("Allow Dump");
+    gsControlLogger.addColumn("Allow Fill");
+    gsControlLogger.addColumn("Arm Igniter");
+    gsControlLogger.addColumn("Arm Servo");
+    gsControlLogger.addColumn("Emergency Stop");
+    gsControlLogger.addColumn("Fire Igniter");
+    gsControlLogger.addColumn("Valve Start");
+}
+
+void PacketCSVLogging::initEngineStatusLogger() {
+    if (!triedCreatingDataLogDir) {
+        createDataLogDir();
+    }
+
+    engineStatusLogger.openFile(dataLogDir + "/EngineStatus.log");
+    engineStatusLogger.addColumn("Timestamp");
+    engineStatusLogger.addColumn("Ignite Timestamp");
+    engineStatusLogger.addColumn("Launch Timestamp");
+    engineStatusLogger.addColumn("NOS Valve Idle");
+    engineStatusLogger.addColumn("NOS Valve Closed Switch High");
+    engineStatusLogger.addColumn("NOS Valve Opened Switch High");
+    engineStatusLogger.addColumn("IPA Valve Idle");
+    engineStatusLogger.addColumn("IPA Valve Closed Switch High");
+    engineStatusLogger.addColumn("IPA Valve Opened Switch High");
+    engineStatusLogger.addColumn("Storage Error Status");
+}
+
+void PacketCSVLogging::initFillingStationStatusLogger() {
+    if (!triedCreatingDataLogDir) {
+        createDataLogDir();
+    }
+
+    fillingStationStatusLogger.openFile(dataLogDir + "/FillingStationStatus.log");
+    fillingStationStatusLogger.addColumn("Timestamp");
+    fillingStationStatusLogger.addColumn("Fill Valve Idle");
+    fillingStationStatusLogger.addColumn("Fill Valve Closed Switch High");
+    fillingStationStatusLogger.addColumn("Fill Valve Opened Switch High");
+    fillingStationStatusLogger.addColumn("Dump Valve Idle");
+    fillingStationStatusLogger.addColumn("Dump Valve Closed Switch High");
+    fillingStationStatusLogger.addColumn("Dump Valve Opened Switch High");
+    fillingStationStatusLogger.addColumn("Storage Error Status");
 }
