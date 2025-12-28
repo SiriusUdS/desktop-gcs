@@ -6,11 +6,11 @@
 
 #include <imgui.h>
 
-const char* ValvesWindow::name() const {
+const char* ValvesWindow::getName() const {
     return "Valves";
 }
 
-const char* ValvesWindow::dockspace() const {
+const char* ValvesWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 

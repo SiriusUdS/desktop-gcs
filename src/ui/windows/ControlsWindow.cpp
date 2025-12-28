@@ -12,11 +12,11 @@
 
 #include <imgui.h>
 
-const char* ControlsWindow::name() const {
+const char* ControlsWindow::getName() const {
     return "Controls";
 }
 
-const char* ControlsWindow::dockspace() const {
+const char* ControlsWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 

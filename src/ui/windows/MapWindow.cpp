@@ -43,11 +43,11 @@ void MapWindow::saveState(mINI::INIStructure& ini) const {
     ini[IniConfig::GCS_SECTION].set(INI_MAP_WINDOW_MAP_VIEW, std::to_string(mapView));
 }
 
-const char* MapWindow::name() const {
+const char* MapWindow::getName() const {
     return "Map";
 }
 
-const char* MapWindow::dockspace() const {
+const char* MapWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 

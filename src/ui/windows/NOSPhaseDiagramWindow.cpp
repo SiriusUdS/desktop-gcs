@@ -37,11 +37,11 @@ void NOSPhaseDiagramWindow::init() {
     }
 }
 
-const char* NOSPhaseDiagramWindow::name() const {
+const char* NOSPhaseDiagramWindow::getName() const {
     return "NOS Phase Diagram";
 }
 
-const char* NOSPhaseDiagramWindow::dockspace() const {
+const char* NOSPhaseDiagramWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::PLOT;
 }
 

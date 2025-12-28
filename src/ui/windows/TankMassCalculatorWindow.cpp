@@ -7,11 +7,11 @@
 
 #include <imgui.h>
 
-const char* TankMassCalculatorWindow::name() const {
+const char* TankMassCalculatorWindow::getName() const {
     return "Tank Mass Calculator";
 }
 
-const char* TankMassCalculatorWindow::dockspace() const {
+const char* TankMassCalculatorWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 

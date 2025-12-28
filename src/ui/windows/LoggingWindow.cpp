@@ -35,11 +35,11 @@ void LoggingWindow::saveState(mINI::INIStructure& ini) const {
     ini[IniConfig::GCS_SECTION].set(GCS_INI_LOG_WINDOW_SHOW_ERROR, std::to_string(showError));
 }
 
-const char* LoggingWindow::name() const {
+const char* LoggingWindow::getName() const {
     return "Logs";
 }
 
-const char* LoggingWindow::dockspace() const {
+const char* LoggingWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::LOGGING;
 }
 

@@ -6,11 +6,11 @@
 
 #include <imgui.h>
 
-const char* SwitchesWindow::name() const {
+const char* SwitchesWindow::getName() const {
     return "Switches";
 }
 
-const char* SwitchesWindow::dockspace() const {
+const char* SwitchesWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 

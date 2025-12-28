@@ -145,7 +145,7 @@ std::vector<HelloImGui::DockableWindow> Application::createDockableWindows() {
     std::vector<HelloImGui::DockableWindow> dockableWindows = PlotWindowCenter::createDockableWindows();
 
     for (const auto& window : windows) {
-        dockableWindows.emplace_back(window->name(), window->dockspace(), [window]() { window->render(); });
+        dockableWindows.emplace_back(window->getName(), window->getDockspace(), [window]() { window->render(); });
     }
 
     return dockableWindows;

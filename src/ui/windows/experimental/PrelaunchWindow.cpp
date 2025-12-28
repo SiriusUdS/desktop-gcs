@@ -2,12 +2,15 @@
 
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
+#include "LaunchWindow.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
 #include "UiState.h"
 
 #include <imgui.h>
 #include <implot.h>
+
+const char* const PrelaunchWindow::name = "Prelaunch";
 
 PrelaunchWindow::PrelaunchWindow()
     : postNOSTankLoadCellState(UiState::TankLoadCell::postNOSADCValue, "Post NOS"),
@@ -17,11 +20,11 @@ PrelaunchWindow::PrelaunchWindow()
                            PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red)) {
 }
 
-const char* PrelaunchWindow::name() const {
-    return "Prelaunch";
+const char* PrelaunchWindow::getName() const {
+    return name;
 }
 
-const char* PrelaunchWindow::dockspace() const {
+const char* PrelaunchWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 
@@ -61,6 +64,6 @@ void PrelaunchWindow::renderImpl() {
 
     ImGui::SeparatorText("Switch to \"Launch\"");
     if (ImGui::Button("Confirm")) {
-        ImGui::SetWindowFocus("Launch"); // TODO: Access window name from launch window class
+        ImGui::SetWindowFocus(LaunchWindow::name);
     }
 }

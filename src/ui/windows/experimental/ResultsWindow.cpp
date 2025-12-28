@@ -2,11 +2,13 @@
 
 #include "ImGuiConfig.h"
 
-const char* ResultsWindow::name() const {
-    return "Results";
+const char* const ResultsWindow::name = "Results";
+
+const char* ResultsWindow::getName() const {
+    return name;
 }
 
-const char* ResultsWindow::dockspace() const {
+const char* ResultsWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 

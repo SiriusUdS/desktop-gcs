@@ -11,11 +11,11 @@
 
 #include <imgui.h>
 
-const char* BoardsWindow::name() const {
+const char* BoardsWindow::getName() const {
     return "Boards";
 }
 
-const char* BoardsWindow::dockspace() const {
+const char* BoardsWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 

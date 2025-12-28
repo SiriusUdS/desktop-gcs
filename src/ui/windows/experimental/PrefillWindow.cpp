@@ -1,5 +1,6 @@
 #include "PrefillWindow.h"
 
+#include "FillWindow.h"
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
 #include "SavableSessionState.h"
@@ -9,6 +10,8 @@
 
 #include <imgui.h>
 #include <implot.h>
+
+const char* const PrefillWindow::name = "Prefill";
 
 PrefillWindow::PrefillWindow()
     : prewrapTankLoadCellState{UiState::TankLoadCell::prewrapADCValue, "Prewrap"},
@@ -20,11 +23,11 @@ PrefillWindow::PrefillWindow()
                            PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red)} {
 }
 
-const char* PrefillWindow::name() const {
-    return "Prefill";
+const char* PrefillWindow::getName() const {
+    return name;
 }
 
-const char* PrefillWindow::dockspace() const {
+const char* PrefillWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 
@@ -182,7 +185,7 @@ void PrefillWindow::renderImpl() {
     const bool allowConfirm = prewrapTankLoadCellState.saved && postwrapTankLoadCellState.saved && postIPATankLoadCellState.saved;
     ImGui::BeginDisabled(!allowConfirm);
     if (ImGui::Button("Confirm")) {
-        ImGui::SetWindowFocus("Fill"); // TODO: Access window name from fill window class
+        ImGui::SetWindowFocus(FillWindow::name);
     }
     ImGui::EndDisabled();
     if (!allowConfirm && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {

@@ -4,12 +4,15 @@
 #include "Engine/EngineState.h"
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
+#include "PrelaunchWindow.h"
 #include "SensorPlotData.h"
 #include "SwitchData.h"
 #include "ThemedColors.h"
 
 #include <imgui.h>
 #include <implot.h>
+
+const char* const FillWindow::name = "Fill";
 
 FillWindow::FillWindow()
     : tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
@@ -21,11 +24,11 @@ FillWindow::FillWindow()
       tankMassPlotLine{GSDataCenter::NOSTankMass_PlotData, PlotStyle("Tank Mass", ThemedColors::PlotLine::yellow)} {
 }
 
-const char* FillWindow::name() const {
-    return "Fill";
+const char* FillWindow::getName() const {
+    return name;
 }
 
-const char* FillWindow::dockspace() const {
+const char* FillWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 
@@ -121,7 +124,7 @@ void FillWindow::renderImpl() {
 
     ImGui::SeparatorText("Switch to \"Prelaunch\"");
     if (ImGui::Button("Confirm")) {
-        ImGui::SetWindowFocus("Prelaunch"); // TODO: Access window name from prelaunch window class
+        ImGui::SetWindowFocus(PrelaunchWindow::name);
     }
 }
 
@@ -164,6 +167,6 @@ void FillWindow::renderPercentageInputRow(const char* name,
 
 void FillWindow::addDisabledTooltip(const char* tooltipDisabled, bool inputEnabled) const {
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && !inputEnabled) {
-        ImGui::SetTooltip(tooltipDisabled);
+        ImGui::SetTooltip("%s", tooltipDisabled);
     }
 }

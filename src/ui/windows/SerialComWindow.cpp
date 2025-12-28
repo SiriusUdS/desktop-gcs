@@ -31,11 +31,11 @@ void SerialComWindow::saveState(mINI::INIStructure& ini) const {
     ini[IniConfig::GCS_SECTION].set(INI_RECV_BUFFER_DISPLAY_MODE, std::to_string(recvBufferDisplayMode));
 }
 
-const char* SerialComWindow::name() const {
+const char* SerialComWindow::getName() const {
     return "Serial COM";
 }
 
-const char* SerialComWindow::dockspace() const {
+const char* SerialComWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 

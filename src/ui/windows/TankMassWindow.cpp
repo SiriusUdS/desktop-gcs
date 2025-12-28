@@ -43,11 +43,11 @@ void TankMassWindow::init() {
     tankMassPlotTitle = StringUtils::getRecentPlotLineTitle("Tank Mass", RECENT_TIME_WINDOW_MS / 1000);
 }
 
-const char* TankMassWindow::name() const {
+const char* TankMassWindow::getName() const {
     return "Tank Mass";
 }
 
-const char* TankMassWindow::dockspace() const {
+const char* TankMassWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::PLOT;
 }
 

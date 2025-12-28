@@ -14,8 +14,8 @@ public:
     void init() override;
     void loadState(const mINI::INIStructure& ini) override;
     void saveState(mINI::INIStructure& ini) const override;
-    const char* name() const override;
-    const char* dockspace() const override;
+    const char* getName() const override;
+    const char* getDockspace() const override;
 
 private:
     enum MapView { MAP_VIEW = 0, SATELLITE_VIEW = 1 };

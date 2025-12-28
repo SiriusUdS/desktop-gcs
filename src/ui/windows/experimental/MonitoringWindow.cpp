@@ -2,10 +2,13 @@
 
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
+#include "ResultsWindow.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
 
 #include <implot.h>
+
+const char* const MonitoringWindow::name = "Monitoring";
 
 MonitoringWindow::MonitoringWindow()
     : thrustLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
@@ -21,11 +24,11 @@ MonitoringWindow::MonitoringWindow()
          {GSDataCenter::Thermistor_Motor_PlotData.t8().getValuePlotData(), PlotStyle("Motor Thermistor 8", ThemedColors::PlotLine::gray)}}} {
 }
 
-const char* MonitoringWindow::name() const {
-    return "Monitoring";
+const char* MonitoringWindow::getName() const {
+    return name;
 }
 
-const char* MonitoringWindow::dockspace() const {
+const char* MonitoringWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 
@@ -44,6 +47,6 @@ void MonitoringWindow::renderImpl() {
 
     ImGui::SeparatorText("Switch to \"Results\"");
     if (ImGui::Button("Confirm")) {
-        ImGui::SetWindowFocus("Results"); // TODO: Access window name from results window class
+        ImGui::SetWindowFocus(ResultsWindow::name);
     }
 }

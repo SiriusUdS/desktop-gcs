@@ -1,8 +1,11 @@
 #include "LaunchWindow.h"
 
 #include "ImGuiConfig.h"
+#include "MonitoringWindow.h"
 
 #include <imgui.h>
+
+const char* const LaunchWindow::name = "Launch";
 
 using StateRect = StateMachineRenderer::StateRect;
 using Arrow = StateMachineRenderer::Arrow;
@@ -11,11 +14,11 @@ using AnchorEdgeSide = StateMachineRenderer::AnchorEdgeSide;
 using ArrowheadDir = StateMachineRenderer::ArrowheadDir;
 using Label = StateMachineRenderer::Label;
 
-const char* LaunchWindow::name() const {
-    return "Launch";
+const char* LaunchWindow::getName() const {
+    return name;
 }
 
-const char* LaunchWindow::dockspace() const {
+const char* LaunchWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::MAP;
 }
 
@@ -46,7 +49,7 @@ void LaunchWindow::renderImpl() {
 
     if (!inLaunchState && motorFireStateActive) {
         inLaunchState = true;
-        ImGui::SetWindowFocus("Monitoring"); // TODO: Access window name from monitoring class
+        ImGui::SetWindowFocus(MonitoringWindow::name);
     } else if (!motorFireStateActive) {
         inLaunchState = false;
     }

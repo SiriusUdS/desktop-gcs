@@ -5,8 +5,10 @@
 
 class LaunchWindow : public UIWindow {
 public:
-    const char* name() const override;
-    const char* dockspace() const override;
+    const char* getName() const override;
+    const char* getDockspace() const override;
+
+    static const char* const name;
 
 private:
     void lazyInit() override;

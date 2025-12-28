@@ -8,11 +8,11 @@
 RocketParametersWindow::RocketParametersWindow() : NOSTankVolume_m3(ConfigParams::NOSTankVolume_m3.currentValue) {
 }
 
-const char* RocketParametersWindow::name() const {
+const char* RocketParametersWindow::getName() const {
     return "Rocket Parameters";
 }
 
-const char* RocketParametersWindow::dockspace() const {
+const char* RocketParametersWindow::getDockspace() const {
     return ImGuiConfig::Dockspace::LOGGING;
 }
 
