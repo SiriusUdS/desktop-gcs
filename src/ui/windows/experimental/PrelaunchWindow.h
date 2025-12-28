@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PlotLine.h"
 #include "SavableSessionState.h"
 #include "UIWindow.h"
 
@@ -13,4 +14,6 @@ private:
     void renderImpl() override;
 
     SavableSessionState postNOSTankLoadCellState;
+    PlotLine tankLoadCellADCPlotLine;
+    PlotLine tankLoadCellPlotLine;
 };

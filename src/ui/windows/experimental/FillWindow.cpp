@@ -118,6 +118,11 @@ void FillWindow::renderImpl() {
 
         ImGui::EndTable();
     }
+
+    ImGui::SeparatorText("Switch to \"Prelaunch\"");
+    if (ImGui::Button("Confirm")) {
+        ImGui::SetWindowFocus("Prelaunch"); // TODO: Access window name from prelaunch window class
+    }
 }
 
 void FillWindow::renderPercentageInputRow(const char* name,

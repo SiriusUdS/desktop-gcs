@@ -159,10 +159,7 @@ void PrefillWindow::renderImpl() {
         ImGui::EndTable();
     }
 
-    ImGui::SeparatorText("Tank Load Cell Plot");
-
     const ImVec2 plotSize = {-1.0f, 500.0f};
-
     ImPlot::SetNextAxesToFit();
     if (ImPlot::BeginPlot("Tank Load Cell (ADC)", plotSize, ImPlotFlags_NoInputs)) {
         constexpr ImAxis adcValueAxis = ImAxis_Y1;
@@ -179,6 +176,17 @@ void PrefillWindow::renderImpl() {
         tankLoadCellPlotLine.plot();
 
         ImPlot::EndPlot();
+    }
+
+    ImGui::SeparatorText("Switch to \"Fill\"");
+    const bool allowConfirm = prewrapTankLoadCellState.saved && postwrapTankLoadCellState.saved && postIPATankLoadCellState.saved;
+    ImGui::BeginDisabled(!allowConfirm);
+    if (ImGui::Button("Confirm")) {
+        ImGui::SetWindowFocus("Fill"); // TODO: Access window name from fill window class
+    }
+    ImGui::EndDisabled();
+    if (!allowConfirm && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ImGui::SetTooltip("All calibration values need to be saved before proceeding to the \"Fill\" window.");
     }
 
     // TODO: THIS IS A TEST

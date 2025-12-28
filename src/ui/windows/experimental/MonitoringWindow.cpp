@@ -41,4 +41,9 @@ void MonitoringWindow::renderImpl() {
         }
         ImPlot::EndPlot();
     }
+
+    ImGui::SeparatorText("Switch to \"Results\"");
+    if (ImGui::Button("Confirm")) {
+        ImGui::SetWindowFocus("Results"); // TODO: Access window name from results window class
+    }
 }
