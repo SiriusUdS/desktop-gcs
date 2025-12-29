@@ -6,19 +6,23 @@
 #include <mutex>
 #include <vector>
 
-class TankMassPlotDataUpdater : public PlotDataUpdateListener {
+class PlotDataProcessor : public PlotDataUpdateListener {
 public:
-    TankMassPlotDataUpdater(std::vector<const PlotData*> dataVec);
+    PlotDataProcessor(std::vector<const PlotData*> dataVec);
+    virtual ~PlotDataProcessor() = default;
+
     void onAddData(const PlotData* plotData, float timestamp, float value) override;
 
-private:
-    struct PlotDataUpdate {
+protected:
+    struct PlotDataProcessData {
         float timestamp{};
         float value{};
         bool wasUpdated{};
         std::chrono::steady_clock::time_point lastUpdateTime{};
     };
 
-    std::map<const PlotData*, PlotDataUpdate> plotDataUpdateMap;
+    virtual void processNewData() = 0;
+
+    std::map<const PlotData*, PlotDataProcessData> plotDataUpdateMap;
     std::mutex mtx;
 };

@@ -27,7 +27,7 @@
 #include "SerialTask.h"
 #include "SwitchesWindow.h"
 #include "TankMassCalculatorWindow.h"
-#include "TankMassPlotDataUpdater.h"
+#include "TankMassPlotDataProcessor.h"
 #include "TankMassWindow.h"
 #include "UITheme.h"
 #include "ValvesWindow.h"
@@ -40,8 +40,7 @@
 namespace Application {
 mINI::INIFile iniFile("sirius_gcs.ini");
 mINI::INIStructure iniStructure;
-TankMassPlotDataUpdater tankMassPlotDataUpdater{
-  {&GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData(), &GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData()}};
+TankMassPlotDataProcessor tankMassPlotDataProcessor;
 std::vector<std::shared_ptr<UIWindow>> windows;
 std::shared_ptr<LoggingWindow> loggingWindow;
 } // namespace Application
@@ -99,7 +98,7 @@ void Application::init() {
         window->loadState(iniStructure);
     }
 
-    tankMassPlotDataUpdater.subscribe();
+    tankMassPlotDataProcessor.subscribe();
 
     SerialTask::start();
 }

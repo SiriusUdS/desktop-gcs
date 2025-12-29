@@ -36,6 +36,7 @@ workspace "sirius-gcs"
         "src/map",
         "src/params",
         "src/plot",
+        "src/plot/processors",
         "src/plot/views",
         "src/state",
         "src/utils",

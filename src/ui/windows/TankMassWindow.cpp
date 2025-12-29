@@ -115,8 +115,8 @@ void TankMassWindow::renderImpl() {
             ImPlot::SetNextAxesToFit();
             if (ImPlot::BeginPlot(tankMassPlotTitle.c_str(), ImVec2(-1, plotRowHeight), ImPlotFlags_NoInputs)) {
                 ImPlot::SetupAxes("Timestamp (ms)", "Mass (lb)");
-                recentTankMass.plot(false);
-                recentTankLoadCell.plot(false);
+                recentTankMass.plot();
+                // recentTankLoadCell.plot(); TODO : Temporarily commented out for tests
                 ImPlot::EndPlot();
             }
 
