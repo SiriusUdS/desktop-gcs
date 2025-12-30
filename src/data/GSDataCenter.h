@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GSDataCenterConfig.h"
 #include "GSDataCenterTypes.h"
 #include "SwitchData.h"
 #include "ValveData.h"
@@ -16,6 +15,7 @@ extern PressureSensorFillingStationPlotData PressureSensor_FillingStation_PlotDa
 extern LoadCellFillingStationPlotData LoadCell_FillingStation_PlotData;
 
 extern PlotData NOSTankMass_PlotData;
+extern PlotData TankGasLeft_perc_PlotData;
 
 extern SwitchData AllowDumpSwitchData;
 extern SwitchData AllowFillSwitchData;

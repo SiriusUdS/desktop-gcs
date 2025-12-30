@@ -1,16 +1,16 @@
-#include "SavableSessionState.h"
+#include "SavableStateWidget.h"
 
 #include "ThemedColors.h"
 
 #include <imgui.h>
 
-SavableSessionState::SavableSessionState(SessionState& state, std::string label) : state(state), label(label) {
+SavableStateWidget::SavableStateWidget(State& state, std::string label) : state(state), label(label) {
     readButtonLabel = "Read##read_" + state.id;
     saveButtonLabel = "Save##save_" + state.id;
     cancelButtonLabel = "Cancel##cancel_" + state.id;
 }
 
-void SavableSessionState::renderAsRow(float value) {
+void SavableStateWidget::renderAsRow(float savableValue) {
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
     ImGui::Text("%s", label.c_str());
@@ -18,7 +18,7 @@ void SavableSessionState::renderAsRow(float value) {
     ImGui::TableSetColumnIndex(1);
     ImGui::BeginDisabled(saved);
     if (ImGui::Button(readButtonLabel.c_str())) {
-        readValue = value;
+        readValue = savableValue;
     }
     ImGui::EndDisabled();
 

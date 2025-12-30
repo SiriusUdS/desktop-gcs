@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PlotLine.h"
-#include "SavableSessionState.h"
+#include "SavableStateWidget.h"
 #include "UIWindow.h"
 
 class PrelaunchWindow : public UIWindow {
@@ -15,7 +15,7 @@ public:
 private:
     void renderImpl() override;
 
-    SavableSessionState postNOSTankLoadCellState;
+    SavableStateWidget postNOSTankLoadCellState;
     PlotLine tankLoadCellADCPlotLine;
     PlotLine tankLoadCellPlotLine;
 };

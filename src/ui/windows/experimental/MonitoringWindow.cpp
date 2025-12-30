@@ -11,8 +11,9 @@
 const char* const MonitoringWindow::name = "Monitoring";
 
 MonitoringWindow::MonitoringWindow()
-    : thrustLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
-                             PlotStyle("Thrust Load Cell", ThemedColors::PlotLine::blue)},
+    : tankGasLeftPlotLine{GSDataCenter::TankGasLeft_perc_PlotData, PlotStyle("Tank Gas Left", ThemedColors::PlotLine::blue)},
+      thrustLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
+                             PlotStyle("Thrust Load Cell", ThemedColors::PlotLine::red)},
       motorThermistorPlotLines{
         {{GSDataCenter::Thermistor_Motor_PlotData.t1().getValuePlotData(), PlotStyle("Motor Thermistor 1", ThemedColors::PlotLine::blue)},
          {GSDataCenter::Thermistor_Motor_PlotData.t2().getValuePlotData(), PlotStyle("Motor Thermistor 2", ThemedColors::PlotLine::red)},
@@ -34,6 +35,14 @@ const char* MonitoringWindow::getDockspace() const {
 
 void MonitoringWindow::renderImpl() {
     if (ImPlot::BeginPlot("Load Cells", {-1.0f, 500.0f})) {
+        constexpr ImAxis gasLeftAxis = ImAxis_Y1;
+        constexpr ImAxis weightAxis = ImAxis_Y2;
+
+        ImPlot::SetupAxis(ImAxis_X1, "Timestamp (ms)");
+        ImPlot::SetupAxis(gasLeftAxis, "Gas Left (%)");
+        ImPlot::SetupAxis(weightAxis, "Weight (lb)");
+
+        tankGasLeftPlotLine.plot();
         thrustLoadCellPlotLine.plot();
         ImPlot::EndPlot();
     }

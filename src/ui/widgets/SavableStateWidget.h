@@ -1,13 +1,13 @@
 #pragma once
 
-#include "SessionState.h"
+#include "State.h"
 
-struct SavableSessionState {
-    SavableSessionState(SessionState& state, std::string label);
-    void renderAsRow(float value);
+struct SavableStateWidget {
+    SavableStateWidget(State& state, std::string label);
+    void renderAsRow(float savableValue);
 
     float readValue{};
-    SessionState& state;
+    State& state;
     bool saved{};
     std::string label;
     std::string readButtonLabel;

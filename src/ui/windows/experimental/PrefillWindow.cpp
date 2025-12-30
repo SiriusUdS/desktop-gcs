@@ -1,12 +1,11 @@
 #include "PrefillWindow.h"
 
+#include "AppState.h"
 #include "FillWindow.h"
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
-#include "SavableSessionState.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
-#include "UiState.h"
 
 #include <imgui.h>
 #include <implot.h>
@@ -14,9 +13,9 @@
 const char* const PrefillWindow::name = "Prefill";
 
 PrefillWindow::PrefillWindow()
-    : prewrapTankLoadCellState{UiState::TankLoadCell::prewrapADCValue, "Prewrap"},
-      postwrapTankLoadCellState{UiState::TankLoadCell::postwrapADCValue, "Postwrap"},
-      postIPATankLoadCellState{UiState::TankLoadCell::postIPAADCValue, "Post IPA"},
+    : prewrapTankLoadCellState{AppState::TankLoadCell::prewrapADCValue, "Prewrap"},
+      postwrapTankLoadCellState{AppState::TankLoadCell::postwrapADCValue, "Postwrap"},
+      postIPATankLoadCellState{AppState::TankLoadCell::postIPAADCValue, "Post IPA"},
       tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
                               PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)},
       tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),

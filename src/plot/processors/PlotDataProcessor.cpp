@@ -10,8 +10,6 @@ PlotDataProcessor::PlotDataProcessor(std::vector<const PlotData*> dataVec) : Plo
 }
 
 void PlotDataProcessor::onAddData(const PlotData* plotData, float timestamp, float value) {
-    std::lock_guard<std::mutex> lock(mtx);
-
     auto updatedSourceIt = plotDataUpdateMap.find(plotData);
     if (updatedSourceIt == plotDataUpdateMap.end()) {
         GCS_APP_LOG_ERROR("PlotDataProcessor: Notifier plot data not found in tracked plot data map.");

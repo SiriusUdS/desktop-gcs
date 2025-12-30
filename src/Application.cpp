@@ -26,6 +26,7 @@
 #include "SerialComWindow.h"
 #include "SerialTask.h"
 #include "SwitchesWindow.h"
+#include "TankGasLeftPlotDataProcessor.h"
 #include "TankMassCalculatorWindow.h"
 #include "TankMassPlotDataProcessor.h"
 #include "TankMassWindow.h"
@@ -40,6 +41,7 @@
 namespace Application {
 mINI::INIFile iniFile("sirius_gcs.ini");
 mINI::INIStructure iniStructure;
+TankGasLeftPlotDataProcessor tankGasLeftPlotDataProcessor;
 TankMassPlotDataProcessor tankMassPlotDataProcessor;
 std::vector<std::shared_ptr<UIWindow>> windows;
 std::shared_ptr<LoggingWindow> loggingWindow;
@@ -98,6 +100,7 @@ void Application::init() {
         window->loadState(iniStructure);
     }
 
+    tankGasLeftPlotDataProcessor.subscribe();
     tankMassPlotDataProcessor.subscribe();
 
     SerialTask::start();

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PlotLine.h"
-#include "SavableSessionState.h"
+#include "SavableStateWidget.h"
 #include "SensorTestSequencer.h"
 #include "UIWindow.h"
 
@@ -17,9 +17,9 @@ private:
     void renderImpl() override;
 
     SensorTestSequencer sensorTestSequencer;
-    SavableSessionState prewrapTankLoadCellState;
-    SavableSessionState postwrapTankLoadCellState;
-    SavableSessionState postIPATankLoadCellState;
+    SavableStateWidget prewrapTankLoadCellState;
+    SavableStateWidget postwrapTankLoadCellState;
+    SavableStateWidget postIPATankLoadCellState;
     PlotLine tankLoadCellADCPlotLine;
     PlotLine tankLoadCellPlotLine;
 };

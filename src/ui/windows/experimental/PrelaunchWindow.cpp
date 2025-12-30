@@ -1,11 +1,11 @@
 #include "PrelaunchWindow.h"
 
+#include "AppState.h"
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
 #include "LaunchWindow.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
-#include "UiState.h"
 
 #include <imgui.h>
 #include <implot.h>
@@ -13,7 +13,7 @@
 const char* const PrelaunchWindow::name = "Prelaunch";
 
 PrelaunchWindow::PrelaunchWindow()
-    : postNOSTankLoadCellState(UiState::TankLoadCell::postNOSADCValue, "Post NOS"),
+    : postNOSTankLoadCellState(AppState::TankLoadCell::postNOSADCValue, "Post NOS"),
       tankLoadCellADCPlotLine(GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
                               PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)),
       tankLoadCellPlotLine(GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
@@ -63,7 +63,13 @@ void PrelaunchWindow::renderImpl() {
     ImGui::Button("Test igniter continuity");
 
     ImGui::SeparatorText("Switch to \"Launch\"");
+    const bool allowConfirm = postNOSTankLoadCellState.saved;
+    ImGui::BeginDisabled(!allowConfirm);
     if (ImGui::Button("Confirm")) {
         ImGui::SetWindowFocus(LaunchWindow::name);
     }
+    if (!allowConfirm && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ImGui::SetTooltip("All calibration values need to be saved before proceeding to the \"Launch\" window.");
+    }
+    ImGui::EndDisabled();
 }

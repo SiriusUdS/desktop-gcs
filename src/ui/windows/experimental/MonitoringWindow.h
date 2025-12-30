@@ -17,6 +17,7 @@ public:
 private:
     void renderImpl() override;
 
+    PlotLine tankGasLeftPlotLine;
     PlotLine thrustLoadCellPlotLine;
 
     std::array<PlotLine, GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD> motorThermistorPlotLines;

@@ -1,6 +1,5 @@
 #include "GSDataCenter.h"
 
-#include "SensorPlotData.h"
 #include "SwitchData.h"
 #include "ValveData.h"
 
@@ -12,6 +11,7 @@ PressureSensorFillingStationPlotData PressureSensor_FillingStation_PlotData;
 LoadCellFillingStationPlotData LoadCell_FillingStation_PlotData;
 
 PlotData NOSTankMass_PlotData;
+PlotData TankGasLeft_perc_PlotData;
 
 SwitchData AllowDumpSwitchData;
 SwitchData AllowFillSwitchData;

@@ -3,7 +3,6 @@
 #include "PlotDataUpdateListener.h"
 
 #include <map>
-#include <mutex>
 #include <vector>
 
 class PlotDataProcessor : public PlotDataUpdateListener {
@@ -24,5 +23,4 @@ protected:
     virtual void processNewData() = 0;
 
     std::map<const PlotData*, PlotDataProcessData> plotDataUpdateMap;
-    std::mutex mtx;
 };
