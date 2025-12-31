@@ -23,9 +23,7 @@ void TankGasLeftPlotDataProcessor::processNewData() {
     const double postIPAADCValue = static_cast<double>(AppState::TankLoadCell::postIPAADCValue.value.load());
 
     if (postIPAADCValue == prewrapADCValue) {
-        GCS_APP_LOG_ERROR(
-          "TankGasLeftPlotDataProcessor: prewrapADCValue and postIPAADCValue have the same value, tank gas left value not computed to "
-          "avoid division by 0.");
+        // Returning early to avoid division by 0.
         return;
     }
 
