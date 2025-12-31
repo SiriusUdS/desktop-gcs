@@ -1,6 +1,7 @@
 #include "PrelaunchWindow.h"
 
 #include "AppState.h"
+#include "ConfigParams.h"
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
 #include "LaunchWindow.h"
@@ -51,10 +52,10 @@ void PrelaunchWindow::renderImpl() {
         ImPlot::SetupAxis(weightAxis, "Weight (lb)");
 
         ImPlot::SetAxis(adcValueAxis);
-        tankLoadCellADCPlotLine.plot();
+        tankLoadCellADCPlotLine.plot(ConfigParams::compressPlots.currentValue);
 
         ImPlot::SetAxis(weightAxis);
-        tankLoadCellPlotLine.plot();
+        tankLoadCellPlotLine.plot(ConfigParams::compressPlots.currentValue);
 
         ImPlot::EndPlot();
     }

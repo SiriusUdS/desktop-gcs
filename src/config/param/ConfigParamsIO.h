@@ -10,4 +10,7 @@ void saveParams(mINI::INIStructure& ini);
 
 void loadFloatParam(const mINI::INIStructure& ini, FloatConfigParam& param);
 void saveFloatParam(mINI::INIStructure& ini, const FloatConfigParam& param);
+
+void loadBoolParam(const mINI::INIStructure& ini, BoolConfigParam& param);
+void saveBoolParam(mINI::INIStructure& ini, const BoolConfigParam& param);
 } // namespace ConfigParamsIO

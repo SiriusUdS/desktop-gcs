@@ -23,6 +23,7 @@ int main(int, char*[]) {
 
     runnerParams.callbacks.LoadAdditionalFonts = Application::loadFonts;
     runnerParams.callbacks.PreNewFrame = Application::preNewFrame;
+    runnerParams.callbacks.ShowMenus = Application::showMenus;
     runnerParams.callbacks.BeforeExit = Application::shutdown;
 
     runnerParams.imGuiWindowParams.menuAppTitle = "Sirius GCS";

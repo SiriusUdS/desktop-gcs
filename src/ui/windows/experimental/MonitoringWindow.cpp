@@ -1,5 +1,6 @@
 #include "MonitoringWindow.h"
 
+#include "ConfigParams.h"
 #include "GSDataCenter.h"
 #include "ImGuiConfig.h"
 #include "ResultsWindow.h"
@@ -50,9 +51,9 @@ void MonitoringWindow::renderImpl() {
         ImPlot::SetupAxis(weightAxis, "Weight (lb)");
 
         ImPlot::SetAxis(gasLeftAxis);
-        tankGasLeftPlotLine.plot();
+        tankGasLeftPlotLine.plot(ConfigParams::compressPlots.currentValue);
         ImPlot::SetAxis(weightAxis);
-        thrustLoadCellPlotLine.plot();
+        thrustLoadCellPlotLine.plot(ConfigParams::compressPlots.currentValue);
 
         ImPlot::EndPlot();
     }
@@ -67,12 +68,12 @@ void MonitoringWindow::renderImpl() {
         ImPlot::SetupAxis(temperatureAxis, "Temperature (C)");
 
         ImPlot::SetAxis(pressureAxis);
-        tankPressurePlotLine.plot();
-        chamberPressurePlotLine.plot();
+        tankPressurePlotLine.plot(ConfigParams::compressPlots.currentValue);
+        chamberPressurePlotLine.plot(ConfigParams::compressPlots.currentValue);
 
         ImPlot::SetAxis(temperatureAxis);
         for (const PlotLine& plotLine : motorThermistorPlotLines) {
-            plotLine.plot();
+            plotLine.plot(ConfigParams::compressPlots.currentValue);
         }
         ImPlot::EndPlot();
     }

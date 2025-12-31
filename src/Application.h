@@ -10,6 +10,7 @@ namespace Application {
 void loadFonts();
 void init();
 void preNewFrame();
+void showMenus();
 void shutdown();
 std::vector<HelloImGui::DockingSplit> createBaseDockingSplits();
 std::vector<HelloImGui::DockableWindow> createDockableWindows();

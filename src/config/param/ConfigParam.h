@@ -17,4 +17,5 @@ struct ConfigParam {
     std::string iniKey;
 };
 
+using BoolConfigParam = ConfigParam<bool>;
 using FloatConfigParam = ConfigParam<float>;

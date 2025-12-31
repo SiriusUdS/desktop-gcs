@@ -5,6 +5,7 @@
 // clang-format on
 
 #include "BoardsWindow.h"
+#include "ConfigParams.h"
 #include "ConfigParamsIO.h"
 #include "ControlsWindow.h"
 #include "FillWindow.h"
@@ -108,6 +109,16 @@ void Application::init() {
 
 void Application::preNewFrame() {
     UITheme::update();
+}
+
+void Application::showMenus() {
+    if (ImGui::BeginMenu("Plot")) {
+        if (ImGui::MenuItem("Compress all", NULL, ConfigParams::compressPlots.currentValue)) {
+            ConfigParams::compressPlots.currentValue = !ConfigParams::compressPlots.currentValue.load();
+        }
+
+        ImGui::EndMenu();
+    }
 }
 
 void Application::shutdown() {
