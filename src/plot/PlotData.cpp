@@ -46,12 +46,7 @@ void PlotData::addData(float timestamp, float value) {
     }
 
     if (values.raw().size() > MAX_ORIGINAL_DATA_SIZE) {
-        timeline.eraseOld(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
-        values.eraseOld(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
-
-        for (PlotDataUpdateListener* listener : listeners) {
-            listener->onEraseOld(this);
-        }
+        eraseOldImpl(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
     }
 
     if (values.compressed().size() > MAX_COMPRESSED_DATA_SIZE) {
@@ -70,12 +65,13 @@ void PlotData::addData(float timestamp, float value) {
 void PlotData::clear() {
     std::lock_guard<std::mutex> lock(mtx);
 
-    timeline.clear();
-    values.clear();
+    clearImpl();
+}
 
-    for (PlotDataUpdateListener* listener : listeners) {
-        listener->onClear(this);
-    }
+void PlotData::eraseOld(size_t amount) {
+    std::lock_guard<std::mutex> lock(mtx);
+
+    eraseOldImpl(amount);
 }
 
 void PlotData::addListener(PlotDataUpdateListener* listener) const {
@@ -137,4 +133,22 @@ size_t PlotData::getSize() const {
 
 PlotData::LockedView PlotData::makeLockedView() const {
     return LockedView(mtx, timeline, values);
+}
+
+void PlotData::clearImpl() {
+    timeline.clear();
+    values.clear();
+
+    for (PlotDataUpdateListener* listener : listeners) {
+        listener->onClear(this);
+    }
+}
+
+void PlotData::eraseOldImpl(size_t amount) {
+    timeline.eraseOld(amount);
+    values.eraseOld(amount);
+
+    for (PlotDataUpdateListener* listener : listeners) {
+        listener->onEraseOld(this);
+    }
 }

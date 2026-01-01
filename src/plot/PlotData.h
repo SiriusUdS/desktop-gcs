@@ -27,6 +27,7 @@ public:
     PlotData();
     void addData(float timestamp, float value);
     void clear();
+    void eraseOld(size_t amount);
     void addListener(PlotDataUpdateListener* listener) const;
     float recentAverageValue(size_t duration_ms = DEFAULT_RECENT_AVG_VAL_DURATION_MS) const;
     const DataSeries& getTimeline() const;
@@ -39,6 +40,9 @@ private:
     static constexpr size_t DATA_AMOUNT_TO_DROP_IF_MAX_REACHED = 10'000;
     static constexpr size_t MAX_COMPRESSED_DATA_SIZE = 20'000;
     static constexpr size_t TARGET_COMPRESSED_DATA_SIZE = 10'000;
+
+    void clearImpl();
+    void eraseOldImpl(size_t amount);
 
     DataSeries timeline;
     DataSeries values;
