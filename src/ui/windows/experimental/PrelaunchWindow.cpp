@@ -3,7 +3,6 @@
 #include "AppState.h"
 #include "ConfigParams.h"
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
 #include "LaunchWindow.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
@@ -23,10 +22,6 @@ PrelaunchWindow::PrelaunchWindow()
 
 const char* PrelaunchWindow::getName() const {
     return name;
-}
-
-const char* PrelaunchWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void PrelaunchWindow::renderImpl() {

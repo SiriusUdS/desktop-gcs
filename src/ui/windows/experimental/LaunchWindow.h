@@ -6,7 +6,6 @@
 class LaunchWindow : public UIWindow {
 public:
     const char* getName() const override;
-    const char* getDockspace() const override;
 
     static const char* const name;
 

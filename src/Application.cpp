@@ -4,35 +4,17 @@
 #include <WinSock2.h>
 // clang-format on
 
-#include "BoardsWindow.h"
 #include "ConfigParams.h"
 #include "ConfigParamsIO.h"
-#include "ControlsWindow.h"
-#include "FillWindow.h"
 #include "FontConfig.h"
-#include "GSDataCenter.h"
-#include "ImGuiConfig.h"
-#include "LaunchWindow.h"
 #include "Logging.h"
-#include "LoggingWindow.h"
-#include "MapWindow.h"
-#include "MonitoringWindow.h"
-#include "NOSPhaseDiagramWindow.h"
 #include "PlotWindowCenter.h"
-#include "PrefillWindow.h"
-#include "PrelaunchWindow.h"
-#include "ResultsWindow.h"
-#include "RocketParametersWindow.h"
-#include "SensorPlotData.h"
-#include "SerialComWindow.h"
 #include "SerialTask.h"
-#include "SwitchesWindow.h"
 #include "TankGasLeftPlotDataProcessor.h"
-#include "TankMassCalculatorWindow.h"
 #include "TankMassPlotDataProcessor.h"
-#include "TankMassWindow.h"
 #include "UITheme.h"
-#include "ValvesWindow.h"
+#include "UIWindow.h"
+#include "UIWindows.h"
 
 #include <imgui.h>
 #include <implot.h>
@@ -45,7 +27,6 @@ mINI::INIStructure iniStructure;
 TankGasLeftPlotDataProcessor tankGasLeftPlotDataProcessor;
 TankMassPlotDataProcessor tankMassPlotDataProcessor;
 std::vector<std::shared_ptr<UIWindow>> windows;
-std::shared_ptr<LoggingWindow> loggingWindow;
 } // namespace Application
 
 void Application::loadFonts() {
@@ -75,31 +56,8 @@ void Application::init() {
     PlotWindowCenter::loadState(iniStructure);
     ConfigParamsIO::loadParams(iniStructure);
 
-    loggingWindow = std::make_shared<LoggingWindow>();
-
-    // windows.emplace_back(std::make_shared<BoardsWindow>());
-    // windows.emplace_back(std::make_shared<ControlsWindow>());
-    windows.emplace_back(loggingWindow);
-    windows.emplace_back(std::make_shared<MapWindow>());
-    // windows.emplace_back(std::make_shared<NOSPhaseDiagramWindow>());
-    windows.emplace_back(std::make_shared<RocketParametersWindow>());
-    windows.emplace_back(std::make_shared<SerialComWindow>());
-    // windows.emplace_back(std::make_shared<SwitchesWindow>());
-    windows.emplace_back(std::make_shared<TankMassCalculatorWindow>());
-    windows.emplace_back(std::make_shared<TankMassWindow>());
-    // windows.emplace_back(std::make_shared<ValvesWindow>());
-
-    windows.emplace_back(std::make_shared<PrefillWindow>());
-    windows.emplace_back(std::make_shared<FillWindow>());
-    windows.emplace_back(std::make_shared<PrelaunchWindow>());
-    windows.emplace_back(std::make_shared<LaunchWindow>());
-    windows.emplace_back(std::make_shared<MonitoringWindow>());
-    windows.emplace_back(std::make_shared<ResultsWindow>());
-
-    for (const auto& window : windows) {
-        window->init();
-        window->loadState(iniStructure);
-    }
+    UIWindows::init();
+    UIWindows::loadState(iniStructure);
 
     tankGasLeftPlotDataProcessor.subscribe();
     tankMassPlotDataProcessor.subscribe();
@@ -126,40 +84,11 @@ void Application::shutdown() {
     ConfigParamsIO::saveParams(iniStructure);
     PlotWindowCenter::saveState(iniStructure);
 
-    for (const auto& window : windows) {
-        window->saveState(iniStructure);
-    }
+    UIWindows::saveState(iniStructure);
 
     iniFile.write(iniStructure);
 
     ImPlot::DestroyContext();
 
     WSACleanup();
-}
-
-std::vector<HelloImGui::DockingSplit> Application::createBaseDockingSplits() {
-    HelloImGui::DockingSplit splitPlotLogs;
-    splitPlotLogs.initialDock = ImGuiConfig::Dockspace::PLOT;
-    splitPlotLogs.newDock = ImGuiConfig::Dockspace::LOGGING;
-    splitPlotLogs.direction = ImGuiDir_Down;
-    splitPlotLogs.ratio = 0.33f;
-
-    HelloImGui::DockingSplit splitPlotMap;
-    splitPlotMap.initialDock = ImGuiConfig::Dockspace::PLOT;
-    splitPlotMap.newDock = ImGuiConfig::Dockspace::MAP;
-    splitPlotMap.direction = ImGuiDir_Left;
-    splitPlotMap.ratio = 0.5f;
-
-    std::vector<HelloImGui::DockingSplit> splits = {splitPlotLogs, splitPlotMap};
-    return splits;
-}
-
-std::vector<HelloImGui::DockableWindow> Application::createDockableWindows() {
-    std::vector<HelloImGui::DockableWindow> dockableWindows = PlotWindowCenter::createDockableWindows();
-
-    for (const auto& window : windows) {
-        dockableWindows.emplace_back(window->getName(), window->getDockspace(), [window]() { window->render(); });
-    }
-
-    return dockableWindows;
 }

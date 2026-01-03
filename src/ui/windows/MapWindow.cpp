@@ -1,6 +1,5 @@
 #include "MapWindow.h"
 
-#include "ImGuiConfig.h"
 #include "IniConfig.h"
 #include "Logging.h"
 #include "RichMarkItem.h"
@@ -45,10 +44,6 @@ void MapWindow::saveState(mINI::INIStructure& ini) const {
 
 const char* MapWindow::getName() const {
     return "Map";
-}
-
-const char* MapWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void MapWindow::renderImpl() {

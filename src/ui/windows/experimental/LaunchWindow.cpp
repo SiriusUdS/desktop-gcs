@@ -1,6 +1,5 @@
 #include "LaunchWindow.h"
 
-#include "ImGuiConfig.h"
 #include "MonitoringWindow.h"
 
 #include <imgui.h>
@@ -16,10 +15,6 @@ using Label = StateMachineRenderer::Label;
 
 const char* LaunchWindow::getName() const {
     return name;
-}
-
-const char* LaunchWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void LaunchWindow::lazyInit() {

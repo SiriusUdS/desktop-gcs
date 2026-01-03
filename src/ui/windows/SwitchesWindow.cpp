@@ -1,17 +1,12 @@
 #include "SwitchesWindow.h"
 
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
 #include "OnOff.h"
 
 #include <imgui.h>
 
 const char* SwitchesWindow::getName() const {
     return "Switches";
-}
-
-const char* SwitchesWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void SwitchesWindow::renderImpl() {

@@ -12,8 +12,4 @@ void init();
 void preNewFrame();
 void showMenus();
 void shutdown();
-std::vector<HelloImGui::DockingSplit> createBaseDockingSplits();
-std::vector<HelloImGui::DockableWindow> createDockableWindows();
-
-extern std::shared_ptr<LoggingWindow> loggingWindow;
 } // namespace Application

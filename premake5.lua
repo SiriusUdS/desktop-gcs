@@ -40,6 +40,7 @@ workspace "sirius-gcs"
         "src/plot/views",
         "src/state",
         "src/utils",
+        "src/ui/layouts",
         "src/ui/theme",
         "src/ui/widgets",
         "src/ui/windows",

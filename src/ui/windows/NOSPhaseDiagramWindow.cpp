@@ -2,10 +2,8 @@
 
 #include "DataSeries.h"
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
 #include "VaporPressure.h"
 
-#include <cmath>
 #include <implot.h>
 
 const NOSPhaseDiagramWindow::PT_Point NOSPhaseDiagramWindow::triplePoint{-90.82f, 12.74156526f};
@@ -39,10 +37,6 @@ void NOSPhaseDiagramWindow::init() {
 
 const char* NOSPhaseDiagramWindow::getName() const {
     return "NOS Phase Diagram";
-}
-
-const char* NOSPhaseDiagramWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::PLOT;
 }
 
 void NOSPhaseDiagramWindow::renderImpl() {

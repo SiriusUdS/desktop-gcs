@@ -8,7 +8,6 @@ class FillWindow : public UIWindow {
 public:
     FillWindow();
     const char* getName() const override;
-    const char* getDockspace() const override;
 
     static const char* const name;
 

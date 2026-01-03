@@ -1,4 +1,7 @@
+#include "AllWindowsLayout.h"
 #include "Application.h"
+#include "DiagnosticsLayout.h"
+#include "MissionLayout.h"
 
 #include <hello_imgui/hello_imgui.h>
 
@@ -18,8 +21,12 @@ int main(int, char*[]) {
     runnerParams.appWindowParams.borderlessResizable = true;
     runnerParams.appWindowParams.borderlessClosable = true;
 
-    runnerParams.dockingParams.dockingSplits = Application::createBaseDockingSplits();
-    runnerParams.dockingParams.dockableWindows = Application::createDockableWindows();
+    MissionLayout missionLayout;
+    DiagnosticsLayout diagnosticsLayout;
+    AllWindowsLayout allWindowsLayout;
+    runnerParams.dockingParams = missionLayout.createDockingParams();
+    runnerParams.alternativeDockingLayouts = {diagnosticsLayout.createDockingParams(), allWindowsLayout.createDockingParams()};
+    runnerParams.rememberSelectedAlternativeLayout = false;
 
     runnerParams.callbacks.LoadAdditionalFonts = Application::loadFonts;
     runnerParams.callbacks.PreNewFrame = Application::preNewFrame;

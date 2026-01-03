@@ -4,7 +4,6 @@
 #include "ConfigParams.h"
 #include "FillWindow.h"
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
 
@@ -25,10 +24,6 @@ PrefillWindow::PrefillWindow()
 
 const char* PrefillWindow::getName() const {
     return name;
-}
-
-const char* PrefillWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void PrefillWindow::renderImpl() {

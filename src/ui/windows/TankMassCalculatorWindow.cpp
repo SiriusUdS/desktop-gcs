@@ -2,17 +2,12 @@
 
 #include "ConfigParams.h"
 #include "FontAwesome.h"
-#include "ImGuiConfig.h"
 #include "TankMass.h"
 
 #include <imgui.h>
 
 const char* TankMassCalculatorWindow::getName() const {
     return "Tank Mass Calculator";
-}
-
-const char* TankMassCalculatorWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void TankMassCalculatorWindow::renderImpl() {

@@ -1,17 +1,12 @@
 #include "ValvesWindow.h"
 
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
 #include "ValveData.h"
 
 #include <imgui.h>
 
 const char* ValvesWindow::getName() const {
     return "Valves";
-}
-
-const char* ValvesWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void ValvesWindow::renderImpl() {

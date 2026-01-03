@@ -9,7 +9,6 @@ class PrefillWindow : public UIWindow {
 public:
     PrefillWindow();
     const char* getName() const override;
-    const char* getDockspace() const override;
 
     static const char* const name;
 

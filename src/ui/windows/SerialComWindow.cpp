@@ -3,7 +3,6 @@
 #include "ComPortSelector.h"
 #include "FontConfig.h"
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
 #include "IniConfig.h"
 #include "PacketRateMonitor.h"
 #include "SerialCom.h"
@@ -33,10 +32,6 @@ void SerialComWindow::saveState(mINI::INIStructure& ini) const {
 
 const char* SerialComWindow::getName() const {
     return "Serial COM";
-}
-
-const char* SerialComWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void SerialComWindow::renderImpl() {

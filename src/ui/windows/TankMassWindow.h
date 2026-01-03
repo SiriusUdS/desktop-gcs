@@ -8,7 +8,6 @@ public:
     TankMassWindow();
     void init() override;
     const char* getName() const override;
-    const char* getDockspace() const override;
 
 private:
     void renderImpl() override;
@@ -21,7 +20,6 @@ private:
     std::string engineThrustPlotTitle;
     std::string tankMassPlotTitle;
 
-    // TODO: Replace these indexes with constants
     RecentPlotDataView recentMotorPressureSensor1;
     RecentPlotDataView recentMotorPressureSensor2;
     RecentPlotDataView recentFillPressureSensor1;

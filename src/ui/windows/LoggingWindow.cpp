@@ -1,7 +1,6 @@
 #include "LoggingWindow.h"
 
 #include "FontAwesome.h"
-#include "ImGuiConfig.h"
 #include "IniConfig.h"
 #include "ThemedColors.h"
 #include "ToggleButton.h"
@@ -39,10 +38,6 @@ const char* LoggingWindow::getName() const {
     return "Logs";
 }
 
-const char* LoggingWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::LOGGING;
-}
-
 void LoggingWindow::addLog(const char* str, const char* strEnd, spdlog::level::level_enum type) {
     logBuffer.addLog(str, strEnd, type);
 }
@@ -74,6 +69,7 @@ void LoggingWindow::renderImpl() {
 
     ImGui::Separator();
 
+    // TODO: TEXT COLOR IS WRONG WHEN RENDERING LOG MESSAGES
     if (ImGui::BeginChild("scrolling", ImVec2(0, 0), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar)) {
         logBuffer.render();
     }

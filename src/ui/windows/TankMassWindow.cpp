@@ -1,7 +1,6 @@
 #include "TankMassWindow.h"
 
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
 #include "SensorPlotData.h"
 #include "StringUtils.h"
 #include "ThemedColors.h"
@@ -45,10 +44,6 @@ void TankMassWindow::init() {
 
 const char* TankMassWindow::getName() const {
     return "Tank Mass";
-}
-
-const char* TankMassWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::PLOT;
 }
 
 void TankMassWindow::renderImpl() {

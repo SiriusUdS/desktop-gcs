@@ -22,7 +22,6 @@ public:
     virtual void saveState(mINI::INIStructure& ini) const {
     }
     virtual const char* getName() const = 0;
-    virtual const char* getDockspace() const = 0;
 
 protected:
     virtual void lazyInit() {

@@ -6,7 +6,6 @@
 class BoardsWindow : public UIWindow {
 public:
     const char* getName() const override;
-    const char* getDockspace() const override;
 
 private:
     void renderImpl() override;

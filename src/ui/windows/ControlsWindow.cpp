@@ -1,23 +1,14 @@
 #include "ControlsWindow.h"
 
 #include "CommandControl.h"
-#include "Engine/EngineSensors.h"
 #include "Engine/EngineState.h"
-#include "FillingStation/FillingStationSensors.h"
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
-#include "Logging.h"
 #include "SwitchData.h"
-#include "ValveData.h"
 
 #include <imgui.h>
 
 const char* ControlsWindow::getName() const {
     return "Controls";
-}
-
-const char* ControlsWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void ControlsWindow::renderImpl() {

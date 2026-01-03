@@ -5,7 +5,6 @@
 #include "FontConfig.h"
 #include "GSControl/GSControlState.h"
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
 #include "SerialCom.h"
 #include "SerialTask.h"
 
@@ -13,10 +12,6 @@
 
 const char* BoardsWindow::getName() const {
     return "Boards";
-}
-
-const char* BoardsWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void BoardsWindow::renderImpl() {

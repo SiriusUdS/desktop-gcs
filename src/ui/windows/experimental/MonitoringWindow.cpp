@@ -2,7 +2,6 @@
 
 #include "ConfigParams.h"
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
 #include "ResultsWindow.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
@@ -33,10 +32,6 @@ MonitoringWindow::MonitoringWindow()
 
 const char* MonitoringWindow::getName() const {
     return name;
-}
-
-const char* MonitoringWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void MonitoringWindow::renderImpl() {

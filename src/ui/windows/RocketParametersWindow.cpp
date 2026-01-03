@@ -1,7 +1,6 @@
 #include "RocketParametersWindow.h"
 
 #include "ConfigParams.h"
-#include "ImGuiConfig.h"
 
 #include <imgui.h>
 
@@ -10,10 +9,6 @@ RocketParametersWindow::RocketParametersWindow() : NOSTankVolume_m3(ConfigParams
 
 const char* RocketParametersWindow::getName() const {
     return "Rocket Parameters";
-}
-
-const char* RocketParametersWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::LOGGING;
 }
 
 void RocketParametersWindow::renderImpl() {

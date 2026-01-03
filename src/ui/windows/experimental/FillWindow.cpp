@@ -4,7 +4,6 @@
 #include "ConfigParams.h"
 #include "Engine/EngineState.h"
 #include "GSDataCenter.h"
-#include "ImGuiConfig.h"
 #include "PrelaunchWindow.h"
 #include "SensorPlotData.h"
 #include "SwitchData.h"
@@ -27,10 +26,6 @@ FillWindow::FillWindow()
 
 const char* FillWindow::getName() const {
     return name;
-}
-
-const char* FillWindow::getDockspace() const {
-    return ImGuiConfig::Dockspace::MAP;
 }
 
 void FillWindow::renderImpl() {
