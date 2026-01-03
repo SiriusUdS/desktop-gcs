@@ -9,6 +9,8 @@
  */
 class AbstractComPortDiscovery {
 public:
+    virtual ~AbstractComPortDiscovery() = default;
+
     /**
      * @brief Gets the available COM ports.
      * @param comPortVec A vector to store the names of available COM ports.

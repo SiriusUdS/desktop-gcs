@@ -6,6 +6,7 @@ class PlotDataUpdateListener {
 public:
     PlotDataUpdateListener(std::vector<const PlotData*> dataVec) : dv(dataVec) {
     }
+    virtual ~PlotDataUpdateListener() = default;
 
     void subscribe() {
         for (const PlotData* data : dv) {

@@ -8,6 +8,7 @@ class PlotData;
 class PlotDataView {
 public:
     PlotDataView(const PlotData& data, const PlotStyle& style);
+    virtual ~PlotDataView() = default;
 
     void plot(bool showCompressedData = false);
 

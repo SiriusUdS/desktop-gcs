@@ -7,6 +7,8 @@ class UIWindow;
 
 class Layout {
 public:
+    virtual ~Layout() = default;
+
     HelloImGui::DockingParams createDockingParams();
 
 protected:
