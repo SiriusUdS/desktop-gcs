@@ -9,11 +9,11 @@ HelloImGui::DockingParams Layout::createDockingParams() {
 }
 
 std::vector<HelloImGui::DockableWindow> Layout::createDockableWindows() {
-    std::vector<DockedWindow> temp = getDockedWindows();
+    std::vector<DockedWindow> dockedWindows = getDockedWindows();
     std::vector<HelloImGui::DockableWindow> dockableWindows;
 
-    for (const auto& test : temp) {
-        dockableWindows.emplace_back(test.window->getName(), test.dockspace, [test]() { test.window->render(); });
+    for (const auto& dockedWindow : dockedWindows) {
+        dockableWindows.emplace_back(dockedWindow.window->getName(), dockedWindow.dockspace, [dockedWindow]() { dockedWindow.window->render(); });
     }
 
     return dockableWindows;

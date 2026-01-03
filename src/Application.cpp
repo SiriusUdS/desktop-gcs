@@ -7,6 +7,7 @@
 #include "ConfigParams.h"
 #include "ConfigParamsIO.h"
 #include "FontConfig.h"
+#include "GSDataCenter.h"
 #include "Logging.h"
 #include "PlotWindowCenter.h"
 #include "SerialTask.h"
@@ -71,8 +72,28 @@ void Application::preNewFrame() {
 
 void Application::showMenus() {
     if (ImGui::BeginMenu("Plot")) {
-        if (ImGui::MenuItem("Compress all", NULL, ConfigParams::compressPlots.currentValue)) {
+        if (ImGui::MenuItem("Show compressed data", NULL, ConfigParams::compressPlots.currentValue)) {
             ConfigParams::compressPlots.currentValue = !ConfigParams::compressPlots.currentValue.load();
+        }
+
+        if (ImGui::MenuItem("Clear all")) {
+            for (SensorPlotData& sensorPlotData : GSDataCenter::Thermistor_Motor_PlotData.data) {
+                sensorPlotData.clear();
+            }
+            for (SensorPlotData& sensorPlotData : GSDataCenter::PressureSensor_Motor_PlotData.data) {
+                sensorPlotData.clear();
+            }
+            for (SensorPlotData& sensorPlotData : GSDataCenter::Thermistor_FillingStation_PlotData.data) {
+                sensorPlotData.clear();
+            }
+            for (SensorPlotData& sensorPlotData : GSDataCenter::PressureSensor_FillingStation_PlotData.data) {
+                sensorPlotData.clear();
+            }
+            for (SensorPlotData& sensorPlotData : GSDataCenter::LoadCell_FillingStation_PlotData.data) {
+                sensorPlotData.clear();
+            }
+            GSDataCenter::NOSTankMass_PlotData.clear();
+            GSDataCenter::TankGasLeft_perc_PlotData.clear();
         }
 
         ImGui::EndMenu();
