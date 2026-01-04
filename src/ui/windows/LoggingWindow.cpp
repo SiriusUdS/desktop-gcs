@@ -69,7 +69,6 @@ void LoggingWindow::renderImpl() {
 
     ImGui::Separator();
 
-    // TODO: TEXT COLOR IS WRONG WHEN RENDERING LOG MESSAGES
     if (ImGui::BeginChild("scrolling", ImVec2(0, 0), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar)) {
         logBuffer.render();
     }

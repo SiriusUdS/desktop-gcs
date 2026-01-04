@@ -48,8 +48,8 @@ void LogBuffer::render() {
 
             // clang-format off
             switch (logLevels[lineIdx]) {
-                case spdlog::level::debug: color = ThemedColors::Text::green.resolve(); break;
-                case spdlog::level::info:  color = ThemedColors::Text::blue.resolve(); break;
+                case spdlog::level::debug: color = ThemedColors::Text::blue.resolve(); break;
+                case spdlog::level::info:  color = ThemedColors::Text::green.resolve(); break;
                 case spdlog::level::warn:  color = ThemedColors::Text::yellow.resolve(); break;
                 case spdlog::level::err:   color = ThemedColors::Text::red.resolve(); break;
                 default: color = ImGui::GetStyleColorVec4(ImGuiCol_Text); break;

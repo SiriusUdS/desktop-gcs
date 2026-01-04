@@ -10,4 +10,5 @@ private:
 
     static const char* MISSION_DOCKSPACE;
     static const char* LIVE_FEED_DOCKSPACE;
+    static const char* LOG_DOCKSPACE;
 };
