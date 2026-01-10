@@ -18,17 +18,22 @@ void TankGasLeftPlotDataProcessor::processNewData() {
     }
     const PlotDataProcessData& tankLoadCellPlotDataUpdate = tankLoadCellPlotDataUpdateIt->second;
 
-    const double tankLoadCellADCValue = static_cast<double>(tankLoadCellPlotDataUpdate.value);
-    const double prewrapADCValue = static_cast<double>(AppState::TankLoadCell::prewrapADCValue.value.load());
-    const double postIPAADCValue = static_cast<double>(AppState::TankLoadCell::postIPAADCValue.value.load());
+    if (!AppState::TankLoadCell::prewrapADCValue.saved || !AppState::TankLoadCell::postIPAADCValue.saved) {
+        // Prewrap and Post IPA tank load cell ADC values need to be confirmed/saved before the "tank gas left" value can be determined.
+        return;
+    }
 
-    if (postIPAADCValue == prewrapADCValue) {
+    const float current = tankLoadCellPlotDataUpdate.value;
+    const float prewrap = AppState::TankLoadCell::prewrapADCValue.value;
+    const float postIPA = AppState::TankLoadCell::postIPAADCValue.value;
+
+    if (postIPA == prewrap) {
         // Returning early to avoid division by 0.
         return;
     }
 
     const float timestamp = tankLoadCellPlotDataUpdate.timestamp;
-    const float value_perc = static_cast<float>(100.0f * (tankLoadCellADCValue - prewrapADCValue) / (tankLoadCellADCValue - postIPAADCValue));
+    const float value_perc = 100.0f * (current - prewrap) / (postIPA - prewrap);
 
     GSDataCenter::TankGasLeft_perc_PlotData.addData(timestamp, value_perc);
 }

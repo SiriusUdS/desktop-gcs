@@ -177,7 +177,7 @@ void PrefillWindow::renderImpl() {
     }
 
     ImGui::SeparatorText("Switch to \"Fill\"");
-    const bool allowConfirm = prewrapTankLoadCellState.saved && postwrapTankLoadCellState.saved && postIPATankLoadCellState.saved;
+    const bool allowConfirm = prewrapTankLoadCellState.state.saved && postwrapTankLoadCellState.state.saved && postIPATankLoadCellState.state.saved;
     ImGui::BeginDisabled(!allowConfirm);
     if (ImGui::Button("Confirm")) {
         ImGui::SetWindowFocus(FillWindow::name);

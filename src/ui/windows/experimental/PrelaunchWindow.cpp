@@ -59,7 +59,7 @@ void PrelaunchWindow::renderImpl() {
     ImGui::Button("Test igniter continuity");
 
     ImGui::SeparatorText("Switch to \"Launch\"");
-    const bool allowConfirm = postNOSTankLoadCellState.saved;
+    const bool allowConfirm = postNOSTankLoadCellState.state.saved;
     ImGui::BeginDisabled(!allowConfirm);
     if (ImGui::Button("Confirm")) {
         ImGui::SetWindowFocus(LaunchWindow::name);

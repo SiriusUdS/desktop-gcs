@@ -1,12 +1,12 @@
 #pragma once
 
-#include "State.h"
+#include "SavableState.h"
 
 namespace AppState {
 namespace TankLoadCell {
-extern State prewrapADCValue;
-extern State postwrapADCValue;
-extern State postIPAADCValue;
-extern State postNOSADCValue;
+extern SavableState prewrapADCValue;
+extern SavableState postwrapADCValue;
+extern SavableState postIPAADCValue;
+extern SavableState postNOSADCValue;
 } // namespace TankLoadCell
 } // namespace AppState
