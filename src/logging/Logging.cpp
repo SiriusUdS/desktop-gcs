@@ -7,16 +7,11 @@
 
 namespace Logging {
 std::vector<spdlog::sink_ptr> appLoggerSinks;
-
-void initAppLogger();
-} // namespace Logging
+}
 
 void Logging::init() {
     spdlog::flush_every(std::chrono::seconds(5));
-    initAppLogger();
-}
 
-void Logging::initAppLogger() {
     spdlog::sink_ptr appConsoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     spdlog::sink_ptr appFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/app.log");
     std::shared_ptr<ImGuiTextBufferSink> appImguiSink = std::make_shared<ImGuiTextBufferSink>();

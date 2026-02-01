@@ -1,6 +1,6 @@
 #include "RecentDataSelector.h"
 
-RecentDataSelector::RecentDataSelector(const PlotData* data, size_t timelapseWindow_ms) : DataSelector(data), timelapseWindow_ms(timelapseWindow_ms) {
+RecentDataSelector::RecentDataSelector(size_t timelapseWindow_ms) : timelapseWindow_ms(timelapseWindow_ms) {
 }
 
 RecentDataSelector::Window RecentDataSelector::getWindow(const std::vector<float>& timeline) {
@@ -23,16 +23,4 @@ RecentDataSelector::Window RecentDataSelector::getWindow(const std::vector<float
     }
 
     return Window{start, size - start};
-}
-
-void RecentDataSelector::onClear(const PlotData* plotData) {
-    start = 0;
-}
-
-void RecentDataSelector::onCompress(const PlotData* plotData) {
-    start = 0;
-}
-
-void RecentDataSelector::onEraseOld(const PlotData* plotData) {
-    start = 0;
 }

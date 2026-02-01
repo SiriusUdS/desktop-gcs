@@ -1,13 +1,9 @@
 #pragma once
 
-#include "PlotDataUpdateListener.h"
-
 #include <vector>
 
-class DataSelector : public PlotDataUpdateListener {
+class DataSelector {
 public:
-    DataSelector(const PlotData* data) : PlotDataUpdateListener({data}) {
-    }
     virtual ~DataSelector() = default;
 
     struct Window {

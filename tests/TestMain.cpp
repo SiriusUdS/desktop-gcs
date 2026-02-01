@@ -6,5 +6,6 @@
 
 int main(int argc, char** argv) {
     Logging::init();
+    GCS_APP_LOG_INFO("Starting tests...");
     return doctest::Context(argc, argv).run();
 }
