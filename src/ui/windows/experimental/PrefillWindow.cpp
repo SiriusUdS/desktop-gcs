@@ -1,9 +1,9 @@
 #include "PrefillWindow.h"
 
 #include "AppState.h"
-#include "ConfigParams.h"
 #include "FillWindow.h"
 #include "GSDataCenter.h"
+#include "IniParams.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
 
@@ -159,7 +159,7 @@ void PrefillWindow::renderImpl() {
 
     const ImVec2 plotSize = {-1.0f, 500.0f};
     ImPlot::SetNextAxesToFit();
-    if (ImPlot::BeginPlot("Tank Load Cell (ADC)", plotSize, ImPlotFlags_NoInputs)) {
+    if (ImPlot::BeginPlot("Tank Load Cell", plotSize, ImPlotFlags_NoInputs)) {
         constexpr ImAxis adcValueAxis = ImAxis_Y1;
         constexpr ImAxis weightAxis = ImAxis_Y2;
 
@@ -168,10 +168,10 @@ void PrefillWindow::renderImpl() {
         ImPlot::SetupAxis(weightAxis, "Weight (lb)");
 
         ImPlot::SetAxis(adcValueAxis);
-        tankLoadCellADCPlotLine.plot(ConfigParams::compressPlots.currentValue);
+        tankLoadCellADCPlotLine.plot(IniParams::compressPlots.currentValue);
 
         ImPlot::SetAxis(weightAxis);
-        tankLoadCellPlotLine.plot(ConfigParams::compressPlots.currentValue);
+        tankLoadCellPlotLine.plot(IniParams::compressPlots.currentValue);
 
         ImPlot::EndPlot();
     }

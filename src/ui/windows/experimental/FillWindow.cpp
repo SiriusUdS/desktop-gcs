@@ -1,9 +1,9 @@
 #include "FillWindow.h"
 
 #include "CommandControl.h"
-#include "ConfigParams.h"
 #include "Engine/EngineState.h"
 #include "GSDataCenter.h"
+#include "IniParams.h"
 #include "PrelaunchWindow.h"
 #include "SensorPlotData.h"
 #include "SwitchData.h"
@@ -50,14 +50,14 @@ void FillWindow::renderImpl() {
         ImPlot::SetupAxis(tempAxis, "Temperature (C)");
 
         ImPlot::SetAxis(weightAxis);
-        tankLoadCellPlotLine.plot(ConfigParams::compressPlots.currentValue);
-        tankMassPlotLine.plot(ConfigParams::compressPlots.currentValue);
+        tankLoadCellPlotLine.plot(IniParams::compressPlots.currentValue);
+        tankMassPlotLine.plot(IniParams::compressPlots.currentValue);
 
         ImPlot::SetAxis(pressureAxis);
-        tankTransducerPlotLine.plot(ConfigParams::compressPlots.currentValue);
+        tankTransducerPlotLine.plot(IniParams::compressPlots.currentValue);
 
         ImPlot::SetAxis(tempAxis);
-        tankTempPlotLine.plot(ConfigParams::compressPlots.currentValue);
+        tankTempPlotLine.plot(IniParams::compressPlots.currentValue);
 
         ImPlot::EndPlot();
     }

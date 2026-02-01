@@ -4,10 +4,10 @@
 #include <WinSock2.h>
 // clang-format on
 
-#include "ConfigParams.h"
-#include "ConfigParamsIO.h"
 #include "FontConfig.h"
 #include "GSDataCenter.h"
+#include "IniParams.h"
+#include "IniParamsIO.h"
 #include "Logging.h"
 #include "PlotWindowCenter.h"
 #include "SerialTask.h"
@@ -55,7 +55,7 @@ void Application::init() {
     iniFile.read(iniStructure);
 
     PlotWindowCenter::loadState(iniStructure);
-    ConfigParamsIO::loadParams(iniStructure);
+    IniParamsIO::loadParams(iniStructure);
 
     UIWindows::init();
     UIWindows::loadState(iniStructure);
@@ -72,8 +72,8 @@ void Application::preNewFrame() {
 
 void Application::showMenus() {
     if (ImGui::BeginMenu("Plot")) {
-        if (ImGui::MenuItem("Show compressed data", NULL, ConfigParams::compressPlots.currentValue)) {
-            ConfigParams::compressPlots.currentValue = !ConfigParams::compressPlots.currentValue.load();
+        if (ImGui::MenuItem("Show compressed data", NULL, IniParams::compressPlots.currentValue)) {
+            IniParams::compressPlots.currentValue = !IniParams::compressPlots.currentValue.load();
         }
 
         if (ImGui::MenuItem("Clear all")) {
@@ -102,7 +102,7 @@ void Application::showMenus() {
 
 void Application::shutdown() {
     SerialTask::stop();
-    ConfigParamsIO::saveParams(iniStructure);
+    IniParamsIO::saveParams(iniStructure);
     PlotWindowCenter::saveState(iniStructure);
 
     UIWindows::saveState(iniStructure);

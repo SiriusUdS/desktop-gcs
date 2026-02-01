@@ -1,6 +1,6 @@
 #include "TankMass.h"
 
-#include "ConfigParams.h"
+#include "IniParams.h"
 
 #include <CoolPropLib.h>
 #include <cmath>
@@ -17,6 +17,6 @@ float TankMass::getNOSTankMass_lb(double tankTemperature_C, double tankPressure_
         return std::numeric_limits<float>::infinity();
     }
 
-    const double tankMass_kg = rho * ConfigParams::NOSTankVolume_m3.currentValue;
+    const double tankMass_kg = rho * IniParams::NOSTankVolume_m3.currentValue;
     return (float) (tankMass_kg * 2.20462262185);
 }

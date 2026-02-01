@@ -4,8 +4,8 @@
 #include <string>
 
 template <typename T>
-struct ConfigParam {
-    ConfigParam(T defaultValue, std::string iniKey) : currentValue{defaultValue}, defaultValue{defaultValue}, iniKey{iniKey} {
+struct IniParam {
+    IniParam(T defaultValue, std::string iniKey) : currentValue{defaultValue}, defaultValue{defaultValue}, iniKey{iniKey} {
     }
 
     void reset() {
@@ -17,5 +17,5 @@ struct ConfigParam {
     std::string iniKey;
 };
 
-using BoolConfigParam = ConfigParam<bool>;
-using FloatConfigParam = ConfigParam<float>;
+using BoolIniParam = IniParam<bool>;
+using FloatIniParam = IniParam<float>;
