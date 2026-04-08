@@ -3,13 +3,14 @@
 #include <atomic>
 #include <thread>
 
+
 class BoardComStateMonitor;
 class WindowsComPortDiscovery;
 class ComPortSelector;
 class IntervalTimer;
 class PacketRateMonitor;
 class PacketReceiver;
-class SerialCom;
+class UdpCom;
 
 namespace SerialTask {
 void start();
@@ -29,5 +30,5 @@ extern BoardComStateMonitor fillingStationBoardComStateMonitor;
 extern BoardComStateMonitor gsControlBoardComStateMonitor;
 extern WindowsComPortDiscovery comPortDiscovery;
 extern ComPortSelector comPortSelector;
-extern SerialCom com;
+extern UdpCom com;
 } // namespace SerialTask

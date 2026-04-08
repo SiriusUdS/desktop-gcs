@@ -7,7 +7,7 @@
 #include "PacketProcessing.h"
 #include "PacketRateMonitor.h"
 #include "PacketReceiver.h"
-#include "SerialCom.h"
+#include "UdpCom.h"
 #include "SerialConfig.h"
 #include "SerialControl.h"
 #include "WindowsComPortDiscovery.h"
@@ -25,7 +25,7 @@ BoardComStateMonitor fillingStationBoardComStateMonitor;
 BoardComStateMonitor gsControlBoardComStateMonitor;
 WindowsComPortDiscovery comPortDiscovery;
 ComPortSelector comPortSelector(comPortDiscovery);
-SerialCom com;
+UdpCom com;
 
 IntervalTimer intervalTimer(std::chrono::milliseconds(1000 / SerialConfig::SERIAL_TASK_LOOPS_PER_SECOND));
 std::thread thread;

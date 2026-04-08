@@ -1,7 +1,7 @@
 #include "SerialControl.h"
 
 #include "BoardComStateMonitor.h"
-#include "SerialCom.h"
+#include "UdpCom.h"
 #include "SerialConfig.h"
 #include "SerialTask.h"
 #include "Timer.h"

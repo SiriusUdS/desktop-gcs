@@ -3,7 +3,7 @@
 #include "CRC.h"
 #include "CommandQueue.h"
 #include "Logging.h"
-#include "SerialCom.h"
+#include "UdpCom.h"
 #include "SerialTask.h"
 #include "Timer.h"
 

@@ -5,7 +5,7 @@
 #include "GSDataCenter.h"
 #include "IniConfig.h"
 #include "PacketRateMonitor.h"
-#include "SerialCom.h"
+#include "UdpCom.h"
 #include "SerialConfig.h"
 #include "SerialTask.h"
 #include "Telecommunication/BoardCommand.h"

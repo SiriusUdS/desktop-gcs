@@ -5,7 +5,7 @@
 #include "FontConfig.h"
 #include "GSControl/GSControlState.h"
 #include "GSDataCenter.h"
-#include "SerialCom.h"
+#include "UdpCom.h"
 #include "SerialTask.h"
 
 #include <imgui.h>
