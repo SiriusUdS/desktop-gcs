@@ -28,6 +28,7 @@ workspace "sirius-gcs"
         "src/com/monitor",
         "src/com/packet",
         "src/com/serial",
+	"src/com/udp",
         "src/config",
         "src/data",
         "src/data/data_conversion",

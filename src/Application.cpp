@@ -63,6 +63,7 @@ void Application::init() {
     tankGasLeftPlotDataProcessor.subscribe();
     tankMassPlotDataProcessor.subscribe();
 
+    //TODO UDP starts here  
     SerialTask::start();
 }
 
@@ -101,6 +102,7 @@ void Application::showMenus() {
 }
 
 void Application::shutdown() {
+    // TODO UDP stops here
     SerialTask::stop();
     IniParamsIO::saveParams(iniStructure);
     PlotWindowCenter::saveState(iniStructure);
