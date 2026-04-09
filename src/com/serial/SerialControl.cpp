@@ -26,8 +26,8 @@ void SerialControl::startComIfNeeded() {
 
     if (timerConnectionAttempt.hasElapsed()) {
         timerConnectionAttempt.reset();
-        if (!SerialTask::com.comOpened()) {
-            SerialTask::com.start();
+        if (!SerialTask::com->comOpened()) {
+            SerialTask::com->start();
         }
     }
 }
@@ -41,7 +41,7 @@ void SerialControl::readIncomingBytesAtSetRate() {
 
     size_t bytesToRead = std::min<size_t>(MAX_BYTES_TO_READ_PER_TASK_LOOP, (size_t) (BYTES_TO_READ_PER_SECOND * elapsedSeconds));
     while (bytesToRead--) {
-        if (!SerialTask::com.read()) {
+        if (!SerialTask::com->read()) {
             break;
         }
     }

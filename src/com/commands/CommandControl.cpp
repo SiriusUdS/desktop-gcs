@@ -53,7 +53,7 @@ void CommandControl::processCommands() {
         }
         lastTimeSentTimer.reset();
         BoardCommand* formattedData = reinterpret_cast<BoardCommand*>(data);
-        if (!SerialTask::com.write(data, dataSize)) {
+        if (!SerialTask::com->write(data, dataSize)) {
             GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over serial communication.");
         }
         timesSent++;

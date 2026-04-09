@@ -100,7 +100,7 @@ void BoardsWindow::renderImpl() {
 
 void BoardsWindow::renderBoardTableRow(const char* name, const char* boardStateName, BoardComStateMonitor::State comState) const {
     const char* comStateText = "Unknown";
-    if (!SerialTask::com.comOpened()) {
+    if (!SerialTask::com->comOpened()) {
         comStateText = "Disconnected";
     } else {
         switch (comState) {

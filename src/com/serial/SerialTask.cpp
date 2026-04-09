@@ -25,7 +25,7 @@ BoardComStateMonitor fillingStationBoardComStateMonitor;
 BoardComStateMonitor gsControlBoardComStateMonitor;
 WindowsComPortDiscovery comPortDiscovery;
 ComPortSelector comPortSelector(comPortDiscovery);
-UdpCom com;
+std::unique_ptr<ICom> com = std::make_unique<UdpCom>();
 
 IntervalTimer intervalTimer(std::chrono::milliseconds(1000 / SerialConfig::SERIAL_TASK_LOOPS_PER_SECOND));
 std::thread thread;

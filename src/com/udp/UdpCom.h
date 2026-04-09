@@ -16,15 +16,13 @@
  */
 class UdpCom: public ICom {
 public:
-    void start();
-    bool read();
-    bool write(uint8_t* msg, size_t size);
-    bool comOpened();
-    void shutdown();
-
-    //TODO temp
-    bool getPacket(uint8_t* recv);
-    uint8_t* getBuffer();
+    void start() override;
+    bool read() override;
+    bool write(uint8_t* msg, size_t size) override;
+    bool comOpened() override;
+    void shutdown() override;
+    bool getPacket(uint8_t* recv) override;
+    uint8_t* getBuffer() override;
     
 
 private:

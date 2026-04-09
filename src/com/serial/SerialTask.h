@@ -10,7 +10,7 @@ class ComPortSelector;
 class IntervalTimer;
 class PacketRateMonitor;
 class PacketReceiver;
-class UdpCom;
+class ICom;
 
 namespace SerialTask {
 void start();
@@ -30,5 +30,5 @@ extern BoardComStateMonitor fillingStationBoardComStateMonitor;
 extern BoardComStateMonitor gsControlBoardComStateMonitor;
 extern WindowsComPortDiscovery comPortDiscovery;
 extern ComPortSelector comPortSelector;
-extern UdpCom com;
+extern std::unique_ptr<ICom> com;
 } // namespace SerialTask

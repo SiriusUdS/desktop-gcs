@@ -1,14 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#include <string>
-#include "../serial/SerialTask.h"
-#include "BoardComStateMonitor.h"
-#include "ComPortSelector.h"
-#include "PacketRateMonitor.h"
-#include "PacketReceiver.h"
+
 /**
  * @class ICom
  * @brief Communication Interface

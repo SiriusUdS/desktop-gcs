@@ -193,7 +193,7 @@ void SerialComWindow::renderImpl() {
 
 void SerialComWindow::renderBoardComStateTableRow(const char* boardName, BoardComStateMonitor::State state) const {
     const char* comStateText = "Unknown";
-    if (!SerialTask::com.comOpened()) {
+    if (!SerialTask::com->comOpened()) {
         comStateText = "Disconnected";
     } else {
         switch (state) {
@@ -291,7 +291,7 @@ void SerialComWindow::recvBufferContentModal() {
 }
 
 void SerialComWindow::updateRecvBufferContentDisplay(bool syncToCurrentBuffer) {
-    const char* buf = (char*) SerialTask::com.getBuffer();
+    const char* buf = (char*) SerialTask::com->getBuffer();
     const char zeroChar = recvBufferDisplayMode == TEXT ? '~' : '\0';
 
     if (syncToCurrentBuffer) {

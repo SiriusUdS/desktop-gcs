@@ -74,7 +74,7 @@ bool PacketProcessing::processIncomingPacket() {
         return false;
     }
 
-    if (!SerialTask::com.getPacket(packetBuf)) {
+    if (!SerialTask::com->getPacket(packetBuf)) {
         GCS_APP_LOG_ERROR("PacketProcessing: Something went wrong while getting the next packet.");
         return false;
     }

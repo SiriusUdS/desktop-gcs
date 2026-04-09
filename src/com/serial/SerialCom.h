@@ -1,20 +1,20 @@
 #pragma once
 
 #include <ceserial.h>
-
+#include "ICom.h"
 /**
  * @class SerialCom
  * @brief Handles serial communication to receive packets
  */
-class SerialCom {
+class SerialCom: public ICom {
 public:
-    void start();
-    bool read();
-    bool write(uint8_t* msg, size_t size);
-    bool comOpened();
-    bool getPacket(uint8_t* recv);
-    uint8_t* getBuffer();
-    void shutdown();
+    void start() override;
+    bool read() override;
+    bool write(uint8_t* msg, size_t size) override;
+    bool comOpened() override;
+    bool getPacket(uint8_t* recv) override;
+    uint8_t* getBuffer() override;
+    void shutdown() override;
 
 private:
     ceSerial com;
