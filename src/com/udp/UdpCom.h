@@ -9,11 +9,12 @@
 #include "ComPortSelector.h"
 #include "PacketRateMonitor.h"
 #include "PacketReceiver.h"
+#include "ICom.h"
 /**
  * @class UdpCom
  * @brief Handles UDP communication to receive packets
  */
-class UdpCom {
+class UdpCom: public ICom {
 public:
     void start();
     bool read();
@@ -27,8 +28,8 @@ public:
     
 
 private:
-    int destPort = 5000;
-    int receivePort = 5000;
+    int destPort = 5002;
+    int receivePort = 5555;
     std::string destIp = "127.0.0.1";
     SOCKET sock = INVALID_SOCKET;
     sockaddr_in destAddr;

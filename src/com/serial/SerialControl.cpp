@@ -26,7 +26,9 @@ void SerialControl::startComIfNeeded() {
 
     if (timerConnectionAttempt.hasElapsed()) {
         timerConnectionAttempt.reset();
-        SerialTask::com.start();
+        if (!SerialTask::com.comOpened()) {
+            SerialTask::com.start();
+        }
     }
 }
 
