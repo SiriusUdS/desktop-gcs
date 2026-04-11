@@ -6,7 +6,7 @@
 #include "GSControl/GSControlState.h"
 #include "GSDataCenter.h"
 #include "UdpCom.h"
-#include "SerialTask.h"
+#include "ComTask.h"
 
 #include <imgui.h>
 
@@ -76,9 +76,9 @@ void BoardsWindow::renderImpl() {
             ImGui::TableSetupColumn("COM State");
             ImGui::TableHeadersRow();
 
-            renderBoardTableRow("Motor", motorBoardStateName, SerialTask::motorBoardComStateMonitor.getState());
-            renderBoardTableRow("Filling Station", fillingStationBoardStateName, SerialTask::fillingStationBoardComStateMonitor.getState());
-            renderBoardTableRow("GS Control", gsControlBoardStateName, SerialTask::gsControlBoardComStateMonitor.getState());
+            renderBoardTableRow("Motor", motorBoardStateName, ComTask::motorBoardComStateMonitor.getState());
+            renderBoardTableRow("Filling Station", fillingStationBoardStateName, ComTask::fillingStationBoardComStateMonitor.getState());
+            renderBoardTableRow("GS Control", gsControlBoardStateName, ComTask::gsControlBoardComStateMonitor.getState());
             ImGui::EndTable();
         }
     }
@@ -100,7 +100,7 @@ void BoardsWindow::renderImpl() {
 
 void BoardsWindow::renderBoardTableRow(const char* name, const char* boardStateName, BoardComStateMonitor::State comState) const {
     const char* comStateText = "Unknown";
-    if (!SerialTask::com->comOpened()) {
+    if (!ComTask::com->comOpened()) {
         comStateText = "Disconnected";
     } else {
         switch (comState) {

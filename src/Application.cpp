@@ -10,7 +10,7 @@
 #include "IniParamsIO.h"
 #include "Logging.h"
 #include "PlotWindowCenter.h"
-#include "SerialTask.h"
+#include "ComTask.h"
 #include "TankGasLeftPlotDataProcessor.h"
 #include "TankMassPlotDataProcessor.h"
 #include "UITheme.h"
@@ -64,7 +64,7 @@ void Application::init() {
     tankMassPlotDataProcessor.subscribe();
 
     //TODO UDP starts here  
-    SerialTask::start();
+    ComTask::start();
 }
 
 void Application::preNewFrame() {
@@ -103,7 +103,7 @@ void Application::showMenus() {
 
 void Application::shutdown() {
     // TODO UDP stops here
-    SerialTask::stop();
+    ComTask::stop();
     IniParamsIO::saveParams(iniStructure);
     PlotWindowCenter::saveState(iniStructure);
 

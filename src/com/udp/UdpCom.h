@@ -4,12 +4,12 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <string>
-#include "../serial/SerialTask.h"
+#include "../ComTask.h"
 #include "BoardComStateMonitor.h"
-#include "ComPortSelector.h"
 #include "PacketRateMonitor.h"
 #include "PacketReceiver.h"
 #include "ICom.h"
+#include "Timer.h"
 /**
  * @class UdpCom
  * @brief Handles UDP communication to receive packets
@@ -19,10 +19,12 @@ public:
     void start() override;
     bool read() override;
     bool write(uint8_t* msg, size_t size) override;
-    bool comOpened() override;
+    bool comOpened() const override;
     void shutdown() override;
     bool getPacket(uint8_t* recv) override;
     uint8_t* getBuffer() override;
+    const char* getProtocolName() const override;
+    const char* getConnectionDetails() const override;
     
 
 private:

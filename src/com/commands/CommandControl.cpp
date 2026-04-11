@@ -4,7 +4,7 @@
 #include "CommandQueue.h"
 #include "Logging.h"
 #include "UdpCom.h"
-#include "SerialTask.h"
+#include "ComTask.h"
 #include "Timer.h"
 
 namespace CommandControl {
@@ -53,7 +53,7 @@ void CommandControl::processCommands() {
         }
         lastTimeSentTimer.reset();
         BoardCommand* formattedData = reinterpret_cast<BoardCommand*>(data);
-        if (!SerialTask::com->write(data, dataSize)) {
+        if (!ComTask::com->write(data, dataSize)) {
             GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over serial communication.");
         }
         timesSent++;

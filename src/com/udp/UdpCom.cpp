@@ -35,9 +35,9 @@ void UdpCom::start() {
         return;
     }
 
-    SerialTask::packetRateMonitor.reset();
-    SerialTask::motorBoardComStateMonitor.reset();
-    SerialTask::fillingStationBoardComStateMonitor.reset();
+    ComTask::packetRateMonitor.reset();
+    ComTask::motorBoardComStateMonitor.reset();
+    ComTask::fillingStationBoardComStateMonitor.reset();
 
     initialized = true;
 }
@@ -61,7 +61,7 @@ bool UdpCom::read() {
     if (bytesRecieved > 0) {
         bool successful = true;
         for (int i = 0; i < bytesRecieved; i++) {
-            if (!SerialTask::packetReceiver.receiveByte(buffer[i])) {
+            if (!ComTask::packetReceiver.receiveByte(buffer[i])) {
                 successful = false;
             }
         }
@@ -86,7 +86,7 @@ bool UdpCom::write(uint8_t* msg, size_t size) {
     return (static_cast<size_t>(bytesSent) == size);
 }
 
-bool UdpCom::comOpened() {
+bool UdpCom::comOpened() const {
     return (sock != INVALID_SOCKET && initialized);
 }
 
@@ -101,9 +101,22 @@ void UdpCom::shutdown() {
 }
 
 bool UdpCom::getPacket(uint8_t* recv) {
-    return SerialTask::packetReceiver.getPacket(recv);
+    return ComTask::packetReceiver.getPacket(recv);
 }
 
 uint8_t* UdpCom::getBuffer() {
-    return SerialTask::packetReceiver.getBuffer();
+    return ComTask::packetReceiver.getBuffer();
+}
+
+const char* UdpCom::getProtocolName() const {
+    return "UDP";
+}
+
+const char* UdpCom::getConnectionDetails() const {
+    if (comOpened()) {
+        static std::string details;
+        details = "Listening on " + destIp + ":" + std::to_string(receivePort);
+        return details.c_str();
+    }
+    return "Disconnected";
 }

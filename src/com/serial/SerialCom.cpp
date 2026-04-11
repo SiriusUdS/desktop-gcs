@@ -4,34 +4,49 @@
 #include "ComPortSelector.h"
 #include "PacketRateMonitor.h"
 #include "PacketReceiver.h"
-#include "SerialTask.h"
+#include "ComTask.h"
 
 /**
  * @brief Initializes communication on the first COM port found.
  */
 void SerialCom::start() {
     com.Close();
-    SerialTask::packetRateMonitor.reset();
-    SerialTask::motorBoardComStateMonitor.reset();
-    SerialTask::fillingStationBoardComStateMonitor.reset();
-    SerialTask::comPortSelector.next();
+    ComTask::packetRateMonitor.reset();
+    ComTask::motorBoardComStateMonitor.reset();
+    ComTask::fillingStationBoardComStateMonitor.reset();
+    comPortSelector.next();
 
-    com.SetPortName("\\\\.\\" + SerialTask::comPortSelector.current());
+    com.SetPortName("\\\\.\\" + comPortSelector.current());
     com.SetBaudRate(CBR_19200);
     com.Open();
 }
 
 /**
  * @brief Reads a single byte from the COM port into an internal buffer.
- * @returns True if a byte was successfully read, otherwise false.
+ * @returns True if bytes were read, otherwise false
+ * necessarily indicate an error.
  */
 bool SerialCom::read() {
-    bool successful;
-    char c = com.ReadChar(successful);
-    if (successful) {
-        successful = SerialTask::packetReceiver.receiveByte(c);
+    static constexpr size_t BYTES_TO_READ_PER_SECOND = 19'200;
+    static constexpr size_t MAX_BYTES_TO_READ_PER_TASK_LOOP = 19'200 / SerialConfig::SERIAL_TASK_LOOPS_PER_SECOND;
+
+    double elapsedSeconds = timerSerialRead.getElapsedTimeInSeconds();
+    timerSerialRead.reset();
+
+    size_t bytesToRead = std::min<size_t>(MAX_BYTES_TO_READ_PER_TASK_LOOP, (size_t) (BYTES_TO_READ_PER_SECOND * elapsedSeconds));
+    while (bytesToRead--) {
+        bool successful;
+        char c = com.ReadChar(successful);
+        if (successful) {
+            successful = ComTask::packetReceiver.receiveByte(c);
+        }
+
+        if (!successful) {
+            return false;
+        }
     }
-    return successful;
+
+    return true;
 }
 
 /**
@@ -50,8 +65,8 @@ bool SerialCom::write(uint8_t* msg, size_t size) {
  * @brief Checks if a COM port is opened.
  * @returns True if a COM port is opened, otherwise false.
  */
-bool SerialCom::comOpened() {
-    return com.IsOpened();
+bool SerialCom::comOpened() const {
+    return const_cast<ceSerial&>(com).IsOpened();
 }
 
 /**
@@ -60,7 +75,7 @@ bool SerialCom::comOpened() {
  * @returns True if a packet was successfully received, otherwise false.
  */
 bool SerialCom::getPacket(uint8_t* recv) {
-    return SerialTask::packetReceiver.getPacket(recv);
+    return ComTask::packetReceiver.getPacket(recv);
 }
 
 /**
@@ -68,7 +83,7 @@ bool SerialCom::getPacket(uint8_t* recv) {
  * @returns Pointer to the internal buffer.
  */
 uint8_t* SerialCom::getBuffer() {
-    return SerialTask::packetReceiver.getBuffer();
+    return ComTask::packetReceiver.getBuffer();
 }
 
 /**
@@ -76,4 +91,17 @@ uint8_t* SerialCom::getBuffer() {
  */
 void SerialCom::shutdown() {
     com.Close();
+}
+
+const char* SerialCom::getProtocolName() const {
+    return "Serial";
+}
+
+const char* SerialCom::getConnectionDetails() const {
+    static std::string details;
+    if (comPortSelector.available()) {
+        details = comPortSelector.current();
+        return details.c_str();
+    }
+    return "None available";
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace SerialControl {
+namespace ComControl {
 void startComIfNeeded();
 void readIncomingBytesAtSetRate();
-} // namespace SerialControl
+} // namespace ComControl

@@ -11,7 +11,7 @@
 #include "SensorPlotData.h"
 #include "UdpCom.h"
 #include "SerialConfig.h"
-#include "SerialTask.h"
+#include "ComTask.h"
 #include "SwitchData.h"
 #include "Telecommunication/PacketHeaderVariable.h"
 #include "Telecommunication/TelemetryPacket.h"
@@ -45,13 +45,13 @@ float loadCellValues_lb[GSDataCenterConfig::LOAD_CELL_AMOUNT]{};
 } // namespace PacketProcessing
 
 void PacketProcessing::processIncomingPackets() {
-    while (SerialTask::packetReceiver.packetAvailable()) {
+    while (ComTask::packetReceiver.packetAvailable()) {
         processIncomingPacket();
     }
 }
 
 bool PacketProcessing::processIncomingPacket() {
-    std::optional<PacketMetadata> packetMetadataOpt = SerialTask::packetReceiver.nextPacketMetadata();
+    std::optional<PacketMetadata> packetMetadataOpt = ComTask::packetReceiver.nextPacketMetadata();
 
     if (!packetMetadataOpt.has_value()) {
         // No available packets
@@ -64,17 +64,17 @@ bool PacketProcessing::processIncomingPacket() {
         GCS_APP_LOG_WARN("PacketProcessing: Received packet size ({}) too small to fit header ({}), ignoring packet.",
                          packetSize,
                          sizeof(TelemetryHeader));
-        SerialTask::packetReceiver.dumpNextPacket();
+        ComTask::packetReceiver.dumpNextPacket();
         return false;
     } else if (packetSize > SerialConfig::MAX_PACKET_SIZE) {
         GCS_APP_LOG_WARN("PacketProcessing: Received packet size ({}) too big to fit in packet buffer ({}), ignoring packet.",
                          packetSize,
                          SerialConfig::MAX_PACKET_SIZE);
-        SerialTask::packetReceiver.dumpNextPacket();
+        ComTask::packetReceiver.dumpNextPacket();
         return false;
     }
 
-    if (!SerialTask::com->getPacket(packetBuf)) {
+    if (!ComTask::com->getPacket(packetBuf)) {
         GCS_APP_LOG_ERROR("PacketProcessing: Something went wrong while getting the next packet.");
         return false;
     }
@@ -140,9 +140,9 @@ bool PacketProcessing::processEngineTelemetryPacket() {
                                                                       pressureSensorValues_psi,
                                                                       timestamp);
 
-    SerialTask::packetRateMonitor.trackPacket();
-    SerialTask::engineTelemetryPacketRateMonitor.trackPacket();
-    SerialTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
+    ComTask::packetRateMonitor.trackPacket();
+    ComTask::engineTelemetryPacketRateMonitor.trackPacket();
+    ComTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
 
     PacketCSVLogging::logEngineTelemetryPacket(timestamp, thermistorAdcValues, thermistorValues_C, pressureSensorAdcValues, pressureSensorValues_psi);
     return true;
@@ -183,9 +183,9 @@ bool PacketProcessing::processFillingStationTelemetryPacket() {
                                                       loadCellValues_lb,
                                                       timestamp);
 
-    SerialTask::packetRateMonitor.trackPacket();
-    SerialTask::fillingStationTelemetryPacketRateMonitor.trackPacket();
-    SerialTask::fillingStationBoardComStateMonitor.trackSuccessfulPacketRead();
+    ComTask::packetRateMonitor.trackPacket();
+    ComTask::fillingStationTelemetryPacketRateMonitor.trackPacket();
+    ComTask::fillingStationBoardComStateMonitor.trackSuccessfulPacketRead();
 
     PacketCSVLogging::logFillingStationTelemetryPacket(timestamp,
                                                        thermistorAdcValues,
@@ -225,9 +225,9 @@ bool PacketProcessing::processGSControlPacket() {
 
     GSDataCenter::gsControlBoardState = status.bits.state;
 
-    SerialTask::packetRateMonitor.trackPacket();
-    SerialTask::gsControlPacketRateMonitor.trackPacket();
-    SerialTask::gsControlBoardComStateMonitor.trackSuccessfulPacketRead();
+    ComTask::packetRateMonitor.trackPacket();
+    ComTask::gsControlPacketRateMonitor.trackPacket();
+    ComTask::gsControlBoardComStateMonitor.trackSuccessfulPacketRead();
 
     PacketCSVLogging::logGSControlPacket(packet);
     return true;
@@ -263,9 +263,9 @@ bool PacketProcessing::processEngineStatusPacket() {
     GSDataCenter::motorBoardState = packet->fields.status.bits.state;
     GSDataCenter::motorBoardStorageErrorStatus = packet->fields.storageErrorStatus.value;
 
-    SerialTask::packetRateMonitor.trackPacket();
-    SerialTask::engineStatusPacketRateMonitor.trackPacket();
-    SerialTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
+    ComTask::packetRateMonitor.trackPacket();
+    ComTask::engineStatusPacketRateMonitor.trackPacket();
+    ComTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
 
     PacketCSVLogging::logEngineStatusPacket(packet);
     return true;
@@ -301,9 +301,9 @@ bool PacketProcessing::processFillingStationStatusPacket() {
     GSDataCenter::fillingStationBoardState = packet->fields.status.bits.state;
     GSDataCenter::fillingStationBoardStorageErrorStatus = packet->fields.storageErrorStatus.value;
 
-    SerialTask::packetRateMonitor.trackPacket();
-    SerialTask::fillingStationStatusPacketRateMonitor.trackPacket();
-    SerialTask::fillingStationBoardComStateMonitor.trackSuccessfulPacketRead();
+    ComTask::packetRateMonitor.trackPacket();
+    ComTask::fillingStationStatusPacketRateMonitor.trackPacket();
+    ComTask::fillingStationBoardComStateMonitor.trackSuccessfulPacketRead();
 
     PacketCSVLogging::logFillingStationStatusPacket(packet);
     return true;
