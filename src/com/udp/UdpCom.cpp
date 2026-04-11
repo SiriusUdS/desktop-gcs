@@ -32,6 +32,7 @@ void UdpCom::start() {
         int err = WSAGetLastError();
         closesocket(sock);
         sock = INVALID_SOCKET;
+        WSACleanup();
         return;
     }
 
@@ -50,26 +51,26 @@ bool UdpCom::read() {
     char buffer[1024];
     sockaddr_in senderAddr;
     int len = sizeof(senderAddr);
+    bool recievedAtLeastOne = false;
 
-    int bytesRecieved = recvfrom(sock, buffer, sizeof(buffer), 0, (struct sockaddr*)&senderAddr, &len);
-    
-    if (bytesRecieved == SOCKET_ERROR) {
-        int error = WSAGetLastError();
-        return false;
-    }
-    
-    if (bytesRecieved > 0) {
-        bool successful = true;
-        for (int i = 0; i < bytesRecieved; i++) {
-            if (!ComTask::packetReceiver.receiveByte(buffer[i])) {
-                successful = false;
+    while (true) {
+        int bytesRecieved = recvfrom(sock, buffer, sizeof(buffer), 0, (struct sockaddr*)&senderAddr, &len);
+        
+        if (bytesRecieved == SOCKET_ERROR) {
+            int error = WSAGetLastError();
+            if (error == WSAEWOULDBLOCK) {
+                break;
             }
         }
-
-        return successful;
+        if (bytesRecieved > 0) {
+            recievedAtLeastOne = true;
+            bool successful = true;
+            for (int i = 0; i < bytesRecieved; i++) {
+                ComTask::packetReceiver.receiveByte(buffer[i]);
+            }
+        }
     }
-
-    return false;
+    return recievedAtLeastOne;
 }
 
 bool UdpCom::write(uint8_t* msg, size_t size) {
