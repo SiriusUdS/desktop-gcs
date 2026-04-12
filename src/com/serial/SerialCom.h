@@ -15,12 +15,12 @@ public:
     void start() override;
     bool read() override;
     bool write(uint8_t* msg, size_t size) override;
-    bool comOpened() const override;
+    bool comOpened() override;
     bool getPacket(uint8_t* recv) override;
     uint8_t* getBuffer() override;
     void shutdown() override;
-    const char* getProtocolName() const override;
-    const char* getConnectionDetails() const override;
+    const char* getProtocolName() override;
+    const char* getConnectionDetails() override;
 
 private:
     ceSerial com;

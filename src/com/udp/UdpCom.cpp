@@ -87,7 +87,7 @@ bool UdpCom::write(uint8_t* msg, size_t size) {
     return (static_cast<size_t>(bytesSent) == size);
 }
 
-bool UdpCom::comOpened() const {
+bool UdpCom::comOpened() {
     return (sock != INVALID_SOCKET && initialized);
 }
 
@@ -109,11 +109,11 @@ uint8_t* UdpCom::getBuffer() {
     return ComTask::packetReceiver.getBuffer();
 }
 
-const char* UdpCom::getProtocolName() const {
+const char* UdpCom::getProtocolName() {
     return "UDP";
 }
 
-const char* UdpCom::getConnectionDetails() const {
+const char* UdpCom::getConnectionDetails() {
     if (comOpened()) {
         static std::string details;
         details = "Listening on " + destIp + ":" + std::to_string(receivePort);

@@ -65,8 +65,8 @@ bool SerialCom::write(uint8_t* msg, size_t size) {
  * @brief Checks if a COM port is opened.
  * @returns True if a COM port is opened, otherwise false.
  */
-bool SerialCom::comOpened() const {
-    return const_cast<ceSerial&>(com).IsOpened();
+bool SerialCom::comOpened() {
+    return com.IsOpened();
 }
 
 /**
@@ -93,11 +93,11 @@ void SerialCom::shutdown() {
     com.Close();
 }
 
-const char* SerialCom::getProtocolName() const {
+const char* SerialCom::getProtocolName() {
     return "Serial";
 }
 
-const char* SerialCom::getConnectionDetails() const {
+const char* SerialCom::getConnectionDetails() {
     static std::string details;
     if (comPortSelector.available()) {
         details = comPortSelector.current();
