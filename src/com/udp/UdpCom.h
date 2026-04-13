@@ -23,11 +23,13 @@ public:
     void shutdown() override;
     bool getPacket(uint8_t* recv) override;
     uint8_t* getBuffer() override;
-    const char* getProtocolName() override;
-    const char* getConnectionDetails() override;
+    std::string getProtocolName() override;
+    std::string getConnectionDetails() override;
+    ComType getComType() const override;
     
 
 private:
+    ComType comType = ComType::UDP;
     int destPort = 5002;
     int receivePort = 5555;
     std::string destIp = "127.0.0.1";

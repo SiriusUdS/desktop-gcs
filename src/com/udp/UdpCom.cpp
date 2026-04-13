@@ -109,15 +109,19 @@ uint8_t* UdpCom::getBuffer() {
     return ComTask::packetReceiver.getBuffer();
 }
 
-const char* UdpCom::getProtocolName() {
-    return "UDP";
+std::string UdpCom::getProtocolName() {
+    return protocolNameFromEnum(comType);
 }
 
-const char* UdpCom::getConnectionDetails() {
+std::string UdpCom::getConnectionDetails() {
     if (comOpened()) {
         static std::string details;
         details = "Listening on " + destIp + ":" + std::to_string(receivePort);
-        return details.c_str();
+        return details;
     }
     return "Disconnected";
+}
+
+ComType UdpCom::getComType() const {
+    return comType;
 }

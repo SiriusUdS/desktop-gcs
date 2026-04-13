@@ -93,15 +93,19 @@ void SerialCom::shutdown() {
     com.Close();
 }
 
-const char* SerialCom::getProtocolName() {
-    return "Serial";
+std::string SerialCom::getProtocolName() {
+    return protocolNameFromEnum(comType);
 }
 
-const char* SerialCom::getConnectionDetails() {
+std::string SerialCom::getConnectionDetails() {
     static std::string details;
     if (comPortSelector.available()) {
         details = comPortSelector.current();
-        return details.c_str();
+        return details;
     }
     return "None available";
+}
+
+ComType SerialCom::getComType() const {
+    return comType;
 }

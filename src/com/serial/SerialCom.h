@@ -19,10 +19,12 @@ public:
     bool getPacket(uint8_t* recv) override;
     uint8_t* getBuffer() override;
     void shutdown() override;
-    const char* getProtocolName() override;
-    const char* getConnectionDetails() override;
+    std::string getProtocolName() override;
+    std::string getConnectionDetails() override;
+    ComType getComType() const override;
 
 private:
+    ComType comType = ComType::SERIAL;
     ceSerial com;
     Timer timerSerialRead;
     WindowsComPortDiscovery comPortDiscovery;
