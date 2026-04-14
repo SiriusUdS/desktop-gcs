@@ -1,15 +1,16 @@
 #pragma once
 
-#include <cstdint>
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#include <string>
-#include "../ComTask.h"
 #include "BoardComStateMonitor.h"
+#include "../ComTask.h"
+#include <cstdint>
+#include "ICom.h"
 #include "PacketRateMonitor.h"
 #include "PacketReceiver.h"
-#include "ICom.h"
+#include <string>
 #include "Timer.h"
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+
 /**
  * @class UdpCom
  * @brief Handles UDP communication to receive packets

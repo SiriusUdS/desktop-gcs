@@ -1,10 +1,10 @@
 #include "ComControl.h"
 
 #include "BoardComStateMonitor.h"
-#include "UdpCom.h"
-#include "SerialConfig.h"
 #include "ComTask.h"
+#include "SerialConfig.h"
 #include "Timer.h"
+#include "UdpCom.h"
 
 using namespace std::chrono;
 

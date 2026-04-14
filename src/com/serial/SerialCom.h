@@ -1,10 +1,10 @@
 #pragma once
 
 #include <ceserial.h>
-#include "ICom.h"
 #include "ComPortSelector.h"
-#include "WindowsComPortDiscovery.h"
+#include "ICom.h"
 #include "Timer.h"
+#include "WindowsComPortDiscovery.h"
 
 /**
  * @class SerialCom

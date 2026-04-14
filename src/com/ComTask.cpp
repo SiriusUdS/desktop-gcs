@@ -1,14 +1,14 @@
 #include "ComTask.h"
 
 #include "BoardComStateMonitor.h"
+#include "ComControl.h"
 #include "CommandControl.h"
 #include "IntervalTimer.h"
 #include "PacketProcessing.h"
 #include "PacketRateMonitor.h"
 #include "PacketReceiver.h"
-#include "UdpCom.h"
 #include "SerialConfig.h"
-#include "ComControl.h"
+#include "UdpCom.h"
 
 namespace ComTask {
 PacketRateMonitor packetRateMonitor;

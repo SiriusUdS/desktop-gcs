@@ -1,6 +1,5 @@
 #pragma once
 #include "udp/UdpCom.h"
-#include <iostream>
 
 void UdpCom::start() {
     WSADATA wsaData;

@@ -2,9 +2,10 @@
 
 #include "BoardComStateMonitor.h"
 #include "ComPortSelector.h"
+#include "ComTask.h"
 #include "PacketRateMonitor.h"
 #include "PacketReceiver.h"
-#include "ComTask.h"
+
 
 /**
  * @brief Initializes communication on the first COM port found.

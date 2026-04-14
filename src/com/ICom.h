@@ -1,8 +1,8 @@
 #pragma once
 
+#include "ComType.h"
 #include <cstdint>
 #include <string>
-#include "ComType.h"
 
 
 /**
