@@ -112,13 +112,13 @@ std::string UdpCom::getProtocolName() {
     return protocolNameFromEnum(comType);
 }
 
-std::string UdpCom::getConnectionDetails() {
+std::optional<std::string> UdpCom::getConnectionDetails() {
     if (comOpened()) {
         static std::string details;
         details = "Listening on " + destIp + ":" + std::to_string(receivePort);
         return details;
     }
-    return "Disconnected";
+    return std::nullopt;
 }
 
 ComType UdpCom::getComType() const {

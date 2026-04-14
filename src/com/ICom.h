@@ -2,8 +2,8 @@
 
 #include "ComType.h"
 #include <cstdint>
+#include <optional>
 #include <string>
-
 
 /**
  * @class ICom
@@ -22,6 +22,6 @@ public:
     virtual ~ICom() = default;
     virtual ComType getComType() const = 0;
     virtual std::string getProtocolName() = 0;
-    virtual std::string getConnectionDetails() = 0;
+    virtual std::optional<std::string> getConnectionDetails() = 0;
 };
 

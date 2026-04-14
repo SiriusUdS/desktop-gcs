@@ -98,13 +98,11 @@ std::string SerialCom::getProtocolName() {
     return protocolNameFromEnum(comType);
 }
 
-std::string SerialCom::getConnectionDetails() {
-    static std::string details;
+std::optional<std::string> SerialCom::getConnectionDetails() {
     if (comPortSelector.available()) {
-        details = comPortSelector.current();
-        return details;
+        return comPortSelector.current();
     }
-    return "None available";
+    return std::nullopt;
 }
 
 ComType SerialCom::getComType() const {

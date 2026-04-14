@@ -20,7 +20,7 @@ public:
     uint8_t* getBuffer() override;
     void shutdown() override;
     std::string getProtocolName() override;
-    std::string getConnectionDetails() override;
+    std::optional<std::string> getConnectionDetails() override;
     ComType getComType() const override;
 
 private:
