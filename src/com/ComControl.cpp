@@ -31,7 +31,3 @@ void ComControl::startComIfNeeded() {
         }
     }
 }
-
-void ComControl::readIncomingBytesAtSetRate() {
-    ComTask::com->read();
-}

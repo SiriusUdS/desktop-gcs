@@ -3,6 +3,7 @@
 #include <ceserial.h>
 #include "ComPortSelector.h"
 #include "ICom.h"
+#include <span>
 #include "Timer.h"
 #include "WindowsComPortDiscovery.h"
 
@@ -12,9 +13,10 @@
  */
 class SerialCom: public ICom {
 public:
+    SerialCom();
     void start() override;
     bool read() override;
-    bool write(uint8_t* msg, size_t size) override;
+    bool write(std::span<const uint8_t> msg) override;
     bool comOpened() override;
     bool getPacket(uint8_t* recv) override;
     uint8_t* getBuffer() override;
@@ -28,5 +30,5 @@ private:
     ceSerial com;
     Timer timerSerialRead;
     WindowsComPortDiscovery comPortDiscovery;
-    ComPortSelector comPortSelector{comPortDiscovery};
+    ComPortSelector comPortSelector;
 };

@@ -47,13 +47,13 @@ bool UdpCom::read() {
         return false;
     }
     
-    char buffer[1024];
+    char incomingDataBuffer[incomingDataBufferSize];
     sockaddr_in senderAddr;
     int len = sizeof(senderAddr);
     bool recievedAtLeastOne = false;
 
     while (true) {
-        int bytesRecieved = recvfrom(sock, buffer, sizeof(buffer), 0, (struct sockaddr*)&senderAddr, &len);
+        int bytesRecieved = recvfrom(sock, incomingDataBuffer, sizeof(incomingDataBuffer), 0, (struct sockaddr*) &senderAddr, &len);
         
         if (bytesRecieved == SOCKET_ERROR) {
             int error = WSAGetLastError();
@@ -65,25 +65,25 @@ bool UdpCom::read() {
             recievedAtLeastOne = true;
             bool successful = true;
             for (int i = 0; i < bytesRecieved; i++) {
-                ComTask::packetReceiver.receiveByte(buffer[i]);
+                ComTask::packetReceiver.receiveByte(incomingDataBuffer[i]);
             }
         }
     }
     return recievedAtLeastOne;
 }
 
-bool UdpCom::write(uint8_t* msg, size_t size) {
+bool UdpCom::write(std::span<const uint8_t> msg) {
     if (!initialized) {
         return false;
     }
 
-    int bytesSent = sendto(sock, reinterpret_cast<const char*>(msg), size, 0, (struct sockaddr*) &destAddr, sizeof(destAddr));
+    int bytesSent = sendto(sock, reinterpret_cast<const char*>(msg.data()), msg.size(), 0, (struct sockaddr*) &destAddr, sizeof(destAddr));
 
     if (bytesSent == SOCKET_ERROR) {
         return false;
     }
 
-    return (static_cast<size_t>(bytesSent) == size);
+    return (static_cast<size_t>(bytesSent) == msg.size());
 }
 
 bool UdpCom::comOpened() {

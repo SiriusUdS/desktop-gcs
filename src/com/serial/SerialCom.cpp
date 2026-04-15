@@ -7,6 +7,11 @@
 #include "PacketReceiver.h"
 
 
+SerialCom::SerialCom():
+comPortSelector(comPortDiscovery){
+    return;
+}
+
 /**
  * @brief Initializes communication on the first COM port found.
  */
@@ -56,9 +61,9 @@ bool SerialCom::read() {
  * @param size The size of the data to send.
  * @returns True if the data was successfully sent, otherwise false.
  */
-bool SerialCom::write(uint8_t* msg, size_t size) {
+bool SerialCom::write(std::span<const uint8_t> msg) {
     static constexpr size_t WRITE_TIMEOUT_MS = 100;
-    bool successful = com.WriteArr(msg, (long) size, WRITE_TIMEOUT_MS);
+    bool successful = com.WriteArr(msg.data(), msg.size(), WRITE_TIMEOUT_MS);
     return successful;
 }
 

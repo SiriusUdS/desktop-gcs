@@ -11,8 +11,10 @@
 #include "Logging.h"
 #include "PlotWindowCenter.h"
 #include "ComTask.h"
+#include "SerialCom.h"
 #include "TankGasLeftPlotDataProcessor.h"
 #include "TankMassPlotDataProcessor.h"
+#include "UdpCom.h"
 #include "UITheme.h"
 #include "UIWindow.h"
 #include "UIWindows.h"
@@ -62,9 +64,10 @@ void Application::init() {
 
     tankGasLeftPlotDataProcessor.subscribe();
     tankMassPlotDataProcessor.subscribe();
-
-    //TODO UDP starts here  
-    ComTask::start();
+       
+    //Switch com type here
+    std::unique_ptr<UdpCom> comProtocol = std::make_unique<UdpCom>();
+    ComTask::start(std::move(comProtocol));
 }
 
 void Application::preNewFrame() {

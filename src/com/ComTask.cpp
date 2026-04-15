@@ -21,7 +21,7 @@ PacketReceiver packetReceiver;
 BoardComStateMonitor motorBoardComStateMonitor;
 BoardComStateMonitor fillingStationBoardComStateMonitor;
 BoardComStateMonitor gsControlBoardComStateMonitor;
-std::unique_ptr<ICom> com = std::make_unique<UdpCom>(); //Switch to SerialCom here
+std::unique_ptr<ICom> com;
 
 IntervalTimer intervalTimer(std::chrono::milliseconds(1000 / SerialConfig::SERIAL_TASK_LOOPS_PER_SECOND));
 std::thread thread;
@@ -30,7 +30,8 @@ std::atomic<bool> running = false;
 std::atomic<bool> shouldStop = false;
 } // namespace ComTask
 
-void ComTask::start() {
+void ComTask::start(std::unique_ptr<ICom> comInterface) {
+    com = std::move(comInterface);
     if (running) {
         return;
     }
@@ -44,7 +45,7 @@ void ComTask::execute() {
     while (!shouldStop) {
         intervalTimer.waitUntilNextInterval();
         ComControl::startComIfNeeded();
-        ComControl::readIncomingBytesAtSetRate();
+        com->read();
         PacketProcessing::processIncomingPackets();
         CommandControl::processCommands();
     }
@@ -52,7 +53,7 @@ void ComTask::execute() {
 
 void ComTask::restart() {
     stop();
-    start();
+    start(std::move(com));
 }
 
 void ComTask::stop() {

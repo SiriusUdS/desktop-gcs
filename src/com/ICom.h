@@ -3,6 +3,7 @@
 #include "ComType.h"
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 
 /**
@@ -14,7 +15,7 @@ public:
     virtual std::string protocolNameFromEnum(ComType comType);
     virtual void start() = 0;
     virtual bool read() = 0;
-    virtual bool write(uint8_t* msg, size_t size) = 0;
+    virtual bool write(std::span<const uint8_t>) = 0;
     virtual bool comOpened() = 0;
     virtual void shutdown() = 0;
     virtual bool getPacket(uint8_t* recv) = 0;

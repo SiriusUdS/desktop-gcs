@@ -11,11 +11,6 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 
-struct UdpEndpoint {
-    std::string ip;
-    int port;
-};
-
 /**
  * @class UdpCom
  * @brief Handles UDP communication to receive packets
@@ -24,7 +19,7 @@ class UdpCom: public ICom {
 public:
     void start() override;
     bool read() override;
-    bool write(uint8_t* msg, size_t size) override;
+    bool write(std::span<const uint8_t> msg) override;
     bool comOpened() override;
     void shutdown() override;
     bool getPacket(uint8_t* recv) override;
@@ -35,6 +30,7 @@ public:
     
 
 private:
+    static constexpr int incomingDataBufferSize = 1024;
     ComType comType = ComType::UDP;
     int destPort = 5002;
     int receivePort = 5555;
