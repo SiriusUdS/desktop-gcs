@@ -54,7 +54,8 @@ void CommandControl::processCommands() {
         lastTimeSentTimer.reset();
         BoardCommand* formattedData = reinterpret_cast<BoardCommand*>(data);
         if (!ComTask::com->write(data)) {
-            GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over serial communication.");
+            std::string protocolName = ComTask::com->getProtocolName();
+            GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over " + protocolName + " communication.");
         }
         timesSent++;
         if (NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND <= timesSent) {

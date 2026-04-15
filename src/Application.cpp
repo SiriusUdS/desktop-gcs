@@ -105,7 +105,6 @@ void Application::showMenus() {
 }
 
 void Application::shutdown() {
-    // TODO UDP stops here
     ComTask::stop();
     IniParamsIO::saveParams(iniStructure);
     PlotWindowCenter::saveState(iniStructure);

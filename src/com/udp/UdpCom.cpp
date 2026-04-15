@@ -30,7 +30,7 @@ bool UdpCom::read() {
     
     char incomingDataBuffer[incomingDataBufferSize];
     sockpp::inet_address senderAddr;
-    bool recievedAtLeastOne = false;
+    bool receivedAtLeastOne = false;
 
     while (true) {
         SSIZE_T bytesReceived = sock.recv_from(incomingDataBuffer, sizeof(incomingDataBuffer), &senderAddr);
@@ -39,13 +39,13 @@ bool UdpCom::read() {
             break;
         }
 
-        recievedAtLeastOne = true;
+        receivedAtLeastOne = true;
 
         for (int i = 0; i < bytesReceived; i++) {
             ComTask::packetReceiver.receiveByte(incomingDataBuffer[i]);
         }
     }
-    return recievedAtLeastOne;
+    return receivedAtLeastOne;
 }
 
 bool UdpCom::write(std::span<const uint8_t> msg) {
@@ -88,7 +88,7 @@ std::string UdpCom::getProtocolName() {
 
 std::optional<std::string> UdpCom::getConnectionDetails() {
     if (comOpened()) {
-        static std::string details;
+        std::string details;
         details = "Listening on " + destIp + ":" + std::to_string(receivePort);
         return details;
     }
