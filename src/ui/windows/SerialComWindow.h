@@ -10,7 +10,7 @@ public:
     SerialComWindow();
     void loadState(const mINI::INIStructure& ini) override;
     void saveState(mINI::INIStructure& ini) const override;
-    std::string getName() const override;
+    const char* getName() const override;
 
 private:
     enum RecvBufferDisplayMode { TEXT = 0, HEXA = 1 };

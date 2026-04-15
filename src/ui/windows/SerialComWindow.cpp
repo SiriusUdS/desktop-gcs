@@ -30,9 +30,9 @@ void SerialComWindow::saveState(mINI::INIStructure& ini) const {
     ini[IniConfig::GCS_SECTION].set(INI_RECV_BUFFER_DISPLAY_MODE, std::to_string(recvBufferDisplayMode));
 }
 
-std::string SerialComWindow::getName() const {
+const char* SerialComWindow::getName() const {
     std::string protocolName = ComTask::com->getProtocolName();
-    return protocolName + " COM";
+    return (protocolName + " COM").c_str();
 }
 
 void SerialComWindow::renderImpl() {

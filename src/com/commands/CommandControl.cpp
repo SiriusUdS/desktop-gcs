@@ -55,7 +55,7 @@ void CommandControl::processCommands() {
         BoardCommand* formattedData = reinterpret_cast<BoardCommand*>(data);
         if (!ComTask::com->write(data)) {
             std::string protocolName = ComTask::com->getProtocolName();
-            GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over " + protocolName + " communication.");
+            GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over {} communication.", protocolName);
         }
         timesSent++;
         if (NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND <= timesSent) {
