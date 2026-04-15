@@ -2,38 +2,19 @@
 #include "udp/UdpCom.h"
 
 void UdpCom::start() {
-    WSADATA wsaData;
-    int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (result != 0) {
+    sockpp::socket_initializer::initialize();
+    sock = sockpp::udp_socket();
+    if (!sock || !sock.bind(sockpp::inet_address("0.0.0.0", receivePort))) {
         initialized = false;
         return;
     }
 
-    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sock == INVALID_SOCKET) {
+    if (!sock.set_non_blocking(true)) {
         initialized = false;
-        WSACleanup();
         return;
     }
 
-    u_long mode = 1;
-    ioctlsocket(sock, FIONBIO, &mode);
-
-    destAddr.sin_family = AF_INET;
-    destAddr.sin_port = htons(destPort);
-    inet_pton(AF_INET, destIp.c_str(), &destAddr.sin_addr);
-    
-    sockaddr_in receiveAddr = {};
-    receiveAddr.sin_family = AF_INET;
-    receiveAddr.sin_addr.s_addr = INADDR_ANY;
-    receiveAddr.sin_port = htons(receivePort);
-    if (bind(sock, (struct sockaddr*) &receiveAddr, sizeof(receiveAddr)) == SOCKET_ERROR) {
-        int err = WSAGetLastError();
-        closesocket(sock);
-        sock = INVALID_SOCKET;
-        WSACleanup();
-        return;
-    }
+    destAddr = sockpp::inet_address(destIp, destPort);
 
     ComTask::packetRateMonitor.reset();
     ComTask::motorBoardComStateMonitor.reset();
@@ -43,43 +24,38 @@ void UdpCom::start() {
 }
 
 bool UdpCom::read() {
-    if (!initialized) {
+    if (!initialized || !sock.is_open()) {
         return false;
     }
     
     char incomingDataBuffer[incomingDataBufferSize];
-    sockaddr_in senderAddr;
-    int len = sizeof(senderAddr);
+    sockpp::inet_address senderAddr;
     bool recievedAtLeastOne = false;
 
     while (true) {
-        int bytesRecieved = recvfrom(sock, incomingDataBuffer, sizeof(incomingDataBuffer), 0, (struct sockaddr*) &senderAddr, &len);
+        SSIZE_T bytesReceived = sock.recv_from(incomingDataBuffer, sizeof(incomingDataBuffer), &senderAddr);
         
-        if (bytesRecieved == SOCKET_ERROR) {
-            int error = WSAGetLastError();
-            if (error == WSAEWOULDBLOCK) {
-                break;
-            }
+        if (bytesReceived <= 0) {
+            break;
         }
-        if (bytesRecieved > 0) {
-            recievedAtLeastOne = true;
-            bool successful = true;
-            for (int i = 0; i < bytesRecieved; i++) {
-                ComTask::packetReceiver.receiveByte(incomingDataBuffer[i]);
-            }
+
+        recievedAtLeastOne = true;
+
+        for (int i = 0; i < bytesReceived; i++) {
+            ComTask::packetReceiver.receiveByte(incomingDataBuffer[i]);
         }
     }
     return recievedAtLeastOne;
 }
 
 bool UdpCom::write(std::span<const uint8_t> msg) {
-    if (!initialized) {
+    if (!initialized || !sock.is_open()) {
         return false;
     }
 
-    int bytesSent = sendto(sock, reinterpret_cast<const char*>(msg.data()), msg.size(), 0, (struct sockaddr*) &destAddr, sizeof(destAddr));
+    SSIZE_T bytesSent = sock.send_to(msg.data(), msg.size(), destAddr);
 
-    if (bytesSent == SOCKET_ERROR) {
+    if (bytesSent <= 0) {
         return false;
     }
 
@@ -87,16 +63,14 @@ bool UdpCom::write(std::span<const uint8_t> msg) {
 }
 
 bool UdpCom::comOpened() {
-    return (sock != INVALID_SOCKET && initialized);
+    return (initialized && sock.is_open());
 }
 
 void UdpCom::shutdown() {
-    if (sock != INVALID_SOCKET) {
-        closesocket(sock);
-        sock = INVALID_SOCKET;
+    if (sock.is_open()) {
+        sock.close();
     }
 
-    WSACleanup();
     initialized = false;
 }
 

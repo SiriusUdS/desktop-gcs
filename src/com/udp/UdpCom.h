@@ -4,12 +4,14 @@
 #include "../ComTask.h"
 #include <cstdint>
 #include "ICom.h"
+#include <sockpp/inet_address.h>
 #include "PacketRateMonitor.h"
 #include "PacketReceiver.h"
+#include <sockpp/socket.h>
 #include <string>
 #include "Timer.h"
-#include <WinSock2.h>
-#include <WS2tcpip.h>
+#include <sockpp/udp_socket.h>
+
 
 /**
  * @class UdpCom
@@ -35,7 +37,8 @@ private:
     int destPort = 5002;
     int receivePort = 5555;
     std::string destIp = "127.0.0.1";
-    SOCKET sock = INVALID_SOCKET;
-    sockaddr_in destAddr;
+
+    sockpp::udp_socket sock;
+    sockpp::inet_address destAddr;
     bool initialized = false;
 };

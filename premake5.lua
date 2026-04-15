@@ -56,7 +56,7 @@ workspace "sirius-gcs"
         "src/**.cpp",
         "external/ceSerial/ceserial.h",
         "external/mINI/ini.h",
-        "external/sirius-headers-common/**.h"
+        "external/sirius-headers-common/**.h",
     }
 
     filter "configurations:Debug"
@@ -77,7 +77,9 @@ workspace "sirius-gcs"
             "libcurl-d",
             "spdlogd",
             "stb_hello_imgui",
-            "zlibd"
+            "zlibd",
+	    "sockpp-static",
+	    "ws2_32"
         }
 
         postbuildcommands {
@@ -102,7 +104,9 @@ workspace "sirius-gcs"
             "libcurl",
             "spdlog",
             "stb_hello_imgui",
-            "zlib"
+            "zlib",
+	    "sockpp-static",
+	    "ws2_32"
         }
 
         postbuildcommands {

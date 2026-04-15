@@ -12,6 +12,7 @@
             ]
         },
         "implot",
+	"sockpp",
         "spdlog"
     ]
 }
