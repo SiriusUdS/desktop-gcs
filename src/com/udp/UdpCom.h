@@ -32,7 +32,7 @@ public:
     
 
 private:
-    static constexpr int incomingDataBufferSize = 1024;
+    static constexpr int incomingDataBufferSize = 4096;
     ComType comType = ComType::UDP;
     const int destPort = 5002;
     const int receivePort = 5555;
