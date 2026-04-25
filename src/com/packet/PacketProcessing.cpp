@@ -38,7 +38,7 @@ void addPlotData(std::array<SensorPlotData, N>& plotData, uint16_t* adcValues, f
 bool validateIncomingPacketSize(size_t targetPacketSize, const char* packetName);
 size_t packetSize{};
 uint8_t serialPacketBuf[SerialConfig::MAX_PACKET_SIZE];
-uint8_t udpPacketBuf[4096];
+uint8_t udpPacketBuf[UdpConfig::UDPBufferSize];
 
 // TODO: Think about declaring these arrays in their respective functions instead of declaring them globally to improve code clarity
 float thermistorValues_C[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD]{};

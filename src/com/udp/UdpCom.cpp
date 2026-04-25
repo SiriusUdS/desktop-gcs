@@ -1,4 +1,3 @@
-#pragma once
 #include "udp/UdpCom.h"
 
 void UdpCom::start() {
