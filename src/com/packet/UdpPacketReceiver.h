@@ -1,11 +1,11 @@
 ﻿#pragma once
 #include "CircularBuffer.hpp"
 #include "CRC.h"
-#include "PacketMetadata.h"
+#include "UdpConfig.h"
+
 #include <queue>
 #include <UdpPacket.h>
 #include "UdpPacketMetadata.h"
-#include <winsock2.h>
 
 enum class ReceiverStatus {
     WAITING_FOR_HEADER,
@@ -29,10 +29,10 @@ private:
     uint8_t packetLostCount = 0;
     networking::UDPPacketHeader headerBuffer;
     uint32_t expectedPayloadLength = 0;
-    uint8_t crcBuffer[4];
+    uint8_t crcBuffer[UdpConfig::CRCSize];
     
     std::queue<UdpPacketMetadata> packetMetadataQueue;
-    CircularBuffer<4096> packetBuffer;
+    CircularBuffer<UdpConfig::UDPBufferSize> packetBuffer;
     std::vector<uint8_t> tempPayloadBuffer;
     
     void resetReceiverState();

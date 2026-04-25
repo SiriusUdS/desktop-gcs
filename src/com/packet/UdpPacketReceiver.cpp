@@ -63,8 +63,8 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
 }
 
 bool UdpPacketReceiver::validateChecksum() {
-    uint32_t receivedCRC = (crcBuffer[0] << 24) | (crcBuffer[1] << 16) | (crcBuffer[2] << 8) | crcBuffer[3];
     
+    uint32_t receivedCRC = ntohl(std::bit_cast<uint32_t>(crcBuffer));
     uint32_t calculatedCRC = CRC::computeCrc(tempPayloadBuffer.data(), expectedPayloadLength);
     
     return(receivedCRC == calculatedCRC);

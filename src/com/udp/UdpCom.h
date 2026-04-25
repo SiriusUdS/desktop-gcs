@@ -35,8 +35,8 @@ public:
 private:
     static constexpr int incomingDataBufferSize = 4096;
     ComType comType = ComType::UDP;
-    const int destPort = 5002;
-    const int receivePort = 5555;
+    int destPort = 5002;
+    int receivePort = 5555;
     std::string destIp = "127.0.0.1";
 
     sockpp::udp_socket sock;

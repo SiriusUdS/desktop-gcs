@@ -3,7 +3,6 @@
 #include "UDPPacket.h"
 #include "UDPDeviceCtrlFlags.h"
 #include <cstdint>
-#include <cstddef>
 #include <winsock2.h>
 
 struct UdpPacketMetadata {
