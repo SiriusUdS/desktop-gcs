@@ -10,6 +10,7 @@ class IntervalTimer;
 class PacketRateMonitor;
 class PacketReceiver;
 class ICom;
+class UdpPacketReceiver;
 
 namespace ComTask {
 void start(std::unique_ptr<ICom> comInterface);
@@ -24,6 +25,7 @@ extern PacketRateMonitor gsControlPacketRateMonitor;
 extern PacketRateMonitor engineStatusPacketRateMonitor;
 extern PacketRateMonitor fillingStationStatusPacketRateMonitor;
 extern PacketReceiver packetReceiver;
+extern UdpPacketReceiver udpPacketReceiver;
 extern BoardComStateMonitor motorBoardComStateMonitor;
 extern BoardComStateMonitor fillingStationBoardComStateMonitor;
 extern BoardComStateMonitor gsControlBoardComStateMonitor;

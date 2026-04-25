@@ -9,6 +9,7 @@
 #include "PacketReceiver.h"
 #include "SerialConfig.h"
 #include "UdpCom.h"
+#include "UdpPacketReceiver.h"
 
 namespace ComTask {
 PacketRateMonitor packetRateMonitor;
@@ -18,6 +19,7 @@ PacketRateMonitor gsControlPacketRateMonitor;
 PacketRateMonitor engineStatusPacketRateMonitor;
 PacketRateMonitor fillingStationStatusPacketRateMonitor;
 PacketReceiver packetReceiver;
+UdpPacketReceiver udpPacketReceiver;
 BoardComStateMonitor motorBoardComStateMonitor;
 BoardComStateMonitor fillingStationBoardComStateMonitor;
 BoardComStateMonitor gsControlBoardComStateMonitor;

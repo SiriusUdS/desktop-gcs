@@ -22,21 +22,23 @@
 #include <FillingStation/FillingStationState.h>
 
 namespace PacketProcessing {
-bool processIncomingPacket();
+bool processIncomingSerialPacket();
+bool processIncomingUdpPacket();
 bool processEngineTelemetryPacket();
 bool processFillingStationTelemetryPacket();
 bool processGSControlPacket();
 bool processEngineStatusPacket();
-bool processFillingStationStatusPacket();
+bool processFillingStationStatusPacket();\
+bool routeDecodedPacket(ComType comType);
 void computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId);
 void computePressureSensorValues(uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD], uint16_t boardId);
 void computeLoadCellValues(uint16_t loadCellAdcValues[GSDataCenterConfig::LOAD_CELL_AMOUNT]);
 template <size_t N>
 void addPlotData(std::array<SensorPlotData, N>& plotData, uint16_t* adcValues, float* computedValues, float timestamp);
 bool validateIncomingPacketSize(size_t targetPacketSize, const char* packetName);
-
 size_t packetSize{};
-uint8_t packetBuf[SerialConfig::MAX_PACKET_SIZE];
+uint8_t serialPacketBuf[SerialConfig::MAX_PACKET_SIZE];
+uint8_t udpPacketBuf[4096];
 
 // TODO: Think about declaring these arrays in their respective functions instead of declaring them globally to improve code clarity
 float thermistorValues_C[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD]{};
@@ -44,13 +46,41 @@ float pressureSensorValues_psi[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BO
 float loadCellValues_lb[GSDataCenterConfig::LOAD_CELL_AMOUNT]{};
 } // namespace PacketProcessing
 
+
 void PacketProcessing::processIncomingPackets() {
     while (ComTask::packetReceiver.packetAvailable()) {
-        processIncomingPacket();
+        processIncomingSerialPacket();
+    }
+
+    while (ComTask::udpPacketReceiver.packetAvailable()) {
+        processIncomingUdpPacket();
     }
 }
 
-bool PacketProcessing::processIncomingPacket() {
+bool PacketProcessing::processIncomingUdpPacket() {
+    std::optional<UdpPacketMetadata> udpMetadataOpt = ComTask::udpPacketReceiver.nextPacketMetadata();
+
+    if (!udpMetadataOpt.has_value()) {
+        return false;
+    }
+
+    packetSize = udpMetadataOpt->size;
+
+    if (packetSize < sizeof(TelemetryHeader)) {
+        //Bypass? Pertinent pour le Udp?
+        GCS_APP_LOG_WARN("PacketProcessing: Invalid UDP packet size");
+
+        return false;
+    }
+
+    if (!ComTask::udpPacketReceiver.getPacket(udpPacketBuf)) {
+        return false;
+    }
+
+    return routeDecodedPacket(ComType::UDP);
+}
+
+bool PacketProcessing::processIncomingSerialPacket() {
     std::optional<PacketMetadata> packetMetadataOpt = ComTask::packetReceiver.nextPacketMetadata();
 
     if (!packetMetadataOpt.has_value()) {
@@ -74,13 +104,30 @@ bool PacketProcessing::processIncomingPacket() {
         return false;
     }
 
-    if (!ComTask::com->getPacket(packetBuf)) {
+    if (!ComTask::com->getPacket(serialPacketBuf)) {
         GCS_APP_LOG_ERROR("PacketProcessing: Something went wrong while getting the next packet.");
         return false;
     }
 
-    TelemetryHeader* header = reinterpret_cast<TelemetryHeader*>(packetBuf);
+    return routeDecodedPacket(ComType::SERIAL);
+}
 
+bool PacketProcessing::routeDecodedPacket(ComType comType) {
+    TelemetryHeader* header;
+    switch (comType) {
+        case ComType::SERIAL: {
+            header = reinterpret_cast<TelemetryHeader*>(serialPacketBuf);
+            break;
+        }
+        case ComType::UDP: {
+            header = reinterpret_cast<TelemetryHeader*>(udpPacketBuf);
+            break;
+        }
+        default: {
+            return false;    
+        }
+    }
+   
     switch (header->bits.type) {
     case TELEMETRY_TYPE_CODE:
         if (header->bits.boardId == ENGINE_BOARD_ID) {
@@ -116,9 +163,9 @@ bool PacketProcessing::processEngineTelemetryPacket() {
         return false;
     }
 
-    EngineTelemetryPacket* packet = reinterpret_cast<EngineTelemetryPacket*>(packetBuf);
+    EngineTelemetryPacket* packet = reinterpret_cast<EngineTelemetryPacket*>(serialPacketBuf);
 
-    if (!isPacketIntegrityValid(packetBuf, packet, sizeof(EngineTelemetryPacket))) {
+    if (!isPacketIntegrityValid(serialPacketBuf, packet, sizeof(EngineTelemetryPacket))) {
         return false;
     }
 
@@ -153,9 +200,9 @@ bool PacketProcessing::processFillingStationTelemetryPacket() {
         return false;
     }
 
-    FillingStationTelemetryPacket* packet = reinterpret_cast<FillingStationTelemetryPacket*>(packetBuf);
+    FillingStationTelemetryPacket* packet = reinterpret_cast<FillingStationTelemetryPacket*>(serialPacketBuf);
 
-    if (!isPacketIntegrityValid(packetBuf, packet, sizeof(FillingStationTelemetryPacket))) {
+    if (!isPacketIntegrityValid(serialPacketBuf, packet, sizeof(FillingStationTelemetryPacket))) {
         return false;
     }
 
@@ -202,9 +249,9 @@ bool PacketProcessing::processGSControlPacket() {
         return false;
     }
 
-    GSControlStatusPacket* packet = reinterpret_cast<GSControlStatusPacket*>(packetBuf);
+    GSControlStatusPacket* packet = reinterpret_cast<GSControlStatusPacket*>(serialPacketBuf);
 
-    if (!isPacketIntegrityValid(packetBuf, packet, sizeof(GSControlStatusPacket))) {
+    if (!isPacketIntegrityValid(serialPacketBuf, packet, sizeof(GSControlStatusPacket))) {
         return false;
     }
 
@@ -238,9 +285,9 @@ bool PacketProcessing::processEngineStatusPacket() {
         return false;
     }
 
-    EngineStatusPacket* packet = reinterpret_cast<EngineStatusPacket*>(packetBuf);
+    EngineStatusPacket* packet = reinterpret_cast<EngineStatusPacket*>(serialPacketBuf);
 
-    if (!isPacketIntegrityValid(packetBuf, packet, sizeof(EngineStatusPacket))) {
+    if (!isPacketIntegrityValid(serialPacketBuf, packet, sizeof(EngineStatusPacket))) {
         return false;
     }
 
@@ -276,9 +323,9 @@ bool PacketProcessing::processFillingStationStatusPacket() {
         return false;
     }
 
-    FillingStationStatusPacket* packet = reinterpret_cast<FillingStationStatusPacket*>(packetBuf);
+    FillingStationStatusPacket* packet = reinterpret_cast<FillingStationStatusPacket*>(serialPacketBuf);
 
-    if (!isPacketIntegrityValid(packetBuf, packet, sizeof(FillingStationStatusPacket))) {
+    if (!isPacketIntegrityValid(serialPacketBuf, packet, sizeof(FillingStationStatusPacket))) {
         return false;
     }
 

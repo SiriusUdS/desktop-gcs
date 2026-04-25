@@ -10,6 +10,7 @@
 #include <sockpp/socket.h>
 #include <string>
 #include "Timer.h"
+#include "UdpPacketReceiver.h"
 #include <sockpp/udp_socket.h>
 
 

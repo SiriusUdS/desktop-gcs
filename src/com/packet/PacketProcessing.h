@@ -1,5 +1,7 @@
 #pragma once
 
+
+#include "ComType.h"
 #include "CRC.h"
 #include "Logging.h"
 
@@ -21,5 +23,6 @@ bool isPacketIntegrityValid(uint8_t* packetBuffer, PacketType packet, size_t siz
     }
     return true;
 }
+
 
 } // namespace PacketProcessing

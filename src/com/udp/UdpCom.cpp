@@ -42,7 +42,7 @@ bool UdpCom::read() {
         receivedAtLeastOne = true;
 
         for (int i = 0; i < bytesReceived; i++) {
-            ComTask::packetReceiver.receiveByte(incomingDataBuffer[i]);
+            ComTask::udpPacketReceiver.receiveByte(incomingDataBuffer[i]);
         }
     }
     return receivedAtLeastOne;
@@ -75,11 +75,11 @@ void UdpCom::shutdown() {
 }
 
 bool UdpCom::getPacket(uint8_t* recv) {
-    return ComTask::packetReceiver.getPacket(recv);
+    return ComTask::udpPacketReceiver.getPacket(recv);
 }
 
 uint8_t* UdpCom::getBuffer() {
-    return ComTask::packetReceiver.getBuffer();
+    return ComTask::udpPacketReceiver.getBuffer();
 }
 
 std::string UdpCom::getProtocolName() {
