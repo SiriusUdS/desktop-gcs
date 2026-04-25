@@ -22,6 +22,7 @@ public:
     std::optional<UdpPacketMetadata> nextPacketMetadata();
     bool packetAvailable();
     bool clear();
+    uint8_t getAmountOfLostPackets();
 private:
     ReceiverStatus status = ReceiverStatus::WAITING_FOR_HEADER;
     size_t currentByteCount = 0;

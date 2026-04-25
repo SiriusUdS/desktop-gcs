@@ -21,7 +21,7 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
         headerBuffer.bytes[currentByteCount++] = byte;
 
         if (currentByteCount == sizeof(networking::UDPPacketHeader)) {
-            expectedPayloadLength = ntohl(headerBuffer.frame.payloadLength); //Switch bcs Network use MSB
+            expectedPayloadLength = ntohs(headerBuffer.frame.payloadLength); //Switch bcs Network use MSB
             
             tempPayloadBuffer.clear();
             tempPayloadBuffer.reserve(expectedPayloadLength);
@@ -107,4 +107,8 @@ bool UdpPacketReceiver::clear() {
     }
     resetReceiverState();
     return true;
+}
+
+uint8_t UdpPacketReceiver::getAmountOfLostPackets() {
+    return packetLostCount;
 }
