@@ -67,7 +67,6 @@ bool PacketProcessing::processIncomingUdpPacket() {
     packetSize = udpMetadataOpt->size;
 
     if (packetSize < sizeof(TelemetryHeader)) {
-        //Bypass? Pertinent pour le Udp?
         GCS_APP_LOG_WARN("PacketProcessing: Invalid UDP packet size");
 
         return false;

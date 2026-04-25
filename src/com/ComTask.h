@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <string>
 #include <thread>
 
 
@@ -17,6 +18,8 @@ void start(std::unique_ptr<ICom> comInterface);
 void execute();
 void restart();
 void stop();
+bool updateConnection(std::string ipAddress, int port);
+int getLostPacketCount();
 
 extern PacketRateMonitor packetRateMonitor;
 extern PacketRateMonitor engineTelemetryPacketRateMonitor;
