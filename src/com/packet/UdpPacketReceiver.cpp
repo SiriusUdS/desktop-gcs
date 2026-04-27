@@ -57,6 +57,7 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
             }
             resetReceiverState();
         }
+        totalPacketReceivedCount++;
         break;
     }
     }
@@ -109,6 +110,10 @@ bool UdpPacketReceiver::clear() {
     return true;
 }
 
-uint8_t UdpPacketReceiver::getAmountOfLostPackets() {
+uint64_t UdpPacketReceiver::getAmountOfLostPackets() {
     return packetLostCount;
+}
+
+uint64_t UdpPacketReceiver::getAmountOfReceivedPackets() {
+    return totalPacketReceivedCount;
 }

@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <string>
+#include <cstdint>
 #include <thread>
 
 
@@ -18,8 +19,9 @@ void start(std::unique_ptr<ICom> comInterface);
 void execute();
 void restart();
 void stop();
-bool updateConnection(std::string ipAddress, int port);
-int getLostPacketCount();
+bool updateConnection(std::string ipAddress, uint16_t port);
+uint64_t getLostPacketCount();
+uint64_t getTotalReceivedPackets();
 
 extern PacketRateMonitor packetRateMonitor;
 extern PacketRateMonitor engineTelemetryPacketRateMonitor;

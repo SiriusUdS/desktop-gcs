@@ -70,7 +70,7 @@ void ComTask::stop() {
     running = false;
 }
 
-bool ComTask::updateConnection(std::string ipAddress, int port) {
+bool ComTask::updateConnection(std::string ipAddress, uint16_t port) {
     if (com.get()->getComType() != ComType::UDP) {
         return false;
     }
@@ -78,6 +78,10 @@ bool ComTask::updateConnection(std::string ipAddress, int port) {
     return dynamic_cast<UdpCom*>(com.get())->openConnectionTo(ipAddress, port);
 }
 
-int ComTask::getLostPacketCount() {
+uint64_t ComTask::getLostPacketCount() {
     return udpPacketReceiver.getAmountOfLostPackets();
+}
+
+uint64_t ComTask::getTotalReceivedPackets() {
+    return udpPacketReceiver.getAmountOfReceivedPackets();
 }

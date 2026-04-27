@@ -61,7 +61,7 @@ bool UdpCom::write(std::span<const uint8_t> msg) {
     return (static_cast<size_t>(bytesSent) == msg.size());
 }
 
-bool UdpCom::openConnectionTo(std::string ipAddress, int port) {
+bool UdpCom::openConnectionTo(std::string ipAddress, uint16_t port) {
     if (comOpened()) {
         shutdown();
     }

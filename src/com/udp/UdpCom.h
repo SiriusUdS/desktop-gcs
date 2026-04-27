@@ -23,7 +23,7 @@ public:
     void start() override;
     bool read() override;
     bool write(std::span<const uint8_t> msg) override;
-    bool openConnectionTo(std::string ipAddress, int port);
+    bool openConnectionTo(std::string ipAddress, uint16_t port);
     bool comOpened() override;
     void shutdown() override;
     bool getPacket(uint8_t* recv) override;
@@ -34,11 +34,12 @@ public:
     
 
 private:
-    static constexpr int incomingDataBufferSize = 4096;
+    static constexpr int incomingDataBufferSize = UdpConfig::UDPBufferSize;
     ComType comType = ComType::UDP;
-    int destPort = 5002;
-    int receivePort = 5555;
-    std::string destIp = "127.0.0.1";
+    uint16_t destPort = UdpConfig::defaultDestPort;
+    std::string destIp = UdpConfig::defaultDestIp;
+    uint16_t receivePort = UdpConfig::defaultReceivePort;
+    
 
     sockpp::udp_socket sock;
     sockpp::inet_address destAddr;

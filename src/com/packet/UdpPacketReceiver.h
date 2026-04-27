@@ -22,11 +22,13 @@ public:
     std::optional<UdpPacketMetadata> nextPacketMetadata();
     bool packetAvailable();
     bool clear();
-    uint8_t getAmountOfLostPackets();
+    uint64_t getAmountOfLostPackets();
+    uint64_t getAmountOfReceivedPackets();
 private:
     ReceiverStatus status = ReceiverStatus::WAITING_FOR_HEADER;
     size_t currentByteCount = 0;
-    uint8_t packetLostCount = 0;
+    uint64_t packetLostCount = 0;
+    uint64_t totalPacketReceivedCount = 0; //Includes lost packets
     networking::UDPPacketHeader headerBuffer;
     uint32_t expectedPayloadLength = 0;
     uint8_t crcBuffer[UdpConfig::CRCSize];
