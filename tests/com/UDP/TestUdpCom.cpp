@@ -64,7 +64,7 @@ TEST_CASE("UdpCom should write data to the destination address") {
     REQUIRE(com.comOpened());
     
     sockpp::udp_socket receiver;
-    receiver.bind(sockpp::inet_address("0.0.0.0", 5002));
+    receiver.bind(sockpp::inet_address("0.0.0.0", UdpConfig::defaultDestPort));
     
     std::vector<uint8_t> outgoingMessage = {0x01, 0x02, 0x03, 0x04};
     std::span<const uint8_t> msgSpan(outgoingMessage);
