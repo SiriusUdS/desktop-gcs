@@ -4,6 +4,7 @@
 #include "ITileLoader.h"
 #include "Logging.h"
 #include "UdpConfig.h"
+
 #include <cstring>
 
 const char* const CommunicationWindow::name = "Communication";

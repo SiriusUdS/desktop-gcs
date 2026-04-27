@@ -1,6 +1,7 @@
 #include "PacketProcessing.h"
 
 #include "BoardComStateMonitor.h"
+#include "ComTask.h"
 #include "GSDataCenter.h"
 #include "LoadCell.h"
 #include "Logging.h"
@@ -9,13 +10,12 @@
 #include "PacketReceiver.h"
 #include "PressureTransducer.h"
 #include "SensorPlotData.h"
-#include "UdpCom.h"
 #include "SerialConfig.h"
-#include "ComTask.h"
 #include "SwitchData.h"
 #include "Telecommunication/PacketHeaderVariable.h"
 #include "Telecommunication/TelemetryPacket.h"
 #include "TemperatureSensor.h"
+#include "UdpCom.h"
 #include "ValveData.h"
 
 #include <Engine/EngineState.h>

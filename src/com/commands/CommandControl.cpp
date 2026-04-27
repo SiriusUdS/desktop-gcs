@@ -1,10 +1,10 @@
 #include "CommandControl.h"
 
-#include "CRC.h"
+#include "ComTask.h"
 #include "CommandQueue.h"
+#include "CRC.h"
 #include "Logging.h"
 #include "UdpCom.h"
-#include "ComTask.h"
 #include "Timer.h"
 
 namespace CommandControl {

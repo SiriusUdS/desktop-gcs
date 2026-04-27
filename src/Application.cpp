@@ -4,13 +4,13 @@
 #include <WinSock2.h>
 // clang-format on
 
+#include "ComTask.h"
 #include "FontConfig.h"
 #include "GSDataCenter.h"
 #include "IniParams.h"
 #include "IniParamsIO.h"
 #include "Logging.h"
 #include "PlotWindowCenter.h"
-#include "ComTask.h"
 #include "SerialCom.h"
 #include "TankGasLeftPlotDataProcessor.h"
 #include "TankMassPlotDataProcessor.h"
