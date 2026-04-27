@@ -22,12 +22,18 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
 
         if (currentByteCount == sizeof(networking::UDPPacketHeader)) {
             expectedPayloadLength = ntohs(headerBuffer.frame.payloadLength); //Switch bcs Network use MSB
-            
+
             tempPayloadBuffer.clear();
             tempPayloadBuffer.reserve(expectedPayloadLength);
-            
+
             status = ReceiverStatus::READING_PAYLOAD;
             currentByteCount = 0;
+        }
+
+        if (!hasValidPayloadSize(expectedPayloadLength)) {
+            status = ReceiverStatus::WAITING_FOR_HEADER;
+            tempPayloadBuffer.clear();
+            clear();
         }
         break;
     }
@@ -47,7 +53,7 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
 
         if (currentByteCount == 4) {
             if (validateChecksum()) {
-                for (uint8_t b:tempPayloadBuffer) {
+                for (uint8_t b : tempPayloadBuffer) {
                     packetBuffer.writeByte(b);
                 }
                 UdpPacketMetadata cleanPacket = UdpPacketMetadata::fromNetworkFrame(headerBuffer.frame, expectedPayloadLength);
@@ -64,27 +70,26 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
 }
 
 bool UdpPacketReceiver::validateChecksum() {
-    
     uint32_t receivedCRC = ntohl(std::bit_cast<uint32_t>(crcBuffer));
     uint32_t calculatedCRC = CRC::computeCrc(tempPayloadBuffer.data(), expectedPayloadLength);
-    
-    return(receivedCRC == calculatedCRC);
+
+    return (receivedCRC == calculatedCRC);
 }
 
 bool UdpPacketReceiver::getPacket(uint8_t* recv) {
     if (packetMetadataQueue.empty()) {
         return false;
     }
-    
+
     UdpPacketMetadata packetMetadata = packetMetadataQueue.front();
-    
+
     packetMetadataQueue.pop();
-    
+
     if (!packetBuffer.read(recv, packetMetadata.size)) {
         clear();
         return false;
     }
-    
+
     return true;
 }
 
@@ -92,7 +97,7 @@ std::optional<UdpPacketMetadata> UdpPacketReceiver::nextPacketMetadata() {
     if (packetMetadataQueue.empty()) {
         return std::nullopt;
     }
-    
+
     return packetMetadataQueue.front();
 }
 
@@ -107,6 +112,18 @@ bool UdpPacketReceiver::clear() {
         packetMetadataQueue.pop();
     }
     resetReceiverState();
+    return true;
+}
+
+bool UdpPacketReceiver::hasValidPayloadSize(uint32_t payloadLength) {
+    if (payloadLength > expectedPayloadLength) {
+        return false;
+    }
+
+    if (payloadLength % 4 != 0) {
+        return false;
+    }
+
     return true;
 }
 

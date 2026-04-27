@@ -22,6 +22,7 @@ public:
     std::optional<UdpPacketMetadata> nextPacketMetadata();
     bool packetAvailable();
     bool clear();
+    bool hasValidPayloadSize(uint32_t payloadLength);
     uint64_t getAmountOfLostPackets();
     uint64_t getAmountOfReceivedPackets();
 private:
