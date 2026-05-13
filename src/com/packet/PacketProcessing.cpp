@@ -24,11 +24,11 @@
 namespace PacketProcessing {
 bool processIncomingSerialPacket();
 bool processIncomingUdpPacket();
-bool processEngineTelemetryPacket();
-bool processFillingStationTelemetryPacket();
-bool processGSControlPacket();
-bool processEngineStatusPacket();
-bool processFillingStationStatusPacket();\
+bool processEngineTelemetryPacket(uint8_t* packetBuf);
+bool processFillingStationTelemetryPacket(uint8_t* packetBuf);
+bool processGSControlPacket(uint8_t* packetBuf);
+bool processEngineStatusPacket(uint8_t* packetBuf);
+bool processFillingStationStatusPacket(uint8_t* packetBuf);
 bool routeDecodedPacket(ComType comType);
 void computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId);
 void computePressureSensorValues(uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD], uint16_t boardId);
@@ -111,60 +111,75 @@ bool PacketProcessing::processIncomingSerialPacket() {
     return routeDecodedPacket(ComType::SERIAL);
 }
 
+bool routeByPacketType(TelemetryHeader* header, bool& value1, uint8_t* packetBuf)
+{
+    switch (header->bits.type) {
+    case TELEMETRY_TYPE_CODE:
+        if (header->bits.boardId == ENGINE_BOARD_ID) {
+            value1 = PacketProcessing::processEngineTelemetryPacket(packetBuf);
+            return true;
+        } else if (header->bits.boardId == FILLING_STATION_BOARD_ID) {
+            value1 = PacketProcessing::processFillingStationTelemetryPacket(packetBuf);
+            return true;
+        } else if (header->bits.boardId == GS_CONTROL_BOARD_ID) {
+            GCS_APP_LOG_WARN("PacketProcessing: Tried processing GS control telemetry packet, but that doesn't exist.");
+            value1 = false;
+            return true;
+        } else {
+            GCS_APP_LOG_WARN("PacketProcessing: Telemetry packet contains invalid boardId, ignoring packet.");
+            value1 = false;
+            return true;
+        }
+    case STATUS_TYPE_CODE:
+        if (header->bits.boardId == ENGINE_BOARD_ID) {
+            value1 = PacketProcessing::processEngineStatusPacket(packetBuf);
+            return true;
+        } else if (header->bits.boardId == FILLING_STATION_BOARD_ID) {
+            value1 = PacketProcessing::processFillingStationStatusPacket(packetBuf);
+            return true;
+        } else if (header->bits.boardId == GS_CONTROL_BOARD_ID) {
+            value1 = PacketProcessing::processGSControlPacket(packetBuf);
+            return true;
+        } else {
+            GCS_APP_LOG_WARN("PacketProcessing: Status packet contains invalid boardId, ignoring packet.");
+            value1 = false;
+            return true;
+        }
+    }
+    return false;
+}
+
 bool PacketProcessing::routeDecodedPacket(ComType comType) {
     TelemetryHeader* header;
     switch (comType) {
         case ComType::SERIAL: {
             header = reinterpret_cast<TelemetryHeader*>(serialPacketBuf);
+            bool valid;
+            if (routeByPacketType(header, valid, serialPacketBuf)) return valid;
             break;
         }
         case ComType::UDP: {
             header = reinterpret_cast<TelemetryHeader*>(udpPacketBuf);
+            bool valid;
+            if (routeByPacketType(header, valid, udpPacketBuf)) return valid;
             break;
         }
         default: {
             return false;    
         }
     }
-   
-    switch (header->bits.type) {
-    case TELEMETRY_TYPE_CODE:
-        if (header->bits.boardId == ENGINE_BOARD_ID) {
-            return processEngineTelemetryPacket();
-        } else if (header->bits.boardId == FILLING_STATION_BOARD_ID) {
-            return processFillingStationTelemetryPacket();
-        } else if (header->bits.boardId == GS_CONTROL_BOARD_ID) {
-            GCS_APP_LOG_WARN("PacketProcessing: Tried processing GS control telemetry packet, but that doesn't exist.");
-            return false;
-        } else {
-            GCS_APP_LOG_WARN("PacketProcessing: Telemetry packet contains invalid boardId, ignoring packet.");
-            return false;
-        }
-    case STATUS_TYPE_CODE:
-        if (header->bits.boardId == ENGINE_BOARD_ID) {
-            return processEngineStatusPacket();
-        } else if (header->bits.boardId == FILLING_STATION_BOARD_ID) {
-            return processFillingStationStatusPacket();
-        } else if (header->bits.boardId == GS_CONTROL_BOARD_ID) {
-            return processGSControlPacket();
-        } else {
-            GCS_APP_LOG_WARN("PacketProcessing: Status packet contains invalid boardId, ignoring packet.");
-            return false;
-        }
-    }
-
     GCS_APP_LOG_ERROR("PacketProcessing: Unknown packet type, ignoring packet.");
     return false;
 }
 
-bool PacketProcessing::processEngineTelemetryPacket() {
+bool PacketProcessing::processEngineTelemetryPacket(uint8_t* packetBuf) {
     if (!validateIncomingPacketSize(sizeof(EngineTelemetryPacket), "EngineTelemetryPacket")) {
         return false;
     }
 
-    EngineTelemetryPacket* packet = reinterpret_cast<EngineTelemetryPacket*>(serialPacketBuf);
+    EngineTelemetryPacket* packet = reinterpret_cast<EngineTelemetryPacket*>(packetBuf);
 
-    if (!isPacketIntegrityValid(serialPacketBuf, packet, sizeof(EngineTelemetryPacket))) {
+    if (!isPacketIntegrityValid(packetBuf, packet, sizeof(EngineTelemetryPacket))) {
         return false;
     }
 
@@ -194,14 +209,14 @@ bool PacketProcessing::processEngineTelemetryPacket() {
     return true;
 }
 
-bool PacketProcessing::processFillingStationTelemetryPacket() {
+bool PacketProcessing::processFillingStationTelemetryPacket(uint8_t* packetBuf) {
     if (!validateIncomingPacketSize(sizeof(FillingStationTelemetryPacket), "FillingStationTelemetryPacket")) {
         return false;
     }
 
-    FillingStationTelemetryPacket* packet = reinterpret_cast<FillingStationTelemetryPacket*>(serialPacketBuf);
+    FillingStationTelemetryPacket* packet = reinterpret_cast<FillingStationTelemetryPacket*>(packetBuf);
 
-    if (!isPacketIntegrityValid(serialPacketBuf, packet, sizeof(FillingStationTelemetryPacket))) {
+    if (!isPacketIntegrityValid(packetBuf, packet, sizeof(FillingStationTelemetryPacket))) {
         return false;
     }
 
@@ -243,14 +258,14 @@ bool PacketProcessing::processFillingStationTelemetryPacket() {
     return true;
 }
 
-bool PacketProcessing::processGSControlPacket() {
+bool PacketProcessing::processGSControlPacket(uint8_t* packetBuf) {
     if (!validateIncomingPacketSize(sizeof(GSControlStatusPacket), "GSControlStatusPacket")) {
         return false;
     }
 
-    GSControlStatusPacket* packet = reinterpret_cast<GSControlStatusPacket*>(serialPacketBuf);
+    GSControlStatusPacket* packet = reinterpret_cast<GSControlStatusPacket*>(packetBuf);
 
-    if (!isPacketIntegrityValid(serialPacketBuf, packet, sizeof(GSControlStatusPacket))) {
+    if (!isPacketIntegrityValid(packetBuf, packet, sizeof(GSControlStatusPacket))) {
         return false;
     }
 
@@ -279,14 +294,13 @@ bool PacketProcessing::processGSControlPacket() {
     return true;
 }
 
-bool PacketProcessing::processEngineStatusPacket() {
+bool PacketProcessing::processEngineStatusPacket(uint8_t* packetBuf) {
     if (!validateIncomingPacketSize(sizeof(EngineStatusPacket), "EngineStatusPacket")) {
         return false;
     }
+    EngineStatusPacket* packet = reinterpret_cast<EngineStatusPacket*>(packetBuf);;
 
-    EngineStatusPacket* packet = reinterpret_cast<EngineStatusPacket*>(serialPacketBuf);
-
-    if (!isPacketIntegrityValid(serialPacketBuf, packet, sizeof(EngineStatusPacket))) {
+    if (!isPacketIntegrityValid(packetBuf, packet, sizeof(EngineStatusPacket))) {
         return false;
     }
 
@@ -317,14 +331,14 @@ bool PacketProcessing::processEngineStatusPacket() {
     return true;
 }
 
-bool PacketProcessing::processFillingStationStatusPacket() {
+bool PacketProcessing::processFillingStationStatusPacket(uint8_t* packetBuf) {
     if (!validateIncomingPacketSize(sizeof(FillingStationStatusPacket), "FillingStationStatusPacket")) {
         return false;
     }
 
-    FillingStationStatusPacket* packet = reinterpret_cast<FillingStationStatusPacket*>(serialPacketBuf);
+    FillingStationStatusPacket* packet = reinterpret_cast<FillingStationStatusPacket*>(packetBuf);
 
-    if (!isPacketIntegrityValid(serialPacketBuf, packet, sizeof(FillingStationStatusPacket))) {
+    if (!isPacketIntegrityValid(packetBuf, packet, sizeof(FillingStationStatusPacket))) {
         return false;
     }
 
