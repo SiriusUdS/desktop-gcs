@@ -18,7 +18,7 @@ void start(std::unique_ptr<ICom> comInterface);
 void execute();
 void restart();
 void stop();
-bool updateConnection(std::string ipAddress, uint16_t port);
+bool updateConnection(std::string ipAddress, uint16_t sendPort, uint16_t receivePort);
 uint64_t getLostPacketCount();
 uint64_t getTotalReceivedPackets();
 

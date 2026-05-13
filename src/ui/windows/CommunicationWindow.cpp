@@ -20,7 +20,8 @@ void CommunicationWindow::renderImpl() {
     
     if (ImGui::CollapsingHeader("UDP Configuration", ImGuiTreeNodeFlags_DefaultOpen)) {
         static char ipBuf[64];
-        static int port = UdpConfig::defaultDestPort;
+        static int listenerPort = UdpConfig::defaultReceivePort;
+        static int senderPort = UdpConfig::defaultDestPort;
         static bool ipBufInitialized = false;
         
         if (!ipBufInitialized) {
@@ -29,11 +30,12 @@ void CommunicationWindow::renderImpl() {
         }
 
         ImGui::InputText("Remote IP", ipBuf, IM_ARRAYSIZE(ipBuf));
-        ImGui::InputInt("Remote Port", &port);
+        ImGui::InputInt("Listener Port", &listenerPort);
+        ImGui::InputInt("Sender Port", &senderPort);
 
         if (ImGui::Button("Update Connection", ImVec2(-FLT_MIN, 0))) {
-            if (ComTask::updateConnection(ipBuf, static_cast<uint16_t>(port))) {
-                GCS_APP_LOG_INFO("Updated connection successfully to: {}:{}", ipBuf, port);
+            if (ComTask::updateConnection(ipBuf, static_cast<uint16_t>(senderPort), static_cast<uint16_t>(listenerPort))) {
+                //GCS_APP_LOG_INFO("Updated connection successfully to: {}:{}", ipBuf, senderPort);
             } else {
                 GCS_APP_LOG_ERROR("Failed to update connection");
             }

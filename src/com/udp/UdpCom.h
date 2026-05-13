@@ -23,7 +23,7 @@ public:
     void start() override;
     bool read() override;
     bool write(std::span<const uint8_t> msg) override;
-    bool openConnectionTo(std::string ipAddress, uint16_t port);
+    bool openConnectionTo(std::string ipAddress, uint16_t sendPort, uint16_t receivePort);
     bool comOpened() override;
     void shutdown() override;
     bool getPacket(uint8_t* recv) override;

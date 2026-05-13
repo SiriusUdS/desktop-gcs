@@ -14,7 +14,6 @@ void UdpCom::start() {
     }
 
     destAddr = sockpp::inet_address(destIp, destPort);
-
     ComTask::packetRateMonitor.reset();
     ComTask::motorBoardComStateMonitor.reset();
     ComTask::fillingStationBoardComStateMonitor.reset();
@@ -30,8 +29,10 @@ bool UdpCom::read() {
     char incomingDataBuffer[incomingDataBufferSize];
     sockpp::inet_address senderAddr;
     bool receivedAtLeastOne = false;
+    
 
     while (true) {
+        
         SSIZE_T bytesReceived = sock.recv_from(incomingDataBuffer, sizeof(incomingDataBuffer), &senderAddr);
         
         if (bytesReceived <= 0) {
@@ -39,7 +40,7 @@ bool UdpCom::read() {
         }
 
         receivedAtLeastOne = true;
-
+        
         for (int i = 0; i < bytesReceived; i++) {
             ComTask::udpPacketReceiver.receiveByte(incomingDataBuffer[i]);
         }
@@ -61,12 +62,13 @@ bool UdpCom::write(std::span<const uint8_t> msg) {
     return (static_cast<size_t>(bytesSent) == msg.size());
 }
 
-bool UdpCom::openConnectionTo(std::string ipAddress, uint16_t port) {
+bool UdpCom::openConnectionTo(std::string ipAddress, uint16_t sendPort, uint16_t receivePort) {
     if (comOpened()) {
         shutdown();
     }
     
-    this->destPort = port;
+    this->destPort = sendPort;
+    this->receivePort = receivePort;
     this->destIp = ipAddress;
     
     start();

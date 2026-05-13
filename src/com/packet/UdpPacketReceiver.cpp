@@ -18,6 +18,7 @@ void UdpPacketReceiver::resetReceiverState() {
 void UdpPacketReceiver::receiveByte(uint8_t byte) {
     switch (status) {
     case ReceiverStatus::WAITING_FOR_HEADER: {
+        GCS_APP_LOG_DEBUG("WAITING_FOR_HEADER");
         headerBuffer.bytes[currentByteCount++] = byte;
 
         if (currentByteCount == sizeof(networking::UDPPacketHeader)) {
@@ -25,8 +26,11 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
 
             tempPayloadBuffer.clear();
             tempPayloadBuffer.reserve(expectedPayloadLength);
-
-            status = ReceiverStatus::READING_PAYLOAD;
+            if (expectedPayloadLength == 0) {
+                status = ReceiverStatus::READING_CRC;
+            } else {
+                status = ReceiverStatus::READING_PAYLOAD;
+            }
             currentByteCount = 0;
         }
 
@@ -39,6 +43,7 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
     }
 
     case ReceiverStatus::READING_PAYLOAD: {
+        GCS_APP_LOG_DEBUG("READING_PAYLOAD");
         tempPayloadBuffer.push_back(byte);
         currentByteCount++;
         if (currentByteCount == expectedPayloadLength) {
@@ -49,6 +54,7 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
     }
 
     case ReceiverStatus::READING_CRC: {
+        GCS_APP_LOG_DEBUG("READING_CRC");
         crcBuffer[currentByteCount++] = byte;
 
         if (currentByteCount == 4) {
@@ -61,9 +67,10 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
             } else {
                 packetLostCount++;
             }
+            totalPacketReceivedCount++;
             resetReceiverState();
         }
-        totalPacketReceivedCount++;
+        
         break;
     }
     }
