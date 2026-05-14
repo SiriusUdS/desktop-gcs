@@ -1,5 +1,7 @@
 #include "udp/UdpCom.h"
 
+#include "PacketProcessing.h"
+
 void UdpCom::start() {
     sockpp::socket_initializer::initialize();
     sock = sockpp::udp_socket();
@@ -44,6 +46,9 @@ bool UdpCom::read() {
         for (int i = 0; i < bytesReceived; i++) {
             ComTask::udpPacketReceiver.receiveByte(incomingDataBuffer[i]);
         }
+        
+        //Need to be called there if very high rate
+        PacketProcessing::processIncomingPackets();
     }
     return receivedAtLeastOne;
 }

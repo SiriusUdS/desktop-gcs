@@ -22,7 +22,7 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
         headerBuffer.bytes[currentByteCount++] = byte;
 
         if (currentByteCount == sizeof(networking::UDPPacketHeader)) {
-            expectedPayloadLength = ntohs(headerBuffer.frame.payloadLength); //Switch bcs Network use MSB
+            expectedPayloadLength = (headerBuffer.frame.payloadLength); //Switch bcs Network use MSB
 
             tempPayloadBuffer.clear();
             tempPayloadBuffer.reserve(expectedPayloadLength);
@@ -76,8 +76,17 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
     }
 }
 
+uint32_t byteSwap32(uint32_t val)
+{
+    return ((val >> 24) & 0x000000FF) |
+           ((val >>  8) & 0x0000FF00) |
+           ((val <<  8) & 0x00FF0000) |
+           ((val << 24) & 0xFF000000);
+}
+
 bool UdpPacketReceiver::validateChecksum() {
-    uint32_t receivedCRC = ntohl(std::bit_cast<uint32_t>(crcBuffer));
+    uint32_t receivedCRC = (std::bit_cast<uint32_t>(crcBuffer));
+    //receivedCRC = byteSwap32(receivedCRC);
     uint32_t calculatedCRC = CRC::computeCrc(tempPayloadBuffer.data(), expectedPayloadLength);
 
     return (receivedCRC == calculatedCRC);
