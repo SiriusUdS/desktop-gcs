@@ -17,7 +17,7 @@ class UdpPacketReceiver {
 public:
     UdpPacketReceiver();
     uint8_t* getBuffer();
-    void receiveByte(uint8_t byte);
+    void receiveByte(uint8_t byte, bool isTesting);
     bool getPacket(uint8_t* recv);
     std::optional<UdpPacketMetadata> nextPacketMetadata();
     bool packetAvailable();

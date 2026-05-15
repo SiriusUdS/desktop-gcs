@@ -1,9 +1,11 @@
 ﻿#include "doctest.h"
+#include "PacketProcessing.h"
 #include "UdpCom.h"
 
 TEST_CASE("UdpCom should successfully bind, read and process a UDP packet from localhost") {
     UdpCom com;
     com.start();
+    com.setIsTest(true);
     
     REQUIRE(com.comOpened());
     REQUIRE(com.getConnectionDetails().has_value());
@@ -20,8 +22,8 @@ TEST_CASE("UdpCom should successfully bind, read and process a UDP packet from l
     
     header.frame.deviceTsMs = 1;
     header.frame.payloadId = 2;
-    header.frame.payloadLength = htons(static_cast<uint16_t>(payload.size()));
-    header.frame.deviceTsMs = htonl(12345);
+    header.frame.payloadLength = (static_cast<uint16_t>(payload.size()));
+    header.frame.deviceTsMs = (12345);
     
     for (size_t i = 0; i < sizeof(header); i++) {
         networkBuffer.push_back(header.bytes[i]);
@@ -32,12 +34,12 @@ TEST_CASE("UdpCom should successfully bind, read and process a UDP packet from l
     }
     
     uint32_t crc = CRC::computeCrc(payload.data(), payload.size());
-    networkBuffer.push_back((crc>>24) & 0xFF);
-    networkBuffer.push_back((crc>>16) & 0xFF);
-    networkBuffer.push_back((crc>>8) & 0xFF);
     networkBuffer.push_back(crc & 0xFF);
+    networkBuffer.push_back((crc>>8) & 0xFF);
+    networkBuffer.push_back((crc>>16) & 0xFF);
+    networkBuffer.push_back((crc>>24) & 0xFF);
     
-    ssize_t bytesSent = client.send_to(networkBuffer.data(), networkBuffer.size(), sockpp::inet_address("127.0.0.1", 5555));
+    ssize_t bytesSent = client.send_to(networkBuffer.data(), networkBuffer.size(), sockpp::inet_address("127.0.0.1", UdpConfig::defaultReceivePort));
     REQUIRE(bytesSent == networkBuffer.size());
     
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -61,6 +63,7 @@ TEST_CASE("UdpCom should successfully bind, read and process a UDP packet from l
 TEST_CASE("UdpCom should write data to the destination address") {
     UdpCom com;
     com.start();
+    com.setIsTest(true);
     REQUIRE(com.comOpened());
     
     sockpp::udp_socket receiver;

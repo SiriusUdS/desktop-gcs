@@ -31,7 +31,7 @@ public:
     std::string getProtocolName() override;
     std::optional<std::string> getConnectionDetails() override;
     ComType getComType() const override;
-    
+    void setIsTest(bool isTest);
 
 private:
     static constexpr int incomingDataBufferSize = UdpConfig::UDPBufferSize;
@@ -44,4 +44,5 @@ private:
     sockpp::udp_socket sock;
     sockpp::inet_address destAddr;
     bool initialized = false;
+    bool isTesting = false;
 };

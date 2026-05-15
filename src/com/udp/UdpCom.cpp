@@ -3,6 +3,7 @@
 #include "PacketProcessing.h"
 
 void UdpCom::start() {
+    isTesting = false;
     sockpp::socket_initializer::initialize();
     sock = sockpp::udp_socket();
     if (!sock || !sock.bind(sockpp::inet_address("0.0.0.0", receivePort))) {
@@ -44,11 +45,8 @@ bool UdpCom::read() {
         receivedAtLeastOne = true;
         
         for (int i = 0; i < bytesReceived; i++) {
-            ComTask::udpPacketReceiver.receiveByte(incomingDataBuffer[i]);
+            ComTask::udpPacketReceiver.receiveByte(incomingDataBuffer[i], isTesting);
         }
-        
-        //Need to be called there if very high rate
-        PacketProcessing::processIncomingPackets();
     }
     return receivedAtLeastOne;
 }
@@ -119,4 +117,8 @@ std::optional<std::string> UdpCom::getConnectionDetails() {
 
 ComType UdpCom::getComType() const {
     return comType;
+}
+
+void UdpCom::setIsTest(bool isTest) {
+    isTesting = isTest;
 }

@@ -1,5 +1,8 @@
 ﻿#include "UdpPacketReceiver.h"
 
+#include "PacketProcessing.h"
+#include "UdpCom.h"
+
 
 UdpPacketReceiver::UdpPacketReceiver() {
     resetReceiverState();
@@ -15,10 +18,9 @@ void UdpPacketReceiver::resetReceiverState() {
     expectedPayloadLength = 0;
 }
 
-void UdpPacketReceiver::receiveByte(uint8_t byte) {
+void UdpPacketReceiver::receiveByte(uint8_t byte, bool isTesting = false) {
     switch (status) {
     case ReceiverStatus::WAITING_FOR_HEADER: {
-        GCS_APP_LOG_DEBUG("WAITING_FOR_HEADER");
         headerBuffer.bytes[currentByteCount++] = byte;
 
         if (currentByteCount == sizeof(networking::UDPPacketHeader)) {
@@ -43,7 +45,6 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
     }
 
     case ReceiverStatus::READING_PAYLOAD: {
-        GCS_APP_LOG_DEBUG("READING_PAYLOAD");
         tempPayloadBuffer.push_back(byte);
         currentByteCount++;
         if (currentByteCount == expectedPayloadLength) {
@@ -54,7 +55,6 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
     }
 
     case ReceiverStatus::READING_CRC: {
-        GCS_APP_LOG_DEBUG("READING_CRC");
         crcBuffer[currentByteCount++] = byte;
 
         if (currentByteCount == 4) {
@@ -64,9 +64,13 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
                 }
                 UdpPacketMetadata cleanPacket = UdpPacketMetadata::fromNetworkFrame(headerBuffer.frame, expectedPayloadLength);
                 packetMetadataQueue.push(cleanPacket);
+                if (!isTesting) {
+                    PacketProcessing::processIncomingPackets(); //Very high data rate, need to ve called here, if in test we do not want to process there to allow for checks
+                }
             } else {
                 packetLostCount++;
             }
+            
             totalPacketReceivedCount++;
             resetReceiverState();
         }
@@ -74,14 +78,6 @@ void UdpPacketReceiver::receiveByte(uint8_t byte) {
         break;
     }
     }
-}
-
-uint32_t byteSwap32(uint32_t val)
-{
-    return ((val >> 24) & 0x000000FF) |
-           ((val >>  8) & 0x0000FF00) |
-           ((val <<  8) & 0x00FF0000) |
-           ((val << 24) & 0xFF000000);
 }
 
 bool UdpPacketReceiver::validateChecksum() {

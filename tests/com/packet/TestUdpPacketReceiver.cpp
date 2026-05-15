@@ -1,5 +1,7 @@
-﻿#include "CRC.h"
+﻿#include "ComTask.h"
+#include "CRC.h"
 #include "doctest.h"
+#include "UdpCom.h"
 #include "UdpPacketReceiver.h"
 
 void pushUdpPacket(UdpPacketReceiver& pr, uint8_t deviceId, uint8_t payloadId, std::vector<uint8_t> payload, bool corruptCrc = false) {
@@ -12,7 +14,7 @@ void pushUdpPacket(UdpPacketReceiver& pr, uint8_t deviceId, uint8_t payloadId, s
     header.frame.deviceId = deviceId;
     header.frame.payloadId = payloadId;
     
-    header.frame.payloadLength = htons(static_cast<uint16_t>(payload.size()));
+    header.frame.payloadLength = (static_cast<uint16_t>(payload.size()));
     
     header.frame.deviceCtrlFlags.flags = 0;
     header.frame.deviceState = 0;
@@ -21,12 +23,12 @@ void pushUdpPacket(UdpPacketReceiver& pr, uint8_t deviceId, uint8_t payloadId, s
     
     //Header
     for (size_t i = 0; i < sizeof(networking::UDPPacketHeader); i++) {
-        pr.receiveByte(header.bytes[i]);
+        pr.receiveByte(header.bytes[i], true);
     }
     
     //Payload
     for (uint8_t b: payload) {
-        pr.receiveByte(b);
+        pr.receiveByte(b, true);
     }
     
     //CRC
@@ -35,10 +37,11 @@ void pushUdpPacket(UdpPacketReceiver& pr, uint8_t deviceId, uint8_t payloadId, s
         crc ^= 0xFFFFFFFF; //Inverts bits
     }
     
-    pr.receiveByte((crc >> 24) & 0xFF);
-    pr.receiveByte((crc >> 16) & 0xFF);
-    pr.receiveByte((crc >> 8) & 0xFF);
-    pr.receiveByte(crc & 0xFF);
+    // Push CRC bytes in little-endian order (LSB first) to match receiver's interpretation
+    pr.receiveByte(crc & 0xFF, true);
+    pr.receiveByte((crc >> 8) & 0xFF, true);
+    pr.receiveByte((crc >> 16) & 0xFF, true);
+    pr.receiveByte((crc >> 24) & 0xFF, true);
 }
 
 TEST_CASE("UdpPacketReceiver should successfully receive and validate a correct packet") {
