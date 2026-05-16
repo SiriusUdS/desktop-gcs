@@ -32,7 +32,7 @@ void pushUdpPacket(UdpPacketReceiver& pr, uint8_t deviceId, uint8_t payloadId, s
     }
     
     //CRC
-    uint32_t crc = CRC::computeCrc(const_cast<uint8_t*>(payload.data()), payload.size());
+    uint32_t crc = CRC::computeCrcUDP(const_cast<uint8_t*>(payload.data()), payload.size());
     if (corruptCrc) {
         crc ^= 0xFFFFFFFF; //Inverts bits
     }
