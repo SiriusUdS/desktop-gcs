@@ -24,6 +24,7 @@
 namespace PacketProcessing {
 bool processIncomingSerialPacket();
 bool processIncomingUdpPacket();
+bool processUDPHeader(std::optional<UdpPacketMetadata> udpPacketMetadata);
 bool processEngineTelemetryPacket(uint8_t* packetBuf);
 bool processFillingStationTelemetryPacket(uint8_t* packetBuf);
 bool processGSControlPacket(uint8_t* packetBuf);
@@ -75,7 +76,7 @@ bool PacketProcessing::processIncomingUdpPacket() {
     if (!ComTask::udpPacketReceiver.getPacket(udpPacketBuf)) {
         return false;
     }
-
+    processUDPHeader(udpMetadataOpt);
     return routeDecodedPacket(ComType::UDP);
 }
 
@@ -150,18 +151,16 @@ bool routeByPacketType(TelemetryHeader* header, bool& value1, uint8_t* packetBuf
 }
 
 bool PacketProcessing::routeDecodedPacket(ComType comType) {
-    TelemetryHeader* header;
     switch (comType) {
         case ComType::SERIAL: {
+            TelemetryHeader* header;
             header = reinterpret_cast<TelemetryHeader*>(serialPacketBuf);
             bool valid;
             if (routeByPacketType(header, valid, serialPacketBuf)) return valid;
             break;
         }
         case ComType::UDP: {
-            header = reinterpret_cast<TelemetryHeader*>(udpPacketBuf);
-            bool valid;
-            if (routeByPacketType(header, valid, udpPacketBuf)) return valid;
+            
             break;
         }
         default: {
@@ -170,6 +169,19 @@ bool PacketProcessing::routeDecodedPacket(ComType comType) {
     }
     GCS_APP_LOG_ERROR("PacketProcessing: Unknown packet type, ignoring packet.");
     return false;
+}
+
+bool PacketProcessing::processUDPHeader(std::optional<UdpPacketMetadata> udpPacketMetadata) {
+    if (!udpPacketMetadata.has_value()) {
+        return false; 
+    }
+    
+    GSDataCenter::deviceID.store(udpPacketMetadata->deviceID);
+    GSDataCenter::deviceState.store(udpPacketMetadata->deviceState);
+    auto now = std::chrono::system_clock::now().time_since_epoch();
+    uint64_t current_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+    GSDataCenter::lastPacketReceivedTimestamp_ms.store(current_ms);
+    return true;
 }
 
 bool PacketProcessing::processEngineTelemetryPacket(uint8_t* packetBuf) {

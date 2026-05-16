@@ -82,7 +82,6 @@ void UdpPacketReceiver::receiveByte(uint8_t byte, bool isTesting = false) {
 
 bool UdpPacketReceiver::validateChecksum() {
     uint32_t receivedCRC = (std::bit_cast<uint32_t>(crcBuffer));
-    //receivedCRC = byteSwap32(receivedCRC);
     uint32_t calculatedCRC = CRC::computeCrcUDP(tempPayloadBuffer.data(), expectedPayloadLength);
 
     return (receivedCRC == calculatedCRC);
