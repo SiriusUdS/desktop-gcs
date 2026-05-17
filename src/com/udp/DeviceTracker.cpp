@@ -1,6 +1,7 @@
 #include "DeviceTracker.h"
 
 std::optional<DeviceInformation> DeviceTracker::getDevice(const uint8_t deviceId) {
+    std::shared_lock lock(trackerMutex);
     if (deviceExists(deviceId)) {
         return deviceMap[deviceId];
     }
@@ -13,6 +14,7 @@ bool DeviceTracker::deviceExists(const uint8_t deviceId) const {
 }
 
 bool DeviceTracker::updateDevice(uint8_t deviceId, DeviceInformation& deviceInformation) {
+    std::unique_lock lock(trackerMutex);
     if (deviceExists(deviceId)) {
         std::vector<std::string> deviceLogs = deviceMap[deviceId].deviceLogs;
         for (auto log : deviceLogs) {
