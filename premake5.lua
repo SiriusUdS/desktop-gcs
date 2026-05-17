@@ -22,6 +22,7 @@ workspace "sirius-gcs"
     includedirs {
         VKPKG_INCLUDE,
         "src",
+	"src/camera",
         "src/com",
         "src/com/commands",
         "src/com/discovery",
@@ -75,6 +76,7 @@ workspace "sirius-gcs"
             "imguid",
             "implotd",
             "libcurl-d",
+	    "opencv_world4d",
             "spdlogd",
             "stb_hello_imgui",
             "zlibd",
@@ -102,6 +104,7 @@ workspace "sirius-gcs"
             "imgui",
             "implot",
             "libcurl",
+	    "opencv_world4",
             "spdlog",
             "stb_hello_imgui",
             "zlib",
