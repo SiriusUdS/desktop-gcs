@@ -3,6 +3,7 @@
 #include "BoardComStateMonitor.h"
 #include "ComControl.h"
 #include "CommandControl.h"
+#include "DeviceTracker.h"
 #include "IntervalTimer.h"
 #include "PacketProcessing.h"
 #include "PacketRateMonitor.h"
@@ -24,6 +25,7 @@ BoardComStateMonitor motorBoardComStateMonitor;
 BoardComStateMonitor fillingStationBoardComStateMonitor;
 BoardComStateMonitor gsControlBoardComStateMonitor;
 std::unique_ptr<ICom> com;
+std::unique_ptr<DeviceTracker> deviceTracker;
 
 IntervalTimer intervalTimer(std::chrono::milliseconds(1000 / SerialConfig::SERIAL_TASK_LOOPS_PER_SECOND));
 std::thread thread;
@@ -38,6 +40,10 @@ void ComTask::start(std::unique_ptr<ICom> comInterface) {
         return;
     }
 
+    if (com.get()->getComType() == ComType::UDP) {
+        deviceTracker = std::make_unique<DeviceTracker>();
+    }
+    
     shouldStop = false;
     thread = std::thread(&ComTask::execute);
     running = true;
@@ -84,4 +90,10 @@ uint64_t ComTask::getLostPacketCount() {
 
 uint64_t ComTask::getTotalReceivedPackets() {
     return udpPacketReceiver.getAmountOfReceivedPackets();
+}
+
+void ComTask::updateUDPDevice(DeviceInformation deviceInformation) {
+        if (deviceTracker) {
+                deviceTracker->updateDevice(deviceInformation.deviceID, deviceInformation);
+        }
 }

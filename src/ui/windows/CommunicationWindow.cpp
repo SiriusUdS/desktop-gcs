@@ -67,7 +67,9 @@ void CommunicationWindow::renderImpl() {
             }
         }
         
+        //TODO Remove when Devices Window is there
         if (ComTask::getTotalReceivedPackets() > ComTask::getLostPacketCount() && ComTask::getTotalReceivedPackets() > 0) {
+            
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 30.0f);
             ImGui::Text("Latest Packet Information:");
             
