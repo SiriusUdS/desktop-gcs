@@ -46,8 +46,4 @@ std::atomic<uint32_t> timeSinceLastCommandMotorBoard_ms{};
 std::atomic<uint32_t> timeSinceLastCommandFillingStationBoard_ms{};
 std::atomic<uint32_t> lastReceivedGSCommandTimestamp_ms{};
 std::atomic<uint32_t> lastSentCommandTimestamp_ms{};
-
-std::atomic<uint8_t> deviceID{};
-std::atomic<uint8_t> deviceState{};
-std::atomic<uint64_t> lastPacketReceivedTimestamp_ms{};
 } // namespace GSDataCenter

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "DeviceInformation.h"
+#include "DeviceTracker.h"
+
 #include <cstdint>
 #include <string>
 #include <thread>
@@ -21,6 +24,8 @@ void stop();
 bool updateConnection(std::string ipAddress, uint16_t sendPort, uint16_t receivePort);
 uint64_t getLostPacketCount();
 uint64_t getTotalReceivedPackets();
+void updateUDPDevice(DeviceInformation deviceInformation);
+std::vector<DeviceInformation> getAllDeviceInformation();
 
 extern PacketRateMonitor packetRateMonitor;
 extern PacketRateMonitor engineTelemetryPacketRateMonitor;
@@ -34,4 +39,5 @@ extern BoardComStateMonitor motorBoardComStateMonitor;
 extern BoardComStateMonitor fillingStationBoardComStateMonitor;
 extern BoardComStateMonitor gsControlBoardComStateMonitor;
 extern std::unique_ptr<ICom> com;
+extern std::unique_ptr<DeviceTracker> deviceTracker;
 } // namespace ComTask

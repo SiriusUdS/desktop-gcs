@@ -2,6 +2,7 @@
 
 #include "BoardComStateMonitor.h"
 #include "ComTask.h"
+#include "DeviceInformation.h"
 #include "GSDataCenter.h"
 #include "LoadCell.h"
 #include "Logging.h"
@@ -24,7 +25,7 @@
 namespace PacketProcessing {
 bool processIncomingSerialPacket();
 bool processIncomingUdpPacket();
-bool processUDPHeader(std::optional<UdpPacketMetadata> udpPacketMetadata);
+bool processUDPHeader(std::optional<UdpPacketMetadata> udpPacketMetadata, std::optional<std::vector<std::string>> logData);
 bool processEngineTelemetryPacket(uint8_t* packetBuf);
 bool processFillingStationTelemetryPacket(uint8_t* packetBuf);
 bool processGSControlPacket(uint8_t* packetBuf);
@@ -76,7 +77,7 @@ bool PacketProcessing::processIncomingUdpPacket() {
     if (!ComTask::udpPacketReceiver.getPacket(udpPacketBuf)) {
         return false;
     }
-    processUDPHeader(udpMetadataOpt);
+    processUDPHeader(udpMetadataOpt, std::nullopt);
     return routeDecodedPacket(ComType::UDP);
 }
 
@@ -171,16 +172,23 @@ bool PacketProcessing::routeDecodedPacket(ComType comType) {
     return false;
 }
 
-bool PacketProcessing::processUDPHeader(std::optional<UdpPacketMetadata> udpPacketMetadata) {
+bool PacketProcessing::processUDPHeader(std::optional<UdpPacketMetadata> udpPacketMetadata, std::optional<std::vector<std::string>> logData) {
     if (!udpPacketMetadata.has_value()) {
         return false; 
     }
     
-    GSDataCenter::deviceID.store(udpPacketMetadata->deviceID);
-    GSDataCenter::deviceState.store(udpPacketMetadata->deviceState);
-    auto now = std::chrono::system_clock::now().time_since_epoch();
-    uint64_t current_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
-    GSDataCenter::lastPacketReceivedTimestamp_ms.store(current_ms);
+    DeviceInformation deviceInformation;
+    deviceInformation.deviceID = udpPacketMetadata->deviceID;
+    deviceInformation.deviceStatus = udpPacketMetadata->deviceState;
+    deviceInformation.deviceTsMs = udpPacketMetadata->deviceTsMs;
+    deviceInformation.deviceCtrlFlags = udpPacketMetadata->deviceCtrlFlags;
+    if (logData.has_value()) {
+        for (const auto& log : logData.value()) {
+            deviceInformation.deviceLogs.push_back(log);
+        }
+    }
+    
+    ComTask::updateUDPDevice(deviceInformation);
     return true;
 }
 
