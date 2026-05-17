@@ -97,3 +97,9 @@ void ComTask::updateUDPDevice(DeviceInformation deviceInformation) {
                 deviceTracker->updateDevice(deviceInformation.deviceID, deviceInformation);
         }
 }
+
+std::vector<DeviceInformation> ComTask::getAllDeviceInformation() {
+    if (deviceTracker) {
+        return deviceTracker->getAllDeviceInformation();
+    }
+}

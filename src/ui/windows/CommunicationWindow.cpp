@@ -1,6 +1,5 @@
 ﻿#include "CommunicationWindow.h"
 #include "ComTask.h"
-#include "GSDataCenter.h"
 #include "ICom.h"
 #include "ITileLoader.h"
 #include "Logging.h"
@@ -65,21 +64,6 @@ void CommunicationWindow::renderImpl() {
                     lostPacketCount = ComTask::getLostPacketCount();
                 }
             }
-        }
-        
-        //TODO Remove when Devices Window is there
-        if (ComTask::getTotalReceivedPackets() > ComTask::getLostPacketCount() && ComTask::getTotalReceivedPackets() > 0) {
-            
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 30.0f);
-            ImGui::Text("Latest Packet Information:");
-            
-            uint8_t deviceID = GSDataCenter::deviceID;
-            uint8_t deviceState = GSDataCenter::deviceState;
-            uint64_t latestPacketTime = GSDataCenter::lastPacketReceivedTimestamp_ms;
-            
-            ImGui::Text("Device ID: %d", deviceID);
-            ImGui::Text("Device State: %d", deviceState);
-            ImGui::Text("Latest Packet Time: %llu", latestPacketTime);
         }
         
     }

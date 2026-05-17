@@ -25,6 +25,7 @@ bool updateConnection(std::string ipAddress, uint16_t sendPort, uint16_t receive
 uint64_t getLostPacketCount();
 uint64_t getTotalReceivedPackets();
 void updateUDPDevice(DeviceInformation deviceInformation);
+std::vector<DeviceInformation> getAllDeviceInformation();
 
 extern PacketRateMonitor packetRateMonitor;
 extern PacketRateMonitor engineTelemetryPacketRateMonitor;

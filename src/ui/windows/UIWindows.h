@@ -3,6 +3,7 @@
 #include "BoardsWindow.h"
 #include "CommunicationWindow.h"
 #include "ControlsWindow.h"
+#include "DeviceTrackerWindow.h"
 #include "FillWindow.h"
 #include "LaunchWindow.h"
 #include "LiveFeedWindow.h"
@@ -26,6 +27,7 @@ namespace UIWindows {
 extern std::shared_ptr<BoardsWindow> boardsWindow;
 extern std::shared_ptr<CommunicationWindow> communicationWindow;
 extern std::shared_ptr<ControlsWindow> controlsWindow;
+extern std::shared_ptr<DeviceTrackerWindow> deviceTrackerWindow;
 extern std::shared_ptr<FillWindow> fillWindow;
 extern std::shared_ptr<LaunchWindow> launchWindow;
 extern std::shared_ptr<LiveFeedWindow> liveFeedWindow;

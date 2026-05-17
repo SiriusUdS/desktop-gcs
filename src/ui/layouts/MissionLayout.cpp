@@ -36,6 +36,7 @@ std::vector<Layout::DockedWindow> MissionLayout::getDockedWindows() {
     dockableWindows.emplace_back(UIWindows::monitoringWindow, MISSION_DOCKSPACE);
     dockableWindows.emplace_back(UIWindows::resultsWindow, MISSION_DOCKSPACE);
     dockableWindows.emplace_back(UIWindows::communicationWindow, MISSION_DOCKSPACE);
+    dockableWindows.emplace_back(UIWindows::deviceTrackerWindow, MISSION_DOCKSPACE);
 
     dockableWindows.emplace_back(UIWindows::liveFeedWindow, LIVE_FEED_DOCKSPACE);
 

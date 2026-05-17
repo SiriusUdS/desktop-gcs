@@ -1,9 +1,12 @@
 #include "UIWindows.h"
 
+#include "DeviceTrackerWindow.h"
+
 namespace UIWindows {
 std::shared_ptr<BoardsWindow> boardsWindow = std::make_shared<BoardsWindow>();
 std::shared_ptr<CommunicationWindow> communicationWindow = std::make_shared<CommunicationWindow>();
 std::shared_ptr<ControlsWindow> controlsWindow = std::make_shared<ControlsWindow>();
+std::shared_ptr<DeviceTrackerWindow> deviceTrackerWindow = std::make_shared<DeviceTrackerWindow>();
 std::shared_ptr<FillWindow> fillWindow = std::make_shared<FillWindow>();
 std::shared_ptr<LaunchWindow> launchWindow = std::make_shared<LaunchWindow>();
 std::shared_ptr<LiveFeedWindow> liveFeedWindow = std::make_shared<LiveFeedWindow>();
@@ -24,6 +27,7 @@ std::shared_ptr<ValvesWindow> valvesWindow = std::make_shared<ValvesWindow>();
 std::vector<std::shared_ptr<UIWindow>> windows = {boardsWindow,
                                                   communicationWindow,
                                                   controlsWindow,
+                                                  deviceTrackerWindow,            
                                                   fillWindow,
                                                   launchWindow,
                                                   liveFeedWindow,

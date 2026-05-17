@@ -33,3 +33,26 @@ bool DeviceTracker::logInfo(uint8_t deviceId, const std::string& logMessage) {
     
     return false;
 }
+
+std::vector<DeviceInformation> DeviceTracker::getAllDeviceInformation() {
+    std::shared_lock lock(trackerMutex);
+    
+    std::vector<DeviceInformation> informations;
+    informations.reserve(deviceMap.size());
+    
+    for (const auto& [id, data] : deviceMap) {
+        informations.push_back(data);
+    }
+    
+    return informations;
+}
+
+std::vector<std::string> DeviceTracker::getDeviceLogs(uint8_t deviceId) const {
+    std::shared_lock lock(trackerMutex); 
+    
+    if (auto it = deviceMap.find(deviceId); it != deviceMap.end()) {
+        return it->second.deviceLogs; 
+    }
+
+    return {};
+}
