@@ -21,6 +21,7 @@ workspace "sirius-gcs"
 
     includedirs {
         VKPKG_INCLUDE,
+	path.join(VKPKG_INCLUDE, "opencv4"),
         "src",
 	"src/camera",
         "src/com",

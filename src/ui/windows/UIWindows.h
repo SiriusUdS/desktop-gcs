@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BoardsWindow.h"
+#include "CameraWindow.h"
 #include "CommunicationWindow.h"
 #include "ControlsWindow.h"
 #include "DeviceTrackerWindow.h"
@@ -25,6 +26,7 @@
 
 namespace UIWindows {
 extern std::shared_ptr<BoardsWindow> boardsWindow;
+extern std::shared_ptr<CameraWindow> cameraWindow;
 extern std::shared_ptr<CommunicationWindow> communicationWindow;
 extern std::shared_ptr<ControlsWindow> controlsWindow;
 extern std::shared_ptr<DeviceTrackerWindow> deviceTrackerWindow;

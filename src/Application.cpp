@@ -58,7 +58,7 @@ void Application::init() {
 
     PlotWindowCenter::loadState(iniStructure);
     IniParamsIO::loadParams(iniStructure);
-
+    CameraManager::get().init();
     UIWindows::init();
     UIWindows::loadState(iniStructure);
 
@@ -72,6 +72,7 @@ void Application::init() {
 
 void Application::preNewFrame() {
     UITheme::update();
+    CameraManager::get().processFrameAndUploadToGPU();
 }
 
 void Application::showMenus() {

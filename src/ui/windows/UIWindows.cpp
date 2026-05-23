@@ -4,6 +4,7 @@
 
 namespace UIWindows {
 std::shared_ptr<BoardsWindow> boardsWindow = std::make_shared<BoardsWindow>();
+std::shared_ptr<CameraWindow> cameraWindow = std::make_shared<CameraWindow>();
 std::shared_ptr<CommunicationWindow> communicationWindow = std::make_shared<CommunicationWindow>();
 std::shared_ptr<ControlsWindow> controlsWindow = std::make_shared<ControlsWindow>();
 std::shared_ptr<DeviceTrackerWindow> deviceTrackerWindow = std::make_shared<DeviceTrackerWindow>();
