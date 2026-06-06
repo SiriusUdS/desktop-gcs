@@ -41,7 +41,10 @@ std::vector<Layout::DockedWindow> AllWindowsLayout::getDockedWindows() {
     dockableWindows.emplace_back(UIWindows::launchWindow, MAIN_DOCKSPACE);
     dockableWindows.emplace_back(UIWindows::monitoringWindow, MAIN_DOCKSPACE);
     dockableWindows.emplace_back(UIWindows::resultsWindow, MAIN_DOCKSPACE);
-
+    dockableWindows.emplace_back(UIWindows::communicationWindow, MAIN_DOCKSPACE);
+    dockableWindows.emplace_back(UIWindows::cameraWindow, MAIN_DOCKSPACE);
+    dockableWindows.emplace_back(UIWindows::testOverUDPWindow, MAIN_DOCKSPACE);
+    
     dockableWindows.emplace_back(UIWindows::nosPhaseDiagramWindow, PLOT_DOCKSPACE);
     dockableWindows.emplace_back(UIWindows::tankMassWindow, PLOT_DOCKSPACE);
     dockableWindows.emplace_back(UIWindows::liveFeedWindow, PLOT_DOCKSPACE);

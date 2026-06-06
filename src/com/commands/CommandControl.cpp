@@ -1,10 +1,10 @@
 #include "CommandControl.h"
 
-#include "CRC.h"
+#include "ComTask.h"
 #include "CommandQueue.h"
+#include "CRC.h"
 #include "Logging.h"
-#include "SerialCom.h"
-#include "SerialTask.h"
+#include "UdpCom.h"
 #include "Timer.h"
 
 namespace CommandControl {
@@ -53,8 +53,9 @@ void CommandControl::processCommands() {
         }
         lastTimeSentTimer.reset();
         BoardCommand* formattedData = reinterpret_cast<BoardCommand*>(data);
-        if (!SerialTask::com.write(data, dataSize)) {
-            GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over serial communication.");
+        if (!ComTask::com->write(data)) {
+            std::string protocolName = ComTask::com->getProtocolName();
+            GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over {} communication.", protocolName);
         }
         timesSent++;
         if (NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND <= timesSent) {
@@ -192,7 +193,14 @@ void CommandControl::setupReset() {
 }
 
 void CommandControl::finalizeCommandSetup(BoardCommand* cmd) {
-    cmd->fields.crc = CRC::computeCrc(cmd->data, sizeof(BoardCommand) - sizeof(cmd->fields.crc));
+    switch (ComTask::com->getComType()) {
+    case ComType::SERIAL:
+        cmd->fields.crc = CRC::computeCrcSerial(cmd->data, sizeof(BoardCommand) - sizeof(cmd->fields.crc));
+        break;
+    case ComType::UDP:
+        cmd->fields.crc = CRC::computeCrcUDP(cmd->data, sizeof(BoardCommand) - sizeof(cmd->fields.crc));
+        break;
+    }
     dataSize = sizeof(BoardCommand);
     state = State::SENDING;
 }

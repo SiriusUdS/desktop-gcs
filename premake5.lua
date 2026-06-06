@@ -21,13 +21,16 @@ workspace "sirius-gcs"
 
     includedirs {
         VKPKG_INCLUDE,
+	path.join(VKPKG_INCLUDE, "opencv4"),
         "src",
+	"src/camera",
         "src/com",
         "src/com/commands",
         "src/com/discovery",
         "src/com/monitor",
         "src/com/packet",
         "src/com/serial",
+	"src/com/udp",
         "src/config",
         "src/data",
         "src/data/data_conversion",
@@ -55,7 +58,7 @@ workspace "sirius-gcs"
         "src/**.cpp",
         "external/ceSerial/ceserial.h",
         "external/mINI/ini.h",
-        "external/sirius-headers-common/**.h"
+        "external/sirius-headers-common/**.h",
     }
 
     filter "configurations:Debug"
@@ -74,9 +77,12 @@ workspace "sirius-gcs"
             "imguid",
             "implotd",
             "libcurl-d",
+	    "opencv_world4d",
             "spdlogd",
             "stb_hello_imgui",
-            "zlibd"
+            "zlibd",
+	    "sockpp-static",
+	    "ws2_32"
         }
 
         postbuildcommands {
@@ -99,9 +105,12 @@ workspace "sirius-gcs"
             "imgui",
             "implot",
             "libcurl",
+	    "opencv_world4",
             "spdlog",
             "stb_hello_imgui",
-            "zlib"
+            "zlib",
+	    "sockpp-static",
+	    "ws2_32"
         }
 
         postbuildcommands {

@@ -1,7 +1,10 @@
 #pragma once
 
 #include "BoardsWindow.h"
+#include "CameraWindow.h"
+#include "CommunicationWindow.h"
 #include "ControlsWindow.h"
+#include "DeviceTrackerWindow.h"
 #include "FillWindow.h"
 #include "LaunchWindow.h"
 #include "LiveFeedWindow.h"
@@ -17,13 +20,17 @@
 #include "SwitchesWindow.h"
 #include "TankMassCalculatorWindow.h"
 #include "TankMassWindow.h"
+#include "TestOverUDPWindow.h"
 #include "ValvesWindow.h"
 
 #include <memory>
 
 namespace UIWindows {
 extern std::shared_ptr<BoardsWindow> boardsWindow;
+extern std::shared_ptr<CameraWindow> cameraWindow;
+extern std::shared_ptr<CommunicationWindow> communicationWindow;
 extern std::shared_ptr<ControlsWindow> controlsWindow;
+extern std::shared_ptr<DeviceTrackerWindow> deviceTrackerWindow;
 extern std::shared_ptr<FillWindow> fillWindow;
 extern std::shared_ptr<LaunchWindow> launchWindow;
 extern std::shared_ptr<LiveFeedWindow> liveFeedWindow;
@@ -39,6 +46,7 @@ extern std::shared_ptr<SerialComWindow> serialComWindow;
 extern std::shared_ptr<SwitchesWindow> switchesWindow;
 extern std::shared_ptr<TankMassCalculatorWindow> tankMassCalculatorWindow;
 extern std::shared_ptr<TankMassWindow> tankMassWindow;
+extern std::shared_ptr<TestOverUDPWindow> testOverUDPWindow;
 extern std::shared_ptr<ValvesWindow> valvesWindow;
 
 extern std::vector<std::shared_ptr<UIWindow>> windows;

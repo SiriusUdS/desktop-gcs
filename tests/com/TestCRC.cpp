@@ -20,7 +20,7 @@ TEST_CASE("CRC should work with engine telemetry packet") {
     }
 
     const uint32_t expectedCRC = 2665198462;
-    const uint32_t computedCRC = CRC::computeCrc(packet.data, sizeof(packet) - sizeof(packet.fields.crc));
+    const uint32_t computedCRC = CRC::computeCrcSerial(packet.data, sizeof(packet) - sizeof(packet.fields.crc));
     CHECK(expectedCRC == computedCRC);
 }
 
@@ -59,6 +59,6 @@ TEST_CASE("CRC should work with GS control status packet") {
     }
 
     const uint32_t expectedCRC = 2077763144;
-    const uint32_t computedCRC = CRC::computeCrc(packet.data, sizeof(packet) - sizeof(packet.fields.crc));
+    const uint32_t computedCRC = CRC::computeCrcSerial(packet.data, sizeof(packet) - sizeof(packet.fields.crc));
     CHECK(expectedCRC == computedCRC);
 }

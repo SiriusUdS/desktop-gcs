@@ -12,6 +12,14 @@
             ]
         },
         "implot",
+        {
+            "name": "opencv4",
+            "features": [
+                "ffmpeg",
+                "world"
+            ]
+        },
+	"sockpp",
         "spdlog"
     ]
 }

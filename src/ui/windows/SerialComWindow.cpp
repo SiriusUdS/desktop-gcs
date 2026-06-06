@@ -1,14 +1,14 @@
 #include "SerialComWindow.h"
 
 #include "ComPortSelector.h"
+#include "ComTask.h"
 #include "FontConfig.h"
 #include "GSDataCenter.h"
 #include "IniConfig.h"
 #include "PacketRateMonitor.h"
-#include "SerialCom.h"
 #include "SerialConfig.h"
-#include "SerialTask.h"
 #include "Telecommunication/BoardCommand.h"
+#include "UdpCom.h"
 
 #include <algorithm>
 #include <imgui.h>
@@ -31,23 +31,24 @@ void SerialComWindow::saveState(mINI::INIStructure& ini) const {
 }
 
 const char* SerialComWindow::getName() const {
-    return "Serial COM";
+    std::string protocolName = ComTask::com->getProtocolName();
+    return (protocolName + " COM").c_str();
 }
 
 void SerialComWindow::renderImpl() {
     ImGui::SeparatorText("Board COM");
 
-    std::string comPortStr = SerialTask::comPortSelector.available() ? SerialTask::comPortSelector.current() : "None available";
-    ImGui::Text("COM port: %s", comPortStr.c_str());
+    ImGui::Text("Protocol: %s", ComTask::com->getProtocolName());
+    ImGui::Text("Details: %s", ComTask::com->getConnectionDetails());
 
     if (ImGui::BeginTable("BoardComStatesTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
         ImGui::TableSetupColumn("Board");
         ImGui::TableSetupColumn("COM State");
         ImGui::TableHeadersRow();
 
-        renderBoardComStateTableRow("Motor", SerialTask::motorBoardComStateMonitor.getState());
-        renderBoardComStateTableRow("Filling Station", SerialTask::fillingStationBoardComStateMonitor.getState());
-        renderBoardComStateTableRow("GS Control", SerialTask::gsControlBoardComStateMonitor.getState());
+        renderBoardComStateTableRow("Motor", ComTask::motorBoardComStateMonitor.getState());
+        renderBoardComStateTableRow("Filling Station", ComTask::fillingStationBoardComStateMonitor.getState());
+        renderBoardComStateTableRow("GS Control", ComTask::gsControlBoardComStateMonitor.getState());
         ImGui::EndTable();
     }
 
@@ -58,13 +59,13 @@ void SerialComWindow::renderImpl() {
         ImGui::TableSetupColumn("Packets/s");
         ImGui::TableHeadersRow();
 
-        renderPacketRateTableRow("Engine telemetry", SerialTask::engineTelemetryPacketRateMonitor.getRatePerSecond());
-        renderPacketRateTableRow("Filling station telemetry", SerialTask::fillingStationTelemetryPacketRateMonitor.getRatePerSecond());
-        renderPacketRateTableRow("GS control", SerialTask::gsControlPacketRateMonitor.getRatePerSecond());
-        renderPacketRateTableRow("Engine status", SerialTask::engineStatusPacketRateMonitor.getRatePerSecond());
-        renderPacketRateTableRow("Filling station status", SerialTask::fillingStationStatusPacketRateMonitor.getRatePerSecond());
+        renderPacketRateTableRow("Engine telemetry", ComTask::engineTelemetryPacketRateMonitor.getRatePerSecond());
+        renderPacketRateTableRow("Filling station telemetry", ComTask::fillingStationTelemetryPacketRateMonitor.getRatePerSecond());
+        renderPacketRateTableRow("GS control", ComTask::gsControlPacketRateMonitor.getRatePerSecond());
+        renderPacketRateTableRow("Engine status", ComTask::engineStatusPacketRateMonitor.getRatePerSecond());
+        renderPacketRateTableRow("Filling station status", ComTask::fillingStationStatusPacketRateMonitor.getRatePerSecond());
         ImGui::PushFont(FontConfig::boldMainFont);
-        renderPacketRateTableRow("Total", SerialTask::packetRateMonitor.getRatePerSecond());
+        renderPacketRateTableRow("Total", ComTask::packetRateMonitor.getRatePerSecond());
         ImGui::PopFont();
 
         ImGui::EndTable();
@@ -193,7 +194,7 @@ void SerialComWindow::renderImpl() {
 
 void SerialComWindow::renderBoardComStateTableRow(const char* boardName, BoardComStateMonitor::State state) const {
     const char* comStateText = "Unknown";
-    if (!SerialTask::com.comOpened()) {
+    if (!ComTask::com->comOpened()) {
         comStateText = "Disconnected";
     } else {
         switch (state) {
@@ -291,7 +292,7 @@ void SerialComWindow::recvBufferContentModal() {
 }
 
 void SerialComWindow::updateRecvBufferContentDisplay(bool syncToCurrentBuffer) {
-    const char* buf = (char*) SerialTask::com.getBuffer();
+    const char* buf = (char*) ComTask::com->getBuffer();
     const char zeroChar = recvBufferDisplayMode == TEXT ? '~' : '\0';
 
     if (syncToCurrentBuffer) {

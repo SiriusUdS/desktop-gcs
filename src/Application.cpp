@@ -4,15 +4,17 @@
 #include <WinSock2.h>
 // clang-format on
 
+#include "ComTask.h"
 #include "FontConfig.h"
 #include "GSDataCenter.h"
 #include "IniParams.h"
 #include "IniParamsIO.h"
 #include "Logging.h"
 #include "PlotWindowCenter.h"
-#include "SerialTask.h"
+#include "SerialCom.h"
 #include "TankGasLeftPlotDataProcessor.h"
 #include "TankMassPlotDataProcessor.h"
+#include "UdpCom.h"
 #include "UITheme.h"
 #include "UIWindow.h"
 #include "UIWindows.h"
@@ -56,18 +58,21 @@ void Application::init() {
 
     PlotWindowCenter::loadState(iniStructure);
     IniParamsIO::loadParams(iniStructure);
-
+    CameraManager::get().init();
     UIWindows::init();
     UIWindows::loadState(iniStructure);
 
     tankGasLeftPlotDataProcessor.subscribe();
     tankMassPlotDataProcessor.subscribe();
-
-    SerialTask::start();
+       
+    //Switch com type here
+    std::unique_ptr<UdpCom> comProtocol = std::make_unique<UdpCom>();
+    ComTask::start(std::move(comProtocol));
 }
 
 void Application::preNewFrame() {
     UITheme::update();
+    CameraManager::get().processFrameAndUploadToGPU();
 }
 
 void Application::showMenus() {
@@ -101,7 +106,7 @@ void Application::showMenus() {
 }
 
 void Application::shutdown() {
-    SerialTask::stop();
+    ComTask::stop();
     IniParamsIO::saveParams(iniStructure);
     PlotWindowCenter::saveState(iniStructure);
 

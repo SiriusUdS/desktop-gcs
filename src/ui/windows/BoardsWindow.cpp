@@ -1,12 +1,13 @@
 #include "BoardsWindow.h"
 
+#include "ComTask.h"
 #include "Engine/EngineState.h"
 #include "FillingStation/FillingStationState.h"
 #include "FontConfig.h"
 #include "GSControl/GSControlState.h"
 #include "GSDataCenter.h"
-#include "SerialCom.h"
-#include "SerialTask.h"
+#include "UdpCom.h"
+
 
 #include <imgui.h>
 
@@ -33,7 +34,8 @@ void BoardsWindow::renderImpl() {
         case ENGINE_STATE_IGNITION:
             motorBoardStateName = "IGNITION";
             break;
-        case ENGINE_STATE_LAUNCH:
+        case 0x10:
+            //TODO CHANGE CASE VALUE WAS ENGINE_STATE_LAUNCH AND DID NOT EXIST
             motorBoardStateName = "LAUNCH";
             break;
         }
@@ -76,9 +78,9 @@ void BoardsWindow::renderImpl() {
             ImGui::TableSetupColumn("COM State");
             ImGui::TableHeadersRow();
 
-            renderBoardTableRow("Motor", motorBoardStateName, SerialTask::motorBoardComStateMonitor.getState());
-            renderBoardTableRow("Filling Station", fillingStationBoardStateName, SerialTask::fillingStationBoardComStateMonitor.getState());
-            renderBoardTableRow("GS Control", gsControlBoardStateName, SerialTask::gsControlBoardComStateMonitor.getState());
+            renderBoardTableRow("Motor", motorBoardStateName, ComTask::motorBoardComStateMonitor.getState());
+            renderBoardTableRow("Filling Station", fillingStationBoardStateName, ComTask::fillingStationBoardComStateMonitor.getState());
+            renderBoardTableRow("GS Control", gsControlBoardStateName, ComTask::gsControlBoardComStateMonitor.getState());
             ImGui::EndTable();
         }
     }
@@ -100,7 +102,7 @@ void BoardsWindow::renderImpl() {
 
 void BoardsWindow::renderBoardTableRow(const char* name, const char* boardStateName, BoardComStateMonitor::State comState) const {
     const char* comStateText = "Unknown";
-    if (!SerialTask::com.comOpened()) {
+    if (!ComTask::com->comOpened()) {
         comStateText = "Disconnected";
     } else {
         switch (comState) {
