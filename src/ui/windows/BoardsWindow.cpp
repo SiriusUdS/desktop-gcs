@@ -34,7 +34,8 @@ void BoardsWindow::renderImpl() {
         case ENGINE_STATE_IGNITION:
             motorBoardStateName = "IGNITION";
             break;
-        case ENGINE_STATE_LAUNCH:
+        case 0x10:
+            //TODO CHANGE CASE VALUE WAS ENGINE_STATE_LAUNCH AND DID NOT EXIST
             motorBoardStateName = "LAUNCH";
             break;
         }

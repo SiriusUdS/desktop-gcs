@@ -20,6 +20,7 @@
 #include "SwitchesWindow.h"
 #include "TankMassCalculatorWindow.h"
 #include "TankMassWindow.h"
+#include "TestOverUDPWindow.h"
 #include "ValvesWindow.h"
 
 #include <memory>
@@ -45,6 +46,7 @@ extern std::shared_ptr<SerialComWindow> serialComWindow;
 extern std::shared_ptr<SwitchesWindow> switchesWindow;
 extern std::shared_ptr<TankMassCalculatorWindow> tankMassCalculatorWindow;
 extern std::shared_ptr<TankMassWindow> tankMassWindow;
+extern std::shared_ptr<TestOverUDPWindow> testOverUDPWindow;
 extern std::shared_ptr<ValvesWindow> valvesWindow;
 
 extern std::vector<std::shared_ptr<UIWindow>> windows;

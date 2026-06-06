@@ -88,7 +88,7 @@ bool PacketProcessing::processIncomingUdpPacket() {
 
 bool PacketProcessing::routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt) {
     switch (udpMetadataOpt.payloadID) {
-    //TEMP VARIABLE
+    /*
     case (uint32_t) 0x01:
         processEnginePacketUdp(udpPacketBuf, udpMetadataOpt);
         return true;
@@ -97,6 +97,10 @@ bool PacketProcessing::routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt) {
         return true;
     case(uint32_t) 0x03:
         processGSControlPacketUdp(udpPacketBuf, udpMetadataOpt);
+        return true;
+    */
+    case GET_SYSTEM:
+        //TODO
         return true;
     default:
         GCS_APP_LOG_WARN("PacketProcessing: Received UDP packet with unknown payload ID, ignoring)");

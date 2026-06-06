@@ -1,6 +1,7 @@
 #include "UIWindows.h"
 
 #include "DeviceTrackerWindow.h"
+#include "TestOverUDPWindow.h"
 
 namespace UIWindows {
 std::shared_ptr<BoardsWindow> boardsWindow = std::make_shared<BoardsWindow>();
@@ -23,12 +24,13 @@ std::shared_ptr<SerialComWindow> serialComWindow = std::make_shared<SerialComWin
 std::shared_ptr<SwitchesWindow> switchesWindow = std::make_shared<SwitchesWindow>();
 std::shared_ptr<TankMassCalculatorWindow> tankMassCalculatorWindow = std::make_shared<TankMassCalculatorWindow>();
 std::shared_ptr<TankMassWindow> tankMassWindow = std::make_shared<TankMassWindow>();
+std::shared_ptr<TestOverUDPWindow> testOverUDPWindow = std::make_shared<TestOverUDPWindow>();
 std::shared_ptr<ValvesWindow> valvesWindow = std::make_shared<ValvesWindow>();
 
 std::vector<std::shared_ptr<UIWindow>> windows = {boardsWindow,
                                                   communicationWindow,
                                                   controlsWindow,
-                                                  deviceTrackerWindow,            
+                                                  deviceTrackerWindow,
                                                   fillWindow,
                                                   launchWindow,
                                                   liveFeedWindow,
@@ -44,6 +46,7 @@ std::vector<std::shared_ptr<UIWindow>> windows = {boardsWindow,
                                                   switchesWindow,
                                                   tankMassCalculatorWindow,
                                                   tankMassWindow,
+                                                  testOverUDPWindow,
                                                   valvesWindow};
 } // namespace UIWindows
 
