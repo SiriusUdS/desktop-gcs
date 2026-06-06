@@ -193,7 +193,14 @@ void CommandControl::setupReset() {
 }
 
 void CommandControl::finalizeCommandSetup(BoardCommand* cmd) {
-    cmd->fields.crc = CRC::computeCrcSerial(cmd->data, sizeof(BoardCommand) - sizeof(cmd->fields.crc));
+    switch (ComTask::com->getComType()) {
+    case ComType::SERIAL:
+        cmd->fields.crc = CRC::computeCrcSerial(cmd->data, sizeof(BoardCommand) - sizeof(cmd->fields.crc));
+        break;
+    case ComType::UDP:
+        cmd->fields.crc = CRC::computeCrcUDP(cmd->data, sizeof(BoardCommand) - sizeof(cmd->fields.crc));
+        break;
+    }
     dataSize = sizeof(BoardCommand);
     state = State::SENDING;
 }

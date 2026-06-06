@@ -102,4 +102,6 @@ std::vector<DeviceInformation> ComTask::getAllDeviceInformation() {
     if (deviceTracker) {
         return deviceTracker->getAllDeviceInformation();
     }
+    
+    return {};
 }

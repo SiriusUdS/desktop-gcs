@@ -17,6 +17,7 @@
 #include "Telecommunication/TelemetryPacket.h"
 #include "TemperatureSensor.h"
 #include "UdpCom.h"
+#include "UDPTelemetryPacket.h"
 #include "ValveData.h"
 
 #include <Engine/EngineState.h>
@@ -27,11 +28,15 @@ bool processIncomingSerialPacket();
 bool processIncomingUdpPacket();
 bool processUDPHeader(std::optional<UdpPacketMetadata> udpPacketMetadata, std::optional<std::vector<std::string>> logData);
 bool processEngineTelemetryPacket(uint8_t* packetBuf);
+bool processEnginePacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata);
 bool processFillingStationTelemetryPacket(uint8_t* packetBuf);
+bool processFillingStationTelemetryPacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata);
 bool processGSControlPacket(uint8_t* packetBuf);
+bool processGSControlPacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata);
 bool processEngineStatusPacket(uint8_t* packetBuf);
 bool processFillingStationStatusPacket(uint8_t* packetBuf);
-bool routeDecodedPacket(ComType comType);
+bool routeDecodedSerialPacket();
+bool routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt);
 void computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId);
 void computePressureSensorValues(uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD], uint16_t boardId);
 void computeLoadCellValues(uint16_t loadCellAdcValues[GSDataCenterConfig::LOAD_CELL_AMOUNT]);
@@ -78,7 +83,25 @@ bool PacketProcessing::processIncomingUdpPacket() {
         return false;
     }
     processUDPHeader(udpMetadataOpt, std::nullopt);
-    return routeDecodedPacket(ComType::UDP);
+    return routePacketByTypeUdp(udpMetadataOpt.value());
+}
+
+bool PacketProcessing::routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt) {
+    switch (udpMetadataOpt.payloadID) {
+    //TEMP VARIABLE
+    case (uint32_t) 0x01:
+        processEnginePacketUdp(udpPacketBuf, udpMetadataOpt);
+        return true;
+    case(uint32_t) 0x02:
+        processFillingStationTelemetryPacketUdp(udpPacketBuf, udpMetadataOpt);
+        return true;
+    case(uint32_t) 0x03:
+        processGSControlPacketUdp(udpPacketBuf, udpMetadataOpt);
+        return true;
+    default:
+        GCS_APP_LOG_WARN("PacketProcessing: Received UDP packet with unknown payload ID, ignoring)");
+        return false;
+    }
 }
 
 bool PacketProcessing::processIncomingSerialPacket() {
@@ -110,11 +133,10 @@ bool PacketProcessing::processIncomingSerialPacket() {
         return false;
     }
 
-    return routeDecodedPacket(ComType::SERIAL);
+    return routeDecodedSerialPacket();
 }
 
-bool routeByPacketType(TelemetryHeader* header, bool& value1, uint8_t* packetBuf)
-{
+bool routeByPacketTypeSerial(TelemetryHeader* header, bool& value1, uint8_t* packetBuf) {
     switch (header->bits.type) {
     case TELEMETRY_TYPE_CODE:
         if (header->bits.boardId == ENGINE_BOARD_ID) {
@@ -151,32 +173,22 @@ bool routeByPacketType(TelemetryHeader* header, bool& value1, uint8_t* packetBuf
     return false;
 }
 
-bool PacketProcessing::routeDecodedPacket(ComType comType) {
-    switch (comType) {
-        case ComType::SERIAL: {
-            TelemetryHeader* header;
-            header = reinterpret_cast<TelemetryHeader*>(serialPacketBuf);
-            bool valid;
-            if (routeByPacketType(header, valid, serialPacketBuf)) return valid;
-            break;
-        }
-        case ComType::UDP: {
-            
-            break;
-        }
-        default: {
-            return false;    
-        }
-    }
+bool PacketProcessing::routeDecodedSerialPacket() {
+    TelemetryHeader* header;
+    header = reinterpret_cast<TelemetryHeader*>(serialPacketBuf);
+    bool valid;
+    if (routeByPacketTypeSerial(header, valid, serialPacketBuf))
+        return valid;
+
     GCS_APP_LOG_ERROR("PacketProcessing: Unknown packet type, ignoring packet.");
     return false;
 }
 
 bool PacketProcessing::processUDPHeader(std::optional<UdpPacketMetadata> udpPacketMetadata, std::optional<std::vector<std::string>> logData) {
     if (!udpPacketMetadata.has_value()) {
-        return false; 
+        return false;
     }
-    
+
     DeviceInformation deviceInformation;
     deviceInformation.deviceID = udpPacketMetadata->deviceID;
     deviceInformation.deviceStatus = udpPacketMetadata->deviceState;
@@ -187,8 +199,54 @@ bool PacketProcessing::processUDPHeader(std::optional<UdpPacketMetadata> udpPack
             deviceInformation.deviceLogs.push_back(log);
         }
     }
-    
+
     ComTask::updateUDPDevice(deviceInformation);
+    return true;
+}
+
+bool PacketProcessing::processEnginePacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata) {
+    EngineTelemetryUDPPacket* packet = reinterpret_cast<EngineTelemetryUDPPacket*>(packetBuf);
+    //TODO
+    //Telemetry part
+    float timestamp =  static_cast<float>(udpMetadata.deviceTsMs);
+    uint16_t* adcValues = packet->fields.adcValues;
+
+    uint16_t* thermistorAdcValues = adcValues + SerialConfig::THERMISTOR_ADC_VALUES_INDEX_OFFSET;     //TODO modify when known
+    uint16_t* pressureSensorAdcValues = adcValues + SerialConfig::THERMISTOR_ADC_VALUES_INDEX_OFFSET; //TODO modify when known
+
+    computeThermistorValues(thermistorAdcValues, ENGINE_BOARD_ID);         //TODO need to change function??
+    computePressureSensorValues(pressureSensorAdcValues, ENGINE_BOARD_ID); //TODO same as above
+
+    //TODO not sure again
+    addPlotData<GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD>(GSDataCenter::Thermistor_Motor_PlotData.data,
+                                                                 thermistorAdcValues,
+                                                                 thermistorValues_C,
+                                                                 timestamp);
+    addPlotData<GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD>(GSDataCenter::PressureSensor_Motor_PlotData.data,
+                                                                      pressureSensorAdcValues,
+                                                                      pressureSensorValues_psi,
+                                                                      timestamp);
+    PacketCSVLogging::logEngineTelemetryPacket(timestamp, thermistorAdcValues, thermistorValues_C, pressureSensorAdcValues, pressureSensorValues_psi);
+    
+    //Status Part
+    ValveStatus& nosValveStatus = packet->fields.valveStatus[SerialConfig::NOS_VALVE_STATUS_INDEX];
+    ValveStatus& ipaValveStatus = packet->fields.valveStatus[SerialConfig::IPA_VALVE_STATUS_INDEX];
+
+    GSDataCenter::nosValveData.isIdle = nosValveStatus.bits.isIdle;
+    GSDataCenter::nosValveData.closedSwitchHigh = nosValveStatus.bits.closedSwitchHigh;
+    GSDataCenter::nosValveData.openedSwitchHigh = nosValveStatus.bits.openedSwitchHigh;
+
+    GSDataCenter::ipaValveData.isIdle = ipaValveStatus.bits.isIdle;
+    GSDataCenter::ipaValveData.closedSwitchHigh = ipaValveStatus.bits.closedSwitchHigh;
+    GSDataCenter::ipaValveData.openedSwitchHigh = ipaValveStatus.bits.openedSwitchHigh;
+
+    GSDataCenter::igniteTimestamp_ms = packet->fields.igniteTimestamp_ms;
+    GSDataCenter::launchTimestamp_ms = packet->fields.launchTimestamp_ms;
+    GSDataCenter::timeSinceLastCommandMotorBoard_ms = packet->fields.timeSinceLastCommand_ms;
+    GSDataCenter::lastReceivedCommandCodeMotorBoard = packet->fields.lastReceivedCommandCode;
+
+    GSDataCenter::motorBoardState = packet->fields.status.bits.state;
+    GSDataCenter::motorBoardStorageErrorStatus = packet->fields.storageErrorStatus.value;
     return true;
 }
 
@@ -226,6 +284,40 @@ bool PacketProcessing::processEngineTelemetryPacket(uint8_t* packetBuf) {
     ComTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
 
     PacketCSVLogging::logEngineTelemetryPacket(timestamp, thermistorAdcValues, thermistorValues_C, pressureSensorAdcValues, pressureSensorValues_psi);
+    return true;
+}
+
+bool PacketProcessing::processFillingStationTelemetryPacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata) {
+    FillStationTelemetryUDPPacket* packet = reinterpret_cast<FillStationTelemetryUDPPacket*>(packetBuf);
+    float timestamp = static_cast<float>(udpMetadata.deviceTsMs);
+    uint16_t* adcValues = packet->fields.adcValues; 
+    
+    uint16_t* thermistorAdcValues = adcValues + SerialConfig::THERMISTOR_ADC_VALUES_INDEX_OFFSET;
+    uint16_t* pressureSensorAdcValues = adcValues + SerialConfig::PRESSURE_SENSOR_ADC_VALUES_INDEX_OFFSET;
+    uint16_t* loadCellAdcValues = adcValues + SerialConfig::LOAD_CELL_ADC_VALUES_INDEX_OFFSET;
+    
+    computeThermistorValues(thermistorAdcValues, ENGINE_BOARD_ID);
+    computePressureSensorValues(pressureSensorAdcValues, FILLING_STATION_BOARD_ID);
+    computeLoadCellValues(loadCellAdcValues);
+    addPlotData<GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD>(GSDataCenter::Thermistor_FillingStation_PlotData.data,
+                                                                 thermistorAdcValues,
+                                                                 thermistorValues_C,
+                                                                 timestamp);
+    addPlotData<GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD>(GSDataCenter::PressureSensor_FillingStation_PlotData.data,
+                                                                      pressureSensorAdcValues,
+                                                                      pressureSensorValues_psi,
+                                                                      timestamp);
+    addPlotData<GSDataCenterConfig::LOAD_CELL_AMOUNT>(GSDataCenter::LoadCell_FillingStation_PlotData.data,
+                                                      loadCellAdcValues,
+                                                      loadCellValues_lb,
+                                                      timestamp);
+    PacketCSVLogging::logFillingStationTelemetryPacket(timestamp,
+                                                       thermistorAdcValues,
+                                                       thermistorValues_C,
+                                                       pressureSensorAdcValues,
+                                                       pressureSensorValues_psi,
+                                                       loadCellAdcValues,
+                                                       loadCellValues_lb);
     return true;
 }
 
@@ -275,6 +367,31 @@ bool PacketProcessing::processFillingStationTelemetryPacket(uint8_t* packetBuf) 
                                                        pressureSensorValues_psi,
                                                        loadCellAdcValues,
                                                        loadCellValues_lb);
+    return true;
+}
+
+bool PacketProcessing::processGSControlPacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata) {
+    GSControlUdpPacket* packet = reinterpret_cast<GSControlUdpPacket*>(packetBuf);
+    float timestamp = static_cast<float>(udpMetadata.deviceTsMs);
+    GSControlStatus& status = packet->fields.status;
+    
+    GSDataCenter::AllowDumpSwitchData.isOn = status.bits.isAllowDumpSwitchOn;
+    GSDataCenter::AllowFillSwitchData.isOn = status.bits.isAllowFillSwitchOn;
+    GSDataCenter::ArmIgniterSwitchData.isOn = status.bits.isArmIgniterSwitchOn;
+    GSDataCenter::ArmServoSwitchData.isOn = status.bits.isArmServoSwitchOn;
+    GSDataCenter::EmergencyStopButtonData.isOn = status.bits.isEmergencyStopButtonPressed;
+    GSDataCenter::FireIgniterButtonData.isOn = status.bits.isFireIgniterButtonPressed;
+    GSDataCenter::UnsafeKeySwitchData.isOn = status.bits.isUnsafeKeySwitchPressed;
+    GSDataCenter::ValveStartButtonData.isOn = status.bits.isValveStartButtonPressed;
+
+    GSDataCenter::lastReceivedGSCommandTimestamp_ms = packet->fields.lastReceivedGSCommandTimestamp_ms;
+    GSDataCenter::lastBoardSentCommandCode = packet->fields.lastBoardSentCommandCode;
+    GSDataCenter::lastSentCommandTimestamp_ms = packet->fields.lastSentCommandTimestamp_ms;
+    
+    GSDataCenter::gsControlBoardState = status.bits.state;
+    
+    //TODO
+    //PacketCSVLogging::logGSControlPacket(packet);
     return true;
 }
 

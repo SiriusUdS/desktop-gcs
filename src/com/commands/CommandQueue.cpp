@@ -38,7 +38,7 @@ std::optional<std::shared_ptr<QueuedCommand>> CommandQueue::dequeue() {
 
     auto it = active.find(idx);
     if (it == active.end()) {
-        GCS_APP_LOG_WARN("CommandQueue: Desynchronization between command queue and active commands map. This should never happend.");
+        GCS_APP_LOG_WARN("CommandQueue: Desynchronization between command queue and active commands map. This should never happen.");
         return std::nullopt;
     }
 
