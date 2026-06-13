@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CRC/CRCConstants.h"
+#include "system/crc32_polynomial.hpp"
 
 #include <cstdint>
 
@@ -22,7 +22,7 @@ inline std::uint32_t computeCrcUDP(uint8_t* data, size_t sizeInBytes) {
         
         for (int bit = 0; bit < 8; bit++) {
             if (crc & 0x80000000) {
-                constexpr uint32_t POLY = CRC_GENERATING_POLYNOMIAL;
+                constexpr uint32_t POLY = logic::data_integrity::CRC32_POLYNOMIAL;
                 crc = (crc << 1) ^ POLY;
             } else {
                 crc <<= 1;
@@ -41,7 +41,7 @@ inline std::uint32_t computeCrcSerial(uint8_t* data, size_t sizeInBytes) {
         crc ^= word;
         for (int bit = 0; bit < 32; bit++) {
             if (crc & 0x80000000) {
-                constexpr uint32_t POLY = CRC_GENERATING_POLYNOMIAL;
+                constexpr uint32_t POLY = logic::data_integrity::CRC32_POLYNOMIAL;
                 crc = (crc << 1) ^ POLY;
                 continue;
             }
