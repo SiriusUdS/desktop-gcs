@@ -3,6 +3,8 @@
 #include "Telecommunication/BoardCommand.h"
 #include "Telecommunication/PacketHeaderVariable.h"
 
+#include "system/board_id.hpp"
+
 #include <atomic>
 
 enum class CommandType : size_t {
@@ -44,4 +46,4 @@ enum class HeatPadCommandType {
     Dump = FILLING_STATION_COMMAND_CODE_SET_DUMP_VALVE_HEATER_POWER_PCT
 };
 
-enum class BoardType { Engine = ENGINE_BOARD_ID, FillingStation = FILLING_STATION_BOARD_ID };
+enum class BoardType { Engine = static_cast<uint8_t>(BoardId::Engine), FillingStation = static_cast<uint8_t>(BoardId::FillingStation) };

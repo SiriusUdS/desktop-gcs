@@ -20,6 +20,8 @@
 #include "UDPTelemetryPacket.h"
 #include "ValveData.h"
 
+#include "system/board_id.hpp"
+
 #include <Engine/EngineState.h>
 #include <FillingStation/FillingStationState.h>
 
@@ -143,13 +145,13 @@ bool PacketProcessing::processIncomingSerialPacket() {
 bool routeByPacketTypeSerial(TelemetryHeader* header, bool& value1, uint8_t* packetBuf) {
     switch (header->bits.type) {
     case TELEMETRY_TYPE_CODE:
-        if (header->bits.boardId == ENGINE_BOARD_ID) {
+        if (header->bits.boardId == static_cast<uint8_t>(BoardId::Engine)) {
             value1 = PacketProcessing::processEngineTelemetryPacket(packetBuf);
             return true;
-        } else if (header->bits.boardId == FILLING_STATION_BOARD_ID) {
+        } else if (header->bits.boardId == static_cast<uint8_t>(BoardId::FillingStation)) {
             value1 = PacketProcessing::processFillingStationTelemetryPacket(packetBuf);
             return true;
-        } else if (header->bits.boardId == GS_CONTROL_BOARD_ID) {
+        } else if (header->bits.boardId == static_cast<uint8_t>(BoardId::GsControl)) {
             GCS_APP_LOG_WARN("PacketProcessing: Tried processing GS control telemetry packet, but that doesn't exist.");
             value1 = false;
             return true;
@@ -159,13 +161,13 @@ bool routeByPacketTypeSerial(TelemetryHeader* header, bool& value1, uint8_t* pac
             return true;
         }
     case STATUS_TYPE_CODE:
-        if (header->bits.boardId == ENGINE_BOARD_ID) {
+        if (header->bits.boardId == static_cast<uint8_t>(BoardId::Engine)) {
             value1 = PacketProcessing::processEngineStatusPacket(packetBuf);
             return true;
-        } else if (header->bits.boardId == FILLING_STATION_BOARD_ID) {
+        } else if (header->bits.boardId == static_cast<uint8_t>(BoardId::FillingStation)) {
             value1 = PacketProcessing::processFillingStationStatusPacket(packetBuf);
             return true;
-        } else if (header->bits.boardId == GS_CONTROL_BOARD_ID) {
+        } else if (header->bits.boardId == static_cast<uint8_t>(BoardId::GsControl)) {
             value1 = PacketProcessing::processGSControlPacket(packetBuf);
             return true;
         } else {
@@ -218,8 +220,8 @@ bool PacketProcessing::processEnginePacketUdp(uint8_t* packetBuf, UdpPacketMetad
     uint16_t* thermistorAdcValues = adcValues + SerialConfig::THERMISTOR_ADC_VALUES_INDEX_OFFSET;     //TODO modify when known
     uint16_t* pressureSensorAdcValues = adcValues + SerialConfig::THERMISTOR_ADC_VALUES_INDEX_OFFSET; //TODO modify when known
 
-    computeThermistorValues(thermistorAdcValues, ENGINE_BOARD_ID);         //TODO need to change function??
-    computePressureSensorValues(pressureSensorAdcValues, ENGINE_BOARD_ID); //TODO same as above
+    computeThermistorValues(thermistorAdcValues, static_cast<uint8_t>(BoardId::Engine));         //TODO need to change function??
+    computePressureSensorValues(pressureSensorAdcValues, static_cast<uint8_t>(BoardId::Engine)); //TODO same as above
 
     //TODO not sure again
     addPlotData<GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD>(GSDataCenter::Thermistor_Motor_PlotData.data,
@@ -271,8 +273,8 @@ bool PacketProcessing::processEngineTelemetryPacket(uint8_t* packetBuf) {
     uint16_t* thermistorAdcValues = adcValues + SerialConfig::THERMISTOR_ADC_VALUES_INDEX_OFFSET;
     uint16_t* pressureSensorAdcValues = adcValues + SerialConfig::PRESSURE_SENSOR_ADC_VALUES_INDEX_OFFSET;
 
-    computeThermistorValues(thermistorAdcValues, ENGINE_BOARD_ID);
-    computePressureSensorValues(pressureSensorAdcValues, ENGINE_BOARD_ID);
+    computeThermistorValues(thermistorAdcValues, static_cast<uint8_t>(BoardId::Engine));
+    computePressureSensorValues(pressureSensorAdcValues, static_cast<uint8_t>(BoardId::Engine));
 
     addPlotData<GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD>(GSDataCenter::Thermistor_Motor_PlotData.data,
                                                                  thermistorAdcValues,
@@ -300,8 +302,8 @@ bool PacketProcessing::processFillingStationTelemetryPacketUdp(uint8_t* packetBu
     uint16_t* pressureSensorAdcValues = adcValues + SerialConfig::PRESSURE_SENSOR_ADC_VALUES_INDEX_OFFSET;
     uint16_t* loadCellAdcValues = adcValues + SerialConfig::LOAD_CELL_ADC_VALUES_INDEX_OFFSET;
     
-    computeThermistorValues(thermistorAdcValues, ENGINE_BOARD_ID);
-    computePressureSensorValues(pressureSensorAdcValues, FILLING_STATION_BOARD_ID);
+    computeThermistorValues(thermistorAdcValues, static_cast<uint8_t>(BoardId::Engine));
+    computePressureSensorValues(pressureSensorAdcValues, static_cast<uint8_t>(BoardId::FillingStation));
     computeLoadCellValues(loadCellAdcValues);
     addPlotData<GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD>(GSDataCenter::Thermistor_FillingStation_PlotData.data,
                                                                  thermistorAdcValues,
@@ -343,8 +345,8 @@ bool PacketProcessing::processFillingStationTelemetryPacket(uint8_t* packetBuf) 
     uint16_t* pressureSensorAdcValues = adcValues + SerialConfig::PRESSURE_SENSOR_ADC_VALUES_INDEX_OFFSET;
     uint16_t* loadCellAdcValues = adcValues + SerialConfig::LOAD_CELL_ADC_VALUES_INDEX_OFFSET;
 
-    computeThermistorValues(thermistorAdcValues, ENGINE_BOARD_ID);
-    computePressureSensorValues(pressureSensorAdcValues, FILLING_STATION_BOARD_ID);
+    computeThermistorValues(thermistorAdcValues, static_cast<uint8_t>(BoardId::Engine));
+    computePressureSensorValues(pressureSensorAdcValues, static_cast<uint8_t>(BoardId::FillingStation));
     computeLoadCellValues(loadCellAdcValues);
 
     addPlotData<GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD>(GSDataCenter::Thermistor_FillingStation_PlotData.data,
@@ -519,7 +521,7 @@ void PacketProcessing::computeThermistorValues(uint16_t thermistorAdcValues[GSDa
 
 void PacketProcessing::computePressureSensorValues(uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD],
                                                    uint16_t boardId) {
-    uint8_t indexOffset = boardId == ENGINE_BOARD_ID ? 2 : 0;
+    uint8_t indexOffset = boardId == static_cast<uint8_t>(BoardId::Engine) ? 2 : 0;
     for (size_t i = 0; i < GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD; i++) {
         float adcValue = static_cast<float>(pressureSensorAdcValues[i]);
         uint16_t sensorIndex = static_cast<uint16_t>(i + indexOffset);
