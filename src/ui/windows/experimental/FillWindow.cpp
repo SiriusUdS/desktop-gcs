@@ -1,13 +1,14 @@
 #include "FillWindow.h"
 
 #include "CommandControl.h"
-#include "Engine/EngineState.h"
 #include "GSDataCenter.h"
 #include "IniParams.h"
 #include "PrelaunchWindow.h"
 #include "SensorPlotData.h"
 #include "SwitchData.h"
 #include "ThemedColors.h"
+
+#include "system/state.hpp"
 
 #include <imgui.h>
 #include <implot.h>
@@ -29,12 +30,12 @@ const char* FillWindow::getName() const {
 }
 
 void FillWindow::renderImpl() {
-    const bool nosAndIpaValveSliderEnabled = GSDataCenter::motorBoardState == ENGINE_STATE_UNSAFE && GSDataCenter::ArmServoSwitchData.isOn
+    const bool nosAndIpaValveSliderEnabled = GSDataCenter::motorBoardState == static_cast<uint8_t>(logic::control::State::Unsafe) && GSDataCenter::ArmServoSwitchData.isOn
                                              && !GSDataCenter::AllowDumpSwitchData.isOn && !GSDataCenter::AllowFillSwitchData.isOn
                                              && !GSDataCenter::ArmIgniterSwitchData.isOn;
     const bool fillValveSliderEnabled = GSDataCenter::AllowFillSwitchData.isOn;
     const bool dumpValveSliderEnabled = GSDataCenter::AllowDumpSwitchData.isOn;
-    const bool solenoidValveSliderEnabled = GSDataCenter::motorBoardState == ENGINE_STATE_UNSAFE;
+    const bool solenoidValveSliderEnabled = GSDataCenter::motorBoardState == static_cast<uint8_t>(logic::control::State::Unsafe);
 
     ImGui::SeparatorText("Tank Data Plot");
 

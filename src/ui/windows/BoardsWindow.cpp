@@ -1,15 +1,33 @@
 #include "BoardsWindow.h"
 
 #include "ComTask.h"
-#include "Engine/EngineState.h"
-#include "FillingStation/FillingStationState.h"
 #include "FontConfig.h"
-#include "GSControl/GSControlState.h"
 #include "GSDataCenter.h"
 #include "UdpCom.h"
 
+#include "system/state.hpp"
 
 #include <imgui.h>
+
+namespace {
+/// Map a board's raw wire state byte to a display name via the shared
+/// logic::control::State enum (common-protocol's single source of truth; all
+/// boards now share one state encoding instead of per-board *_STATE_* macros).
+const char* boardStateName(uint8_t rawState) {
+    using logic::control::State;
+    switch (static_cast<State>(rawState)) {
+    case State::Init:   return "INIT";
+    case State::Safe:   return "SAFE";
+    case State::Unsafe: return "UNSAFE";
+    case State::Abort:  return "ABORT";
+    case State::Error:  return "ERROR";
+    case State::Ignite: return "IGNITE";
+    case State::Launch: return "LAUNCH";
+    case State::Test:   return "TEST";
+    }
+    return "Unknown";
+}
+} // namespace
 
 const char* BoardsWindow::getName() const {
     return "Boards";
@@ -17,60 +35,9 @@ const char* BoardsWindow::getName() const {
 
 void BoardsWindow::renderImpl() {
     if (ImGui::CollapsingHeader("State")) {
-        const char* motorBoardStateName = "Unknown";
-        switch (GSDataCenter::motorBoardState) {
-        case ENGINE_STATE_INIT:
-            motorBoardStateName = "INIT";
-            break;
-        case ENGINE_STATE_SAFE:
-            motorBoardStateName = "SAFE";
-            break;
-        case ENGINE_STATE_UNSAFE:
-            motorBoardStateName = "UNSAFE";
-            break;
-        case ENGINE_STATE_ABORT:
-            motorBoardStateName = "ABORT";
-            break;
-        case ENGINE_STATE_IGNITION:
-            motorBoardStateName = "IGNITION";
-            break;
-        case 0x10:
-            //TODO CHANGE CASE VALUE WAS ENGINE_STATE_LAUNCH AND DID NOT EXIST
-            motorBoardStateName = "LAUNCH";
-            break;
-        }
-
-        const char* fillingStationBoardStateName = "Unknown";
-        switch (GSDataCenter::fillingStationBoardState) {
-        case FILLING_STATION_STATE_INIT:
-            fillingStationBoardStateName = "INIT";
-            break;
-        case FILLING_STATION_STATE_SAFE:
-            fillingStationBoardStateName = "SAFE";
-            break;
-        case FILLING_STATION_STATE_UNSAFE:
-            fillingStationBoardStateName = "UNSAFE";
-            break;
-        case FILLING_STATION_STATE_ABORT:
-            fillingStationBoardStateName = "ABORT";
-            break;
-        }
-
-        const char* gsControlBoardStateName = "Unknown";
-        switch (GSDataCenter::gsControlBoardState) {
-        case GS_CONTROL_STATE_INIT:
-            gsControlBoardStateName = "INIT";
-            break;
-        case GS_CONTROL_STATE_SAFE:
-            gsControlBoardStateName = "SAFE";
-            break;
-        case GS_CONTROL_STATE_UNSAFE:
-            gsControlBoardStateName = "UNSAFE";
-            break;
-        case GS_CONTROL_STATE_ABORT:
-            gsControlBoardStateName = "ABORT";
-            break;
-        }
+        const char* motorBoardStateName = boardStateName(GSDataCenter::motorBoardState);
+        const char* fillingStationBoardStateName = boardStateName(GSDataCenter::fillingStationBoardState);
+        const char* gsControlBoardStateName = boardStateName(GSDataCenter::gsControlBoardState);
 
         if (ImGui::BeginTable("BoardComStatesTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
             ImGui::TableSetupColumn("Board");

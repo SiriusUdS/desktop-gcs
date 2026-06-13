@@ -1,9 +1,10 @@
 #include "ControlsWindow.h"
 
 #include "CommandControl.h"
-#include "Engine/EngineState.h"
 #include "GSDataCenter.h"
 #include "SwitchData.h"
+
+#include "system/state.hpp"
 
 #include <imgui.h>
 
@@ -13,7 +14,7 @@ const char* ControlsWindow::getName() const {
 
 void ControlsWindow::renderImpl() {
     if (ImGui::CollapsingHeader("Valves")) {
-        const bool nosAndIpaValveSliderEnabled = GSDataCenter::motorBoardState == ENGINE_STATE_UNSAFE && GSDataCenter::ArmServoSwitchData.isOn
+        const bool nosAndIpaValveSliderEnabled = GSDataCenter::motorBoardState == static_cast<uint8_t>(logic::control::State::Unsafe) && GSDataCenter::ArmServoSwitchData.isOn
                                                  && !GSDataCenter::AllowDumpSwitchData.isOn && !GSDataCenter::AllowFillSwitchData.isOn
                                                  && !GSDataCenter::ArmIgniterSwitchData.isOn;
         const bool fillValveSliderEnabled = GSDataCenter::AllowFillSwitchData.isOn;
@@ -45,7 +46,7 @@ void ControlsWindow::renderImpl() {
     }
 
     if (ImGui::CollapsingHeader("Solenoid valve")) {
-        const bool solenoidValveSliderEnabled = GSDataCenter::motorBoardState == ENGINE_STATE_UNSAFE;
+        const bool solenoidValveSliderEnabled = GSDataCenter::motorBoardState == static_cast<uint8_t>(logic::control::State::Unsafe);
         renderPercentageInput("Solenoid Valve",
                               dumpHeatPadSlider,
                               CommandType::DumpHeatPad,
