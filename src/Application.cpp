@@ -11,7 +11,7 @@
 #include "IniParamsIO.h"
 #include "Logging.h"
 #include "PlotWindowCenter.h"
-#include "SerialCom.h"
+// #include "SerialCom.h" // SERIAL PATH RETIRED (UDP-only; UdpCom is hardcoded below)
 #include "TankGasLeftPlotDataProcessor.h"
 #include "TankMassPlotDataProcessor.h"
 #include "UdpCom.h"

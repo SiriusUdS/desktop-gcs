@@ -57,9 +57,10 @@ float loadCellValues_lb[GSDataCenterConfig::LOAD_CELL_AMOUNT]{};
 
 
 void PacketProcessing::processIncomingPackets() {
-    while (ComTask::packetReceiver.packetAvailable()) {
-        processIncomingSerialPacket();
-    }
+    // SERIAL PATH RETIRED — UDP-only for now; revive when serial returns.
+    // while (ComTask::packetReceiver.packetAvailable()) {
+    //     processIncomingSerialPacket();
+    // }
 
     while (ComTask::udpPacketReceiver.packetAvailable()) {
         processIncomingUdpPacket();
@@ -110,6 +111,7 @@ bool PacketProcessing::routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt) {
     }
 }
 
+#if 0 // SERIAL PATH RETIRED — UDP-only for now; revive when serial returns.
 bool PacketProcessing::processIncomingSerialPacket() {
     std::optional<PacketMetadata> packetMetadataOpt = ComTask::packetReceiver.nextPacketMetadata();
 
@@ -190,6 +192,8 @@ bool PacketProcessing::routeDecodedSerialPacket() {
     return false;
 }
 
+#endif // SERIAL PATH RETIRED
+
 bool PacketProcessing::processUDPHeader(std::optional<UdpPacketMetadata> udpPacketMetadata, std::optional<std::vector<std::string>> logData) {
     if (!udpPacketMetadata.has_value()) {
         return false;
@@ -256,6 +260,7 @@ bool PacketProcessing::processEnginePacketUdp(uint8_t* packetBuf, UdpPacketMetad
     return true;
 }
 
+#if 0 // SERIAL PATH RETIRED — UDP-only for now; revive when serial returns.
 bool PacketProcessing::processEngineTelemetryPacket(uint8_t* packetBuf) {
     if (!validateIncomingPacketSize(sizeof(EngineTelemetryPacket), "EngineTelemetryPacket")) {
         return false;
@@ -293,6 +298,8 @@ bool PacketProcessing::processEngineTelemetryPacket(uint8_t* packetBuf) {
     return true;
 }
 
+#endif // SERIAL PATH RETIRED
+
 bool PacketProcessing::processFillingStationTelemetryPacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata) {
     FillStationTelemetryUDPPacket* packet = reinterpret_cast<FillStationTelemetryUDPPacket*>(packetBuf);
     float timestamp = static_cast<float>(udpMetadata.deviceTsMs);
@@ -327,6 +334,7 @@ bool PacketProcessing::processFillingStationTelemetryPacketUdp(uint8_t* packetBu
     return true;
 }
 
+#if 0 // SERIAL PATH RETIRED — UDP-only for now; revive when serial returns.
 bool PacketProcessing::processFillingStationTelemetryPacket(uint8_t* packetBuf) {
     if (!validateIncomingPacketSize(sizeof(FillingStationTelemetryPacket), "FillingStationTelemetryPacket")) {
         return false;
@@ -376,6 +384,8 @@ bool PacketProcessing::processFillingStationTelemetryPacket(uint8_t* packetBuf) 
     return true;
 }
 
+#endif // SERIAL PATH RETIRED
+
 bool PacketProcessing::processGSControlPacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata) {
     GSControlUdpPacket* packet = reinterpret_cast<GSControlUdpPacket*>(packetBuf);
     float timestamp = static_cast<float>(udpMetadata.deviceTsMs);
@@ -401,6 +411,7 @@ bool PacketProcessing::processGSControlPacketUdp(uint8_t* packetBuf, UdpPacketMe
     return true;
 }
 
+#if 0 // SERIAL PATH RETIRED — UDP-only for now; revive when serial returns.
 bool PacketProcessing::processGSControlPacket(uint8_t* packetBuf) {
     if (!validateIncomingPacketSize(sizeof(GSControlStatusPacket), "GSControlStatusPacket")) {
         return false;
@@ -511,6 +522,8 @@ bool PacketProcessing::processFillingStationStatusPacket(uint8_t* packetBuf) {
     PacketCSVLogging::logFillingStationStatusPacket(packet);
     return true;
 }
+
+#endif // SERIAL PATH RETIRED
 
 void PacketProcessing::computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId) {
     for (size_t i = 0; i < GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD; i++) {

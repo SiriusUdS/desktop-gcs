@@ -31,7 +31,7 @@ std::vector<Layout::DockedWindow> DiagnosticsLayout::getDockedWindows() {
 
     dockableWindows.emplace_back(UIWindows::boardsWindow, MAIN_DOCKSPACE);
     dockableWindows.emplace_back(UIWindows::mapWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::serialComWindow, MAIN_DOCKSPACE);
+    // dockableWindows.emplace_back(UIWindows::serialComWindow, MAIN_DOCKSPACE); // SERIAL PATH RETIRED
     dockableWindows.emplace_back(UIWindows::switchesWindow, MAIN_DOCKSPACE);
     dockableWindows.emplace_back(UIWindows::valvesWindow, MAIN_DOCKSPACE);
 

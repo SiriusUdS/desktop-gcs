@@ -20,7 +20,7 @@ std::shared_ptr<PrefillWindow> prefillWindow = std::make_shared<PrefillWindow>()
 std::shared_ptr<PrelaunchWindow> prelaunchWindow = std::make_shared<PrelaunchWindow>();
 std::shared_ptr<ResultsWindow> resultsWindow = std::make_shared<ResultsWindow>();
 std::shared_ptr<RocketParametersWindow> rocketParametersWindow = std::make_shared<RocketParametersWindow>();
-std::shared_ptr<SerialComWindow> serialComWindow = std::make_shared<SerialComWindow>();
+// std::shared_ptr<SerialComWindow> serialComWindow = std::make_shared<SerialComWindow>(); // SERIAL PATH RETIRED
 std::shared_ptr<SwitchesWindow> switchesWindow = std::make_shared<SwitchesWindow>();
 std::shared_ptr<TankMassCalculatorWindow> tankMassCalculatorWindow = std::make_shared<TankMassCalculatorWindow>();
 std::shared_ptr<TankMassWindow> tankMassWindow = std::make_shared<TankMassWindow>();
@@ -42,7 +42,7 @@ std::vector<std::shared_ptr<UIWindow>> windows = {boardsWindow,
                                                   prelaunchWindow,
                                                   resultsWindow,
                                                   rocketParametersWindow,
-                                                  serialComWindow,
+                                                  // serialComWindow, // SERIAL PATH RETIRED
                                                   switchesWindow,
                                                   tankMassCalculatorWindow,
                                                   tankMassWindow,

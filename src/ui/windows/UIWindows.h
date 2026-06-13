@@ -16,7 +16,7 @@
 #include "PrelaunchWindow.h"
 #include "ResultsWindow.h"
 #include "RocketParametersWindow.h"
-#include "SerialComWindow.h"
+// #include "SerialComWindow.h" // SERIAL PATH RETIRED
 #include "SwitchesWindow.h"
 #include "TankMassCalculatorWindow.h"
 #include "TankMassWindow.h"
@@ -42,7 +42,7 @@ extern std::shared_ptr<PrefillWindow> prefillWindow;
 extern std::shared_ptr<PrelaunchWindow> prelaunchWindow;
 extern std::shared_ptr<ResultsWindow> resultsWindow;
 extern std::shared_ptr<RocketParametersWindow> rocketParametersWindow;
-extern std::shared_ptr<SerialComWindow> serialComWindow;
+// extern std::shared_ptr<SerialComWindow> serialComWindow; // SERIAL PATH RETIRED
 extern std::shared_ptr<SwitchesWindow> switchesWindow;
 extern std::shared_ptr<TankMassCalculatorWindow> tankMassCalculatorWindow;
 extern std::shared_ptr<TankMassWindow> tankMassWindow;
