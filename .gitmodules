@@ -7,3 +7,6 @@
 [submodule "tools/premake-ecc"]
 	path = tools/premake-ecc
 	url = https://github.com/MattBystrin/premake-ecc.git
+[submodule "external/common-protocol"]
+	path = external/common-protocol
+	url = https://github.com/SiriusUds/common-protocol
