@@ -9,6 +9,7 @@ PressureSensorMotorPlotData PressureSensor_Motor_PlotData;
 ThermistorFillingStationPlotData Thermistor_FillingStation_PlotData;
 PressureSensorFillingStationPlotData PressureSensor_FillingStation_PlotData;
 LoadCellFillingStationPlotData LoadCell_FillingStation_PlotData;
+ThermocoupleFillingStationPlotData Thermocouple_FillingStation_PlotData;
 
 PlotData NOSTankMass_PlotData;
 PlotData TankGasLeft_perc_PlotData;
@@ -34,6 +35,9 @@ std::atomic<uint8_t> gsControlBoardState{};
 
 std::atomic<uint16_t> motorBoardStorageErrorStatus{};
 std::atomic<uint16_t> fillingStationBoardStorageErrorStatus{};
+
+std::atomic<uint32_t> motorBoardControlFlags{};
+std::atomic<uint32_t> fillingStationBoardControlFlags{};
 
 std::atomic<uint32_t> igniteTimestamp_ms{};
 std::atomic<uint32_t> launchTimestamp_ms{};

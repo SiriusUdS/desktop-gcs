@@ -52,4 +52,13 @@ struct LoadCellFillingStationPlotData {
     SensorPlotData& motor() { return data[0]; }
     SensorPlotData& tank() { return data[1]; }
 };
+
+struct ThermocoupleFillingStationPlotData {
+    std::array<SensorPlotData, GSDataCenterConfig::THERMOCOUPLE_AMOUNT> data;
+
+    SensorPlotData& tc1() { return data[0]; }
+    SensorPlotData& tc2() { return data[1]; }
+    SensorPlotData& tc3() { return data[2]; }
+    SensorPlotData& tc4() { return data[3]; }
+};
 // clang-format on

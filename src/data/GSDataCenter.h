@@ -13,6 +13,7 @@ extern PressureSensorMotorPlotData PressureSensor_Motor_PlotData;
 extern ThermistorFillingStationPlotData Thermistor_FillingStation_PlotData;
 extern PressureSensorFillingStationPlotData PressureSensor_FillingStation_PlotData;
 extern LoadCellFillingStationPlotData LoadCell_FillingStation_PlotData;
+extern ThermocoupleFillingStationPlotData Thermocouple_FillingStation_PlotData;
 
 extern PlotData NOSTankMass_PlotData;
 extern PlotData TankGasLeft_perc_PlotData;
@@ -38,6 +39,9 @@ extern std::atomic<uint8_t> gsControlBoardState;
 
 extern std::atomic<uint16_t> motorBoardStorageErrorStatus;
 extern std::atomic<uint16_t> fillingStationBoardStorageErrorStatus;
+
+extern std::atomic<uint32_t> motorBoardControlFlags;
+extern std::atomic<uint32_t> fillingStationBoardControlFlags;
 
 extern std::atomic<uint32_t> igniteTimestamp_ms;
 extern std::atomic<uint32_t> launchTimestamp_ms;
