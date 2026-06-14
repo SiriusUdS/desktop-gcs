@@ -49,6 +49,20 @@ namespace {
 // (zero-padded up to a 4-byte multiple) + standard CRC-32 (4 B, little-endian).
 // The CRC covers the EthernetHeader and the padded payload; the UDP/IP transport
 // header is excluded (it carries its own checksum).
+
+// Per-command sequence number. The seq tags a logical command so its reply can be
+// matched and the command retried; every resend of the same command shares one seq,
+// so it advances once per built frame (not per transmit). The boards treat seq as a
+// 4-bit field, so it stays in 1..15 (0 is reserved for telemetry / unset).
+uint8_t nextCommandSeq() {
+    static uint8_t seq = 0;
+    seq = (seq + 1) & 0x0F; // 4-bit field on the boards: wrap within 0..15
+    if (seq == 0) {         // skip 0 — it denotes telemetry / unset
+        seq = 1;
+    }
+    return seq;
+}
+
 size_t buildCommandFrame(uint8_t* out, BoardId target, uint8_t payloadId, const uint8_t* payload, size_t payloadLen) {
     const size_t paddedLen = (payloadLen + 3u) & ~size_t(3u);
 
@@ -59,7 +73,7 @@ size_t buildCommandFrame(uint8_t* out, BoardId target, uint8_t payloadId, const 
     header.payload_id = payloadId;
     header.payload_size_bytes = static_cast<uint32_t>(paddedLen);
     header.sender_state = 0;
-    header.seq = 0;                 // TODO: command/response sequence handling
+    header.seq = nextCommandSeq();  // tags this command for reply-matching / retry (shared across its resends)
     header.sender_timestamp_ms = 0; // empty for GS commands per the EthernetHeader spec
 
     std::memcpy(out, &header, sizeof(header));
