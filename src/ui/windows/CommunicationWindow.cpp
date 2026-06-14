@@ -144,21 +144,32 @@ void renderBoardSection(const char* boardName, uint8_t state, uint32_t timestamp
     ImGui::PopID();
 }
 
-// One valve's command row: discrete position buttons that enqueue a SetValvePosition.
-void renderValveCommandRow(const char* name, CommandType valveCmd) {
+// One valve's command row that enqueues a SetValvePosition. ECU valves are binary
+// (the board only accepts Open/Close), so they show just Closed/Open; FCU valves
+// also expose the intermediate percentage positions.
+void renderValveCommandRow(const char* name, CommandType valveCmd, bool binaryOnly) {
     ImGui::PushID(name);
     ImGui::Text("%-5s", name);
     ImGui::SameLine();
     if (ImGui::Button("Closed")) { CommandControl::sendCommand(valveCmd, 0); }
-    ImGui::SameLine();
-    if (ImGui::Button("25%")) { CommandControl::sendCommand(valveCmd, 25); }
-    ImGui::SameLine();
-    if (ImGui::Button("50%")) { CommandControl::sendCommand(valveCmd, 50); }
-    ImGui::SameLine();
-    if (ImGui::Button("75%")) { CommandControl::sendCommand(valveCmd, 75); }
+    if (!binaryOnly) {
+        ImGui::SameLine();
+        if (ImGui::Button("25%")) { CommandControl::sendCommand(valveCmd, 25); }
+        ImGui::SameLine();
+        if (ImGui::Button("50%")) { CommandControl::sendCommand(valveCmd, 50); }
+        ImGui::SameLine();
+        if (ImGui::Button("75%")) { CommandControl::sendCommand(valveCmd, 75); }
+    }
     ImGui::SameLine();
     if (ImGui::Button("Open")) { CommandControl::sendCommand(valveCmd, 100); }
     ImGui::PopID();
+}
+
+// Enqueues a SetState command requesting the given network-wide state.
+void renderSetStateButton(const char* label, logic::control::State state) {
+    if (ImGui::Button(label)) {
+        CommandControl::sendCommand(CommandType::SetState, static_cast<uint32_t>(state));
+    }
 }
 } // namespace
 
@@ -209,10 +220,22 @@ void CommunicationWindow::renderImpl() {
 
     if (ImGui::CollapsingHeader("Commands")) {
         ImGui::TextUnformatted("Valve position");
-        renderValveCommandRow("NOS", CommandType::NosValve);
-        renderValveCommandRow("IPA", CommandType::IpaValve);
-        renderValveCommandRow("Fill", CommandType::FillValve);
-        renderValveCommandRow("Dump", CommandType::DumpValve);
+        renderValveCommandRow("NOS", CommandType::NosValve, /*binaryOnly=*/true);  // ECU: open/close only
+        renderValveCommandRow("IPA", CommandType::IpaValve, /*binaryOnly=*/true);  // ECU: open/close only
+        renderValveCommandRow("Fill", CommandType::FillValve, /*binaryOnly=*/false);
+        renderValveCommandRow("Dump", CommandType::DumpValve, /*binaryOnly=*/false);
+
+        ImGui::Separator();
+        ImGui::TextUnformatted("State transitions");
+        using logic::control::State;
+        renderSetStateButton("Init", State::Init);     ImGui::SameLine();
+        renderSetStateButton("Safe", State::Safe);     ImGui::SameLine();
+        renderSetStateButton("Unsafe", State::Unsafe); ImGui::SameLine();
+        renderSetStateButton("Abort", State::Abort);   ImGui::SameLine();
+        renderSetStateButton("Error", State::Error);
+        renderSetStateButton("Ignite", State::Ignite); ImGui::SameLine();
+        renderSetStateButton("Launch", State::Launch); ImGui::SameLine();
+        renderSetStateButton("Test", State::Test);
 
         ImGui::Separator();
         if (ImGui::Button("Ping")) {

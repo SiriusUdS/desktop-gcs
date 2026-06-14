@@ -36,6 +36,7 @@ std::optional<std::shared_ptr<QueuedCommand>> currentCommand; ///< Current comma
 
 void getNextCommand();
 void setupValveCommand(BoardId target, uint8_t valveIndex);
+void setupSetStateCommand(uint8_t requestedStateId);
 void setupPing();
 void stubUnimplementedCommand(const char* what);
 } // namespace CommandControl
@@ -153,6 +154,9 @@ void CommandControl::getNextCommand() {
         // state-command semantics and target are finalized.
         stubUnimplementedCommand("Abort / Reset");
         break;
+    case CommandType::SetState:
+        setupSetStateCommand(static_cast<uint8_t>(currentCommand.value()->value));
+        break;
     case CommandType::Ping:
         setupPing();
         break;
@@ -178,12 +182,36 @@ void CommandControl::setupValveCommand(BoardId target, uint8_t valveIndex) {
 
     SetValvePositionFrame frame{};
     frame.valve = static_cast<FcuValves>(valveIndex); // on-wire value is the per-board valve index (EcuValves / FcuValves)
-    frame.action = ValveCommand::SetOpenedPct;
-    frame.value = static_cast<uint8_t>(percentageOpen);
+    // The ECU treats valves as binary (opened/closed) and rejects SetOpenedPct, so map
+    // the endpoints to the discrete Open/Close actions; only intermediate positions use the percentage.
+    if (percentageOpen >= 100) {
+        frame.action = ValveCommand::Open;
+        frame.value = 100;
+    } else if (percentageOpen == 0) {
+        frame.action = ValveCommand::Close;
+        frame.value = 0;
+    } else {
+        frame.action = ValveCommand::SetOpenedPct;
+        frame.value = static_cast<uint8_t>(percentageOpen);
+    }
 
     dataSize = buildCommandFrame(data,
                                  target,
                                  static_cast<uint8_t>(SsCommandType::SetValvePosition),
+                                 reinterpret_cast<const uint8_t*>(&frame),
+                                 sizeof(frame));
+    state = State::SENDING;
+}
+
+void CommandControl::setupSetStateCommand(uint8_t requestedStateId) {
+    SetStateFrame frame{};
+    frame.flags = 0; // no reply flags: the command is ACKed, and the resulting state arrives with telemetry
+    frame.requestedID = requestedStateId;
+
+    // Broadcast: the state machine is network-wide, so every board transitions together.
+    dataSize = buildCommandFrame(data,
+                                 BoardId::Broadcast,
+                                 static_cast<uint8_t>(SsCommandType::SetState),
                                  reinterpret_cast<const uint8_t*>(&frame),
                                  sizeof(frame));
     state = State::SENDING;

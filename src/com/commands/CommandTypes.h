@@ -31,6 +31,7 @@ enum class CommandType : size_t {
     Abort,
     Reset,
     Ping,
+    SetState, // value carries the requested logic::control::State id
 
     Count // Always keep this as the last element
 };
