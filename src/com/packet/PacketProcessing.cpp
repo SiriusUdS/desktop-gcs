@@ -214,6 +214,7 @@ namespace {
 // Measured open-% is no longer on the wire; current_set_value (the commanded %)
 // stands in for positionOpened_pct per the migration decision.
 void updateValveData(ValveData& dst, const ValveInfo& src) {
+    dst.state = static_cast<uint8_t>(src.state);
     dst.isIdle = !src.status.in_transition; // moving toward a target => not idle
     dst.closedSwitchHigh = src.status.closed_limit_high;
     dst.openedSwitchHigh = src.status.open_limit_high;
@@ -226,6 +227,7 @@ void decodeEngineState(const SystemStateBase& base, uint8_t boardState) {
     GSDataCenter::motorBoardStorageErrorStatus = static_cast<uint16_t>(base.storage_info.status.error);
     updateValveData(GSDataCenter::nosValveData, base.valve_info[static_cast<size_t>(EcuValves::NOS)]);
     updateValveData(GSDataCenter::ipaValveData, base.valve_info[static_cast<size_t>(EcuValves::IPA)]);
+    GSDataCenter::motorAdcAverager.submit(base.adc_info.channels);
     PacketCSVLogging::logEngineStatus(static_cast<float>(base.creation_timestamp_ms),
                                       boardState,
                                       base.valve_info[static_cast<size_t>(EcuValves::NOS)],
@@ -239,6 +241,7 @@ void decodeFillingStationState(const SystemStateBase& base, uint8_t boardState) 
     GSDataCenter::fillingStationBoardStorageErrorStatus = static_cast<uint16_t>(base.storage_info.status.error);
     updateValveData(GSDataCenter::fillValveData, base.valve_info[static_cast<size_t>(FcuValves::Fill)]);
     updateValveData(GSDataCenter::dumpValveData, base.valve_info[static_cast<size_t>(FcuValves::Dump)]);
+    GSDataCenter::fillingStationAdcAverager.submit(base.adc_info.channels);
     PacketCSVLogging::logFillingStationStatus(static_cast<float>(base.creation_timestamp_ms),
                                               boardState,
                                               base.valve_info[static_cast<size_t>(FcuValves::Fill)],

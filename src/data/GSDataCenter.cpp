@@ -39,6 +39,9 @@ std::atomic<uint16_t> fillingStationBoardStorageErrorStatus{};
 std::atomic<uint32_t> motorBoardControlFlags{};
 std::atomic<uint32_t> fillingStationBoardControlFlags{};
 
+AdcChannelAverager motorAdcAverager;
+AdcChannelAverager fillingStationAdcAverager;
+
 std::atomic<uint32_t> igniteTimestamp_ms{};
 std::atomic<uint32_t> launchTimestamp_ms{};
 

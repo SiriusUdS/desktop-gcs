@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AdcChannelAverager.h"
 #include "GSDataCenterTypes.h"
 #include "SwitchData.h"
 #include "ValveData.h"
@@ -42,6 +43,9 @@ extern std::atomic<uint16_t> fillingStationBoardStorageErrorStatus;
 
 extern std::atomic<uint32_t> motorBoardControlFlags;
 extern std::atomic<uint32_t> fillingStationBoardControlFlags;
+
+extern AdcChannelAverager motorAdcAverager;
+extern AdcChannelAverager fillingStationAdcAverager;
 
 extern std::atomic<uint32_t> igniteTimestamp_ms;
 extern std::atomic<uint32_t> launchTimestamp_ms;
