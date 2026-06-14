@@ -1,12 +1,24 @@
 #pragma once
 
-#include "Telecommunication/BoardCommand.h"
-#include "Telecommunication/PacketHeaderVariable.h"
-
+#include "command/command_type.hpp"
+#include "framing/ethernet_header.hpp"
+#include "framing/payload_type.hpp"
 #include "system/board_id.hpp"
+#include "system/valves/ecu.hpp"
+#include "system/valves/fcu.hpp"
 
 #include <atomic>
+#include <cstdint>
 
+/**
+ * @enum CommandType
+ * @brief GCS-side UI command selector — identifies which control the operator
+ *        actuated. Distinct from the on-wire SSOT command id
+ *        (logic::communication::command::CommandType): CommandControl maps these
+ *        to the protocol commands. Heat-pad / abort / reset entries are kept so
+ *        their controls still compile, but are stubbed in CommandControl until
+ *        the protocol provides them.
+ */
 enum class CommandType : size_t {
     NosValve,
     IpaValve,
@@ -31,19 +43,3 @@ struct QueuedCommand {
     uint32_t value;               ///< Value of the command.
     std::atomic_bool processed{}; ///< Whether the command was processed or not.
 };
-
-enum class ValveCommandType {
-    Nos = ENGINE_COMMAND_CODE_OPEN_NOS_VALVE_PCT,
-    Ipa = ENGINE_COMMAND_CODE_OPEN_IPA_VALVE_PCT,
-    Fill = FILLING_STATION_COMMAND_CODE_OPEN_FILL_VALVE_PCT,
-    Dump = FILLING_STATION_COMMAND_CODE_OPEN_DUMP_VALVE_PCT
-};
-
-enum class HeatPadCommandType {
-    Nos = ENGINE_COMMAND_CODE_SET_NOS_VALVE_HEATER_POWER_PCT,
-    Ipa = ENGINE_COMMAND_CODE_SET_IPA_VALVE_HEATER_POWER_PCT,
-    Fill = FILLING_STATION_COMMAND_CODE_SET_FILL_VALVE_HEATER_POWER_PCT,
-    Dump = FILLING_STATION_COMMAND_CODE_SET_DUMP_VALVE_HEATER_POWER_PCT
-};
-
-enum class BoardType { Engine = static_cast<uint8_t>(BoardId::Engine), FillingStation = static_cast<uint8_t>(BoardId::FillingStation) };
