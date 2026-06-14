@@ -213,51 +213,68 @@ void updateValveData(ValveData& dst, const ValveInfo& src) {
     dst.openedSwitchHigh = src.status.open_limit_high;
     dst.positionOpened_pct = src.current_set_value;
 }
+
+// Decode one engine (ECU) SystemState record into GSDataCenter + the CSV log.
+void decodeEngineState(const SystemStateBase& base, uint8_t boardState) {
+    GSDataCenter::motorBoardState = boardState;
+    GSDataCenter::motorBoardStorageErrorStatus = static_cast<uint16_t>(base.storage_info.status.error);
+    updateValveData(GSDataCenter::nosValveData, base.valve_info[static_cast<size_t>(EcuValves::NOS)]);
+    updateValveData(GSDataCenter::ipaValveData, base.valve_info[static_cast<size_t>(EcuValves::IPA)]);
+    PacketCSVLogging::logEngineStatus(static_cast<float>(base.creation_timestamp_ms),
+                                      boardState,
+                                      base.valve_info[static_cast<size_t>(EcuValves::NOS)],
+                                      base.valve_info[static_cast<size_t>(EcuValves::IPA)],
+                                      static_cast<uint16_t>(base.storage_info.status.error));
+}
+
+// Decode one filling-station (FCU) SystemState record into GSDataCenter + the CSV log.
+void decodeFillingStationState(const SystemStateBase& base, uint8_t boardState) {
+    GSDataCenter::fillingStationBoardState = boardState;
+    GSDataCenter::fillingStationBoardStorageErrorStatus = static_cast<uint16_t>(base.storage_info.status.error);
+    updateValveData(GSDataCenter::fillValveData, base.valve_info[static_cast<size_t>(FcuValves::Fill)]);
+    updateValveData(GSDataCenter::dumpValveData, base.valve_info[static_cast<size_t>(FcuValves::Dump)]);
+    PacketCSVLogging::logFillingStationStatus(static_cast<float>(base.creation_timestamp_ms),
+                                              boardState,
+                                              base.valve_info[static_cast<size_t>(FcuValves::Fill)],
+                                              base.valve_info[static_cast<size_t>(FcuValves::Dump)],
+                                              static_cast<uint16_t>(base.storage_info.status.error));
+}
 } // namespace
 
 bool PacketProcessing::processSystemStatePacket(uint8_t* payloadBuf, const UdpPacketMetadata& meta) {
+    // The payload is a batch of N back-to-back SystemState records (N = 1..~50),
+    // ordered oldest-to-newest. Each record is decoded and CSV-logged; GSDataCenter
+    // ends up holding the most recent (last) record. Board state rides in the
+    // EthernetHeader (sender_state) and is shared by the whole batch.
     const BoardId board = static_cast<BoardId>(meta.deviceID);
-    const uint8_t boardState = meta.deviceState; // board state now rides in the EthernetHeader (sender_state)
-    const float timestamp = static_cast<float>(meta.deviceTsMs);
+    const uint8_t boardState = meta.deviceState;
 
     if (board == BoardId::Engine) {
-        if (!validateIncomingPacketSize(sizeof(EcuSystemState), "EcuSystemState")) {
+        constexpr size_t recordSize = sizeof(EcuSystemState);
+        if (packetSize == 0 || packetSize % recordSize != 0) {
+            GCS_APP_LOG_WARN("PacketProcessing: EcuSystemState batch ({} B) is not a whole multiple of {} B, ignoring.", packetSize, recordSize);
             return false;
         }
-        const SystemStateBase& base = reinterpret_cast<const EcuSystemState*>(payloadBuf)->base;
-
-        GSDataCenter::motorBoardState = boardState;
-        GSDataCenter::motorBoardStorageErrorStatus = static_cast<uint16_t>(base.storage_info.status.error);
-        updateValveData(GSDataCenter::nosValveData, base.valve_info[static_cast<size_t>(EcuValves::NOS)]);
-        updateValveData(GSDataCenter::ipaValveData, base.valve_info[static_cast<size_t>(EcuValves::IPA)]);
+        const EcuSystemState* records = reinterpret_cast<const EcuSystemState*>(payloadBuf);
+        for (size_t i = 0; i < packetSize / recordSize; i++) {
+            decodeEngineState(records[i].base, boardState);
+        }
 
         ComTask::packetRateMonitor.trackPacket();
         ComTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
-
-        PacketCSVLogging::logEngineStatus(timestamp,
-                                          boardState,
-                                          base.valve_info[static_cast<size_t>(EcuValves::NOS)],
-                                          base.valve_info[static_cast<size_t>(EcuValves::IPA)],
-                                          static_cast<uint16_t>(base.storage_info.status.error));
     } else if (board == BoardId::FillingStation) {
-        if (!validateIncomingPacketSize(sizeof(FcuSystemState), "FcuSystemState")) {
+        constexpr size_t recordSize = sizeof(FcuSystemState);
+        if (packetSize == 0 || packetSize % recordSize != 0) {
+            GCS_APP_LOG_WARN("PacketProcessing: FcuSystemState batch ({} B) is not a whole multiple of {} B, ignoring.", packetSize, recordSize);
             return false;
         }
-        const SystemStateBase& base = reinterpret_cast<const FcuSystemState*>(payloadBuf)->base;
-
-        GSDataCenter::fillingStationBoardState = boardState;
-        GSDataCenter::fillingStationBoardStorageErrorStatus = static_cast<uint16_t>(base.storage_info.status.error);
-        updateValveData(GSDataCenter::fillValveData, base.valve_info[static_cast<size_t>(FcuValves::Fill)]);
-        updateValveData(GSDataCenter::dumpValveData, base.valve_info[static_cast<size_t>(FcuValves::Dump)]);
+        const FcuSystemState* records = reinterpret_cast<const FcuSystemState*>(payloadBuf);
+        for (size_t i = 0; i < packetSize / recordSize; i++) {
+            decodeFillingStationState(records[i].base, boardState);
+        }
 
         ComTask::packetRateMonitor.trackPacket();
         ComTask::fillingStationBoardComStateMonitor.trackSuccessfulPacketRead();
-
-        PacketCSVLogging::logFillingStationStatus(timestamp,
-                                                  boardState,
-                                                  base.valve_info[static_cast<size_t>(FcuValves::Fill)],
-                                                  base.valve_info[static_cast<size_t>(FcuValves::Dump)],
-                                                  static_cast<uint16_t>(base.storage_info.status.error));
     } else {
         GCS_APP_LOG_WARN("PacketProcessing: SystemState from unsupported board id {}, ignoring.", meta.deviceID);
         return false;
