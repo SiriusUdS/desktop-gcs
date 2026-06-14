@@ -298,6 +298,7 @@ bool PacketProcessing::processSystemStatePacket(uint8_t* payloadBuf, const UdpPa
         for (size_t i = 0; i < packetSize / recordSize; i++) {
             decodeEngineState(records[i].base, boardState);
         }
+        GSDataCenter::ecuSystemStateCount += packetSize / recordSize;
 
         ComTask::packetRateMonitor.trackPacket();
         ComTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
@@ -311,6 +312,7 @@ bool PacketProcessing::processSystemStatePacket(uint8_t* payloadBuf, const UdpPa
         for (size_t i = 0; i < packetSize / recordSize; i++) {
             decodeFillingStationState(records[i].base, boardState);
         }
+        GSDataCenter::fcuSystemStateCount += packetSize / recordSize;
 
         ComTask::packetRateMonitor.trackPacket();
         ComTask::fillingStationBoardComStateMonitor.trackSuccessfulPacketRead();
@@ -345,6 +347,7 @@ bool PacketProcessing::processExtendedSystemStatePacket(uint8_t* payloadBuf, con
         for (size_t i = 0; i < packetSize / recordSize; i++) {
             decodeEcuExtendedState(records[i]);
         }
+        GSDataCenter::ecuExtendedSystemStateCount += packetSize / recordSize;
         ComTask::packetRateMonitor.trackPacket();
         ComTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
     } else if (board == BoardId::FillingStation) {
@@ -357,6 +360,7 @@ bool PacketProcessing::processExtendedSystemStatePacket(uint8_t* payloadBuf, con
         for (size_t i = 0; i < packetSize / recordSize; i++) {
             decodeFcuExtendedState(records[i]);
         }
+        GSDataCenter::fcuExtendedSystemStateCount += packetSize / recordSize;
         ComTask::packetRateMonitor.trackPacket();
         ComTask::fillingStationBoardComStateMonitor.trackSuccessfulPacketRead();
     } else {

@@ -67,4 +67,10 @@ extern std::atomic<uint32_t> timeSinceLastCommandMotorBoard_ms;
 extern std::atomic<uint32_t> timeSinceLastCommandFillingStationBoard_ms;
 extern std::atomic<uint32_t> lastReceivedGSCommandTimestamp_ms;
 extern std::atomic<uint32_t> lastSentCommandTimestamp_ms;
+
+// Cumulative decoded-record counts per telemetry type (the UI derives Hz from deltas).
+extern std::atomic<uint64_t> ecuSystemStateCount;
+extern std::atomic<uint64_t> fcuSystemStateCount;
+extern std::atomic<uint64_t> ecuExtendedSystemStateCount;
+extern std::atomic<uint64_t> fcuExtendedSystemStateCount;
 } // namespace GSDataCenter

@@ -12,10 +12,28 @@
 #include "system/state.hpp"
 
 #include <array>
+#include <chrono>
 #include <cstdio>
 #include <cstring>
 
 namespace {
+// Derives a Hz rate from a monotonically increasing counter, refreshed every ~0.5 s.
+struct RateTracker {
+    uint64_t lastCount = 0;
+    std::chrono::steady_clock::time_point lastTime = std::chrono::steady_clock::now();
+    double rateHz = 0.0;
+    double update(uint64_t currentCount) {
+        const auto now = std::chrono::steady_clock::now();
+        const double dt = std::chrono::duration<double>(now - lastTime).count();
+        if (dt >= 0.5) {
+            rateHz = static_cast<double>(currentCount - lastCount) / dt;
+            lastCount = currentCount;
+            lastTime = now;
+        }
+        return rateHz;
+    }
+};
+
 const char* boardStateName(uint8_t rawState) {
     using logic::control::State;
     switch (static_cast<State>(rawState)) {
@@ -55,6 +73,7 @@ const char* thermocoupleStateName(uint8_t rawState) {
 
 // Dense per-board status: header line + valve table + averaged ADC channels (+ FCU thermocouples).
 void renderBoardSection(const char* boardName, uint8_t state, uint32_t timestampMs, uint16_t storageErr, uint32_t controlFlags,
+                        double systemStateRateHz, double extendedRateHz,
                         const char* valve1Name, const ValveData& valve1,
                         const char* valve2Name, const ValveData& valve2,
                         const std::array<float, AdcChannelAverager::CHANNELS>& adc,
@@ -63,6 +82,7 @@ void renderBoardSection(const char* boardName, uint8_t state, uint32_t timestamp
     ImGui::SeparatorText(boardName);
     ImGui::Text("State: %s   |   Timestamp: %u ms   |   Storage Err: %u   |   Control Flags: 0x%08X",
                 boardStateName(state), static_cast<unsigned>(timestampMs), static_cast<unsigned>(storageErr), static_cast<unsigned>(controlFlags));
+    ImGui::Text("Rates  -  SystemState: %.0f Hz   |   ExtendedSystemState: %.1f Hz", systemStateRateHz, extendedRateHz);
 
     constexpr ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit;
 
@@ -157,11 +177,18 @@ void CommunicationWindow::renderImpl() {
         const std::array<float, AdcChannelAverager::CHANNELS> motorAdc = GSDataCenter::motorAdcAverager.latestAverage();
         const std::array<float, AdcChannelAverager::CHANNELS> fcuAdc = GSDataCenter::fillingStationAdcAverager.latestAverage();
 
+        static RateTracker ecuSsRate, ecuExtRate, fcuSsRate, fcuExtRate;
+        const double ecuSs = ecuSsRate.update(GSDataCenter::ecuSystemStateCount.load());
+        const double ecuExt = ecuExtRate.update(GSDataCenter::ecuExtendedSystemStateCount.load());
+        const double fcuSs = fcuSsRate.update(GSDataCenter::fcuSystemStateCount.load());
+        const double fcuExt = fcuExtRate.update(GSDataCenter::fcuExtendedSystemStateCount.load());
+
         renderBoardSection("Motor (ECU)",
                            GSDataCenter::motorBoardState.load(),
                            GSDataCenter::motorBoardTimestamp_ms.load(),
                            GSDataCenter::motorBoardStorageErrorStatus.load(),
                            GSDataCenter::motorBoardControlFlags.load(),
+                           ecuSs, ecuExt,
                            "NOS", GSDataCenter::nosValveData,
                            "IPA", GSDataCenter::ipaValveData,
                            motorAdc, nullptr, nullptr, 0);
@@ -171,6 +198,7 @@ void CommunicationWindow::renderImpl() {
                            GSDataCenter::fillingStationBoardTimestamp_ms.load(),
                            GSDataCenter::fillingStationBoardStorageErrorStatus.load(),
                            GSDataCenter::fillingStationBoardControlFlags.load(),
+                           fcuSs, fcuExt,
                            "Fill", GSDataCenter::fillValveData,
                            "Dump", GSDataCenter::dumpValveData,
                            fcuAdc,

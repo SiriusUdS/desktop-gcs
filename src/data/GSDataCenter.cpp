@@ -62,4 +62,9 @@ std::atomic<uint32_t> timeSinceLastCommandMotorBoard_ms{};
 std::atomic<uint32_t> timeSinceLastCommandFillingStationBoard_ms{};
 std::atomic<uint32_t> lastReceivedGSCommandTimestamp_ms{};
 std::atomic<uint32_t> lastSentCommandTimestamp_ms{};
+
+std::atomic<uint64_t> ecuSystemStateCount{};
+std::atomic<uint64_t> fcuSystemStateCount{};
+std::atomic<uint64_t> ecuExtendedSystemStateCount{};
+std::atomic<uint64_t> fcuExtendedSystemStateCount{};
 } // namespace GSDataCenter
