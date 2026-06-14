@@ -2,6 +2,27 @@
 
 #include "Logging.h"
 
+#include <iomanip>
+#include <sstream>
+#include <string>
+
+namespace {
+// Render a value in plain decimal notation (never scientific), trimming trailing
+// zeros so whole numbers like ADC counts log as "1234567" rather than "1.23457e+06".
+std::string formatValue(float value) {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(6) << value;
+    std::string s = oss.str();
+    if (s.find('.') != std::string::npos) {
+        s.erase(s.find_last_not_of('0') + 1); // drop trailing zeros
+        if (s.back() == '.') {
+            s.pop_back(); // drop a now-dangling decimal point
+        }
+    }
+    return s;
+}
+} // namespace
+
 /**
  * @brief Opens the file in which the CSV data will be logged.
  * @param filename The name of the file to open.
@@ -17,6 +38,7 @@ void CSVLogger::openFile(std::string filename) {
     }
 
     firstLog = true;
+    rowsSinceFlush = 0;
     currentFileName = filename;
 }
 
@@ -66,12 +88,15 @@ void CSVLogger::log() {
     }
 
     for (size_t i = 0; i < columns.size() - 1; i++) {
-        file << columns[i].currentValue << ",";
+        file << formatValue(columns[i].currentValue) << ",";
     }
-    file << columns.back().currentValue << '\n';
+    file << formatValue(columns.back().currentValue) << '\n';
     firstLog = false;
 
-    file.flush();
+    if (++rowsSinceFlush >= FLUSH_INTERVAL) {
+        file.flush();
+        rowsSinceFlush = 0;
+    }
 }
 
 /**
