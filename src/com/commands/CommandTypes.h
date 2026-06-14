@@ -30,6 +30,7 @@ enum class CommandType : size_t {
     DumpHeatPad,
     Abort,
     Reset,
+    Ping,
 
     Count // Always keep this as the last element
 };

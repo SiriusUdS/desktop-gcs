@@ -36,6 +36,7 @@ std::optional<std::shared_ptr<QueuedCommand>> currentCommand; ///< Current comma
 
 void getNextCommand();
 void setupValveCommand(BoardId target, uint8_t valveIndex);
+void setupPing();
 void stubUnimplementedCommand(const char* what);
 } // namespace CommandControl
 
@@ -63,7 +64,9 @@ size_t buildCommandFrame(uint8_t* out, BoardId target, uint8_t payloadId, const 
 
     std::memcpy(out, &header, sizeof(header));
     std::memset(out + sizeof(header), 0, paddedLen);
-    std::memcpy(out + sizeof(header), payload, payloadLen);
+    if (payloadLen > 0) {
+        std::memcpy(out + sizeof(header), payload, payloadLen);
+    }
 
     const size_t crcRange = sizeof(header) + paddedLen;
     const uint32_t crc = CRC::computeCrc32(out, crcRange);
@@ -136,6 +139,9 @@ void CommandControl::getNextCommand() {
         // state-command semantics and target are finalized.
         stubUnimplementedCommand("Abort / Reset");
         break;
+    case CommandType::Ping:
+        setupPing();
+        break;
     default:
         GCS_APP_LOG_ERROR("CommandControl: Invalid command type dequeued from command queue. Ignoring command.");
         stubUnimplementedCommand("Unknown");
@@ -166,6 +172,16 @@ void CommandControl::setupValveCommand(BoardId target, uint8_t valveIndex) {
                                  static_cast<uint8_t>(SsCommandType::SetValvePosition),
                                  reinterpret_cast<const uint8_t*>(&frame),
                                  sizeof(frame));
+    state = State::SENDING;
+}
+
+void CommandControl::setupPing() {
+    // Ping carries no payload; the addressed board(s) reply with a Pong (Response).
+    dataSize = buildCommandFrame(data,
+                                 BoardId::Broadcast,
+                                 static_cast<uint8_t>(SsCommandType::Ping),
+                                 nullptr,
+                                 0);
     state = State::SENDING;
 }
 

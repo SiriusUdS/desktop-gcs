@@ -1,5 +1,6 @@
 ﻿#include "CommunicationWindow.h"
 #include "ComTask.h"
+#include "CommandControl.h"
 #include "GSDataCenter.h"
 #include "ICom.h"
 #include "ITileLoader.h"
@@ -7,6 +8,7 @@
 #include "UdpConfig.h"
 
 #include "devices/valve/valve_state.hpp"
+#include "peripherals/thermocouple/thermocouple_state.hpp"
 #include "system/state.hpp"
 
 #include <array>
@@ -42,11 +44,21 @@ const char* valveStateName(uint8_t rawState) {
     return "Unknown";
 }
 
-// Dense per-board status: header line + valve table + averaged ADC channels.
+const char* thermocoupleStateName(uint8_t rawState) {
+    switch (static_cast<ThermocoupleState>(rawState)) {
+    case ThermocoupleState::Unknown: return "Unknown";
+    case ThermocoupleState::Active:  return "Active";
+    case ThermocoupleState::Faulted: return "Faulted";
+    }
+    return "Unknown";
+}
+
+// Dense per-board status: header line + valve table + averaged ADC channels (+ FCU thermocouples).
 void renderBoardSection(const char* boardName, uint8_t state, uint16_t storageErr, uint32_t controlFlags,
                         const char* valve1Name, const ValveData& valve1,
                         const char* valve2Name, const ValveData& valve2,
-                        const std::array<float, AdcChannelAverager::CHANNELS>& adc) {
+                        const std::array<float, AdcChannelAverager::CHANNELS>& adc,
+                        const std::atomic<float>* tcTemps, const std::atomic<uint8_t>* tcStates, size_t tcCount) {
     ImGui::PushID(boardName);
     ImGui::SeparatorText(boardName);
     ImGui::Text("State: %s   |   Storage Err: %u   |   Control Flags: 0x%08X",
@@ -93,6 +105,39 @@ void renderBoardSection(const char* boardName, uint8_t state, uint16_t storageEr
         ImGui::EndTable();
     }
     ImGui::TextDisabled("ADC averaged over %u samples/window", static_cast<unsigned>(AdcChannelAverager::WINDOW));
+
+    if (tcTemps != nullptr && tcStates != nullptr && tcCount > 0) {
+        if (ImGui::BeginTable("thermocouples", 3, tableFlags)) {
+            ImGui::TableSetupColumn("Thermocouple");
+            ImGui::TableSetupColumn("Temp (C)");
+            ImGui::TableSetupColumn("State");
+            ImGui::TableHeadersRow();
+            for (size_t i = 0; i < tcCount; i++) {
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn(); ImGui::Text("TC%u", static_cast<unsigned>(i + 1));
+                ImGui::TableNextColumn(); ImGui::Text("%.2f", tcTemps[i].load());
+                ImGui::TableNextColumn(); ImGui::TextUnformatted(thermocoupleStateName(tcStates[i].load()));
+            }
+            ImGui::EndTable();
+        }
+    }
+    ImGui::PopID();
+}
+
+// One valve's command row: discrete position buttons that enqueue a SetValvePosition.
+void renderValveCommandRow(const char* name, CommandType valveCmd) {
+    ImGui::PushID(name);
+    ImGui::Text("%-5s", name);
+    ImGui::SameLine();
+    if (ImGui::Button("Closed")) { CommandControl::sendCommand(valveCmd, 0); }
+    ImGui::SameLine();
+    if (ImGui::Button("25%")) { CommandControl::sendCommand(valveCmd, 25); }
+    ImGui::SameLine();
+    if (ImGui::Button("50%")) { CommandControl::sendCommand(valveCmd, 50); }
+    ImGui::SameLine();
+    if (ImGui::Button("75%")) { CommandControl::sendCommand(valveCmd, 75); }
+    ImGui::SameLine();
+    if (ImGui::Button("Open")) { CommandControl::sendCommand(valveCmd, 100); }
     ImGui::PopID();
 }
 } // namespace
@@ -118,7 +163,7 @@ void CommunicationWindow::renderImpl() {
                            GSDataCenter::motorBoardControlFlags.load(),
                            "NOS", GSDataCenter::nosValveData,
                            "IPA", GSDataCenter::ipaValveData,
-                           motorAdc);
+                           motorAdc, nullptr, nullptr, 0);
 
         renderBoardSection("Filling Station (FCU)",
                            GSDataCenter::fillingStationBoardState.load(),
@@ -126,7 +171,27 @@ void CommunicationWindow::renderImpl() {
                            GSDataCenter::fillingStationBoardControlFlags.load(),
                            "Fill", GSDataCenter::fillValveData,
                            "Dump", GSDataCenter::dumpValveData,
-                           fcuAdc);
+                           fcuAdc,
+                           GSDataCenter::fillingStationThermocouple_C,
+                           GSDataCenter::fillingStationThermocoupleState,
+                           GSDataCenterConfig::THERMOCOUPLE_AMOUNT);
+    }
+
+    if (ImGui::CollapsingHeader("Commands")) {
+        ImGui::TextUnformatted("Valve position");
+        renderValveCommandRow("NOS", CommandType::NosValve);
+        renderValveCommandRow("IPA", CommandType::IpaValve);
+        renderValveCommandRow("Fill", CommandType::FillValve);
+        renderValveCommandRow("Dump", CommandType::DumpValve);
+
+        ImGui::Separator();
+        if (ImGui::Button("Ping")) {
+            CommandControl::sendCommand(CommandType::Ping, 0);
+        }
+        ImGui::SameLine();
+        ImGui::Text("Pongs received: %u  (last from board %u)",
+                    static_cast<unsigned>(GSDataCenter::pongReceivedCount.load()),
+                    static_cast<unsigned>(GSDataCenter::lastPongSenderId.load()));
     }
 
     if (ImGui::CollapsingHeader("UDP Configuration", ImGuiTreeNodeFlags_DefaultOpen)) {

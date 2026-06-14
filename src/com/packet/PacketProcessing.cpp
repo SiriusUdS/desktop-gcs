@@ -17,6 +17,7 @@
 #include "ValveData.h"
 
 #include "framing/payload_type.hpp"
+#include "response/response_type.hpp"
 #include "system/board_id.hpp"
 #include "system/valves/ecu.hpp"
 #include "system/valves/fcu.hpp"
@@ -75,11 +76,8 @@ bool PacketProcessing::processIncomingUdpPacket() {
     }
 
     packetSize = udpMetadataOpt->size;
-
-    if (packetSize == 0) {
-        GCS_APP_LOG_WARN("PacketProcessing: Empty UDP payload, ignoring.");
-        return false;
-    }
+    // Note: a zero-length payload is valid (no-payload responses such as Pong);
+    // each handler validates its own expected size.
 
     if (!ComTask::udpPacketReceiver.getPacket(udpPacketBuf)) {
         return false;
@@ -101,7 +99,16 @@ bool PacketProcessing::routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt) {
         return false;
     }
 
-    // TODO: handle PayloadType::Response (and command echoes) as the protocol grows.
+    if (udpMetadataOpt.payloadType == static_cast<uint8_t>(PayloadType::Response)) {
+        if (udpMetadataOpt.payloadID == static_cast<uint8_t>(ResponseType::Pong)) {
+            GSDataCenter::pongReceivedCount++;
+            GSDataCenter::lastPongSenderId = static_cast<uint8_t>(udpMetadataOpt.deviceID);
+            return true;
+        }
+        GCS_APP_LOG_WARN("PacketProcessing: Unknown response id {}, ignoring.", udpMetadataOpt.payloadID);
+        return false;
+    }
+
     GCS_APP_LOG_WARN("PacketProcessing: Unhandled UDP payload type {}, ignoring.", udpMetadataOpt.payloadType);
     return false;
 }
@@ -265,6 +272,8 @@ void decodeFcuExtendedState(const FcuExtendedSystemState& rec) {
         const ThermocoupleInfo& tc = rec.thermocouple_info[i];
         const float tempC = static_cast<float>(tc.thermocouple_code) / 128.0f; // LSB = 2^-7 degC
         GSDataCenter::Thermocouple_FillingStation_PlotData.data[i].addData(static_cast<float>(tc.thermocouple_code), tempC, timestamp);
+        GSDataCenter::fillingStationThermocouple_C[i] = tempC;
+        GSDataCenter::fillingStationThermocoupleState[i] = static_cast<uint8_t>(tc.state);
     }
 }
 } // namespace

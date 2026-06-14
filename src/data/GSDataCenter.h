@@ -44,8 +44,14 @@ extern std::atomic<uint16_t> fillingStationBoardStorageErrorStatus;
 extern std::atomic<uint32_t> motorBoardControlFlags;
 extern std::atomic<uint32_t> fillingStationBoardControlFlags;
 
+extern std::atomic<float> fillingStationThermocouple_C[GSDataCenterConfig::THERMOCOUPLE_AMOUNT];
+extern std::atomic<uint8_t> fillingStationThermocoupleState[GSDataCenterConfig::THERMOCOUPLE_AMOUNT];
+
 extern AdcChannelAverager motorAdcAverager;
 extern AdcChannelAverager fillingStationAdcAverager;
+
+extern std::atomic<uint32_t> pongReceivedCount;
+extern std::atomic<uint8_t> lastPongSenderId;
 
 extern std::atomic<uint32_t> igniteTimestamp_ms;
 extern std::atomic<uint32_t> launchTimestamp_ms;
