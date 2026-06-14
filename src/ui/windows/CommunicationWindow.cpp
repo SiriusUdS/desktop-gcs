@@ -54,15 +54,15 @@ const char* thermocoupleStateName(uint8_t rawState) {
 }
 
 // Dense per-board status: header line + valve table + averaged ADC channels (+ FCU thermocouples).
-void renderBoardSection(const char* boardName, uint8_t state, uint16_t storageErr, uint32_t controlFlags,
+void renderBoardSection(const char* boardName, uint8_t state, uint32_t timestampMs, uint16_t storageErr, uint32_t controlFlags,
                         const char* valve1Name, const ValveData& valve1,
                         const char* valve2Name, const ValveData& valve2,
                         const std::array<float, AdcChannelAverager::CHANNELS>& adc,
                         const std::atomic<float>* tcTemps, const std::atomic<uint8_t>* tcStates, size_t tcCount) {
     ImGui::PushID(boardName);
     ImGui::SeparatorText(boardName);
-    ImGui::Text("State: %s   |   Storage Err: %u   |   Control Flags: 0x%08X",
-                boardStateName(state), static_cast<unsigned>(storageErr), static_cast<unsigned>(controlFlags));
+    ImGui::Text("State: %s   |   Timestamp: %u ms   |   Storage Err: %u   |   Control Flags: 0x%08X",
+                boardStateName(state), static_cast<unsigned>(timestampMs), static_cast<unsigned>(storageErr), static_cast<unsigned>(controlFlags));
 
     constexpr ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit;
 
@@ -159,6 +159,7 @@ void CommunicationWindow::renderImpl() {
 
         renderBoardSection("Motor (ECU)",
                            GSDataCenter::motorBoardState.load(),
+                           GSDataCenter::motorBoardTimestamp_ms.load(),
                            GSDataCenter::motorBoardStorageErrorStatus.load(),
                            GSDataCenter::motorBoardControlFlags.load(),
                            "NOS", GSDataCenter::nosValveData,
@@ -167,6 +168,7 @@ void CommunicationWindow::renderImpl() {
 
         renderBoardSection("Filling Station (FCU)",
                            GSDataCenter::fillingStationBoardState.load(),
+                           GSDataCenter::fillingStationBoardTimestamp_ms.load(),
                            GSDataCenter::fillingStationBoardStorageErrorStatus.load(),
                            GSDataCenter::fillingStationBoardControlFlags.load(),
                            "Fill", GSDataCenter::fillValveData,

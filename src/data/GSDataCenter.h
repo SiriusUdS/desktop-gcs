@@ -41,6 +41,9 @@ extern std::atomic<uint8_t> gsControlBoardState;
 extern std::atomic<uint16_t> motorBoardStorageErrorStatus;
 extern std::atomic<uint16_t> fillingStationBoardStorageErrorStatus;
 
+extern std::atomic<uint32_t> motorBoardTimestamp_ms;
+extern std::atomic<uint32_t> fillingStationBoardTimestamp_ms;
+
 extern std::atomic<uint32_t> motorBoardControlFlags;
 extern std::atomic<uint32_t> fillingStationBoardControlFlags;
 

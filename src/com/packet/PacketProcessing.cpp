@@ -231,6 +231,7 @@ void updateValveData(ValveData& dst, const ValveInfo& src) {
 // Decode one engine (ECU) SystemState record into GSDataCenter + the CSV log.
 void decodeEngineState(const SystemStateBase& base, uint8_t boardState) {
     GSDataCenter::motorBoardState = boardState;
+    GSDataCenter::motorBoardTimestamp_ms = base.creation_timestamp_ms;
     GSDataCenter::motorBoardStorageErrorStatus = static_cast<uint16_t>(base.storage_info.status.error);
     updateValveData(GSDataCenter::nosValveData, base.valve_info[static_cast<size_t>(EcuValves::NOS)]);
     updateValveData(GSDataCenter::ipaValveData, base.valve_info[static_cast<size_t>(EcuValves::IPA)]);
@@ -245,6 +246,7 @@ void decodeEngineState(const SystemStateBase& base, uint8_t boardState) {
 // Decode one filling-station (FCU) SystemState record into GSDataCenter + the CSV log.
 void decodeFillingStationState(const SystemStateBase& base, uint8_t boardState) {
     GSDataCenter::fillingStationBoardState = boardState;
+    GSDataCenter::fillingStationBoardTimestamp_ms = base.creation_timestamp_ms;
     GSDataCenter::fillingStationBoardStorageErrorStatus = static_cast<uint16_t>(base.storage_info.status.error);
     updateValveData(GSDataCenter::fillValveData, base.valve_info[static_cast<size_t>(FcuValves::Fill)]);
     updateValveData(GSDataCenter::dumpValveData, base.valve_info[static_cast<size_t>(FcuValves::Dump)]);

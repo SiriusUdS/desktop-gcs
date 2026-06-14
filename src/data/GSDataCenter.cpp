@@ -36,6 +36,9 @@ std::atomic<uint8_t> gsControlBoardState{};
 std::atomic<uint16_t> motorBoardStorageErrorStatus{};
 std::atomic<uint16_t> fillingStationBoardStorageErrorStatus{};
 
+std::atomic<uint32_t> motorBoardTimestamp_ms{};
+std::atomic<uint32_t> fillingStationBoardTimestamp_ms{};
+
 std::atomic<uint32_t> motorBoardControlFlags{};
 std::atomic<uint32_t> fillingStationBoardControlFlags{};
 
