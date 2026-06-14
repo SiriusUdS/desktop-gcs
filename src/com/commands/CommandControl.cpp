@@ -45,9 +45,9 @@ const std::shared_ptr<QueuedCommand> CommandControl::sendCommand(CommandType typ
 
 namespace {
 // Build an outbound command frame into `out`: EthernetHeader (12 B) + payload
-// (zero-padded up to a 4-byte multiple) + CRC (4 B). The CRC covers the
-// EthernetHeader and the padded payload; the UDP/IP transport header is excluded
-// (it carries its own checksum). TODO: verify this framing against firmware.
+// (zero-padded up to a 4-byte multiple) + standard CRC-32 (4 B, little-endian).
+// The CRC covers the EthernetHeader and the padded payload; the UDP/IP transport
+// header is excluded (it carries its own checksum).
 size_t buildCommandFrame(uint8_t* out, BoardId target, uint8_t payloadId, const uint8_t* payload, size_t payloadLen) {
     const size_t paddedLen = (payloadLen + 3u) & ~size_t(3u);
 
@@ -66,7 +66,7 @@ size_t buildCommandFrame(uint8_t* out, BoardId target, uint8_t payloadId, const 
     std::memcpy(out + sizeof(header), payload, payloadLen);
 
     const size_t crcRange = sizeof(header) + paddedLen;
-    const uint32_t crc = CRC::computeCrcUDP(out, crcRange);
+    const uint32_t crc = CRC::computeCrc32(out, crcRange);
     std::memcpy(out + crcRange, &crc, sizeof(crc));
 
     return crcRange + sizeof(crc);

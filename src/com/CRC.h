@@ -51,4 +51,20 @@ inline std::uint32_t computeCrcSerial(uint8_t* data, size_t sizeInBytes) {
     return crc;
 }
 
+/**
+ * @brief Standard CRC-32 (zlib / PNG / PKZIP): reflected input and output,
+ * init 0xFFFFFFFF, final XOR 0xFFFFFFFF, reflected polynomial. This is the
+ * common-protocol wire CRC, matching the boards' firmware.
+ */
+inline std::uint32_t computeCrc32(const uint8_t* data, size_t sizeInBytes) {
+    std::uint32_t crc = 0xFFFFFFFFu;
+    for (size_t i = 0; i < sizeInBytes; i++) {
+        crc ^= data[i];
+        for (int bit = 0; bit < 8; bit++) {
+            crc = (crc & 1u) ? ((crc >> 1) ^ logic::data_integrity::CRC32_POLYNOMIAL_REFLECTED) : (crc >> 1);
+        }
+    }
+    return crc ^ 0xFFFFFFFFu;
+}
+
 } // namespace CRC

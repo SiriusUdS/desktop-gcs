@@ -91,7 +91,7 @@ bool UdpPacketReceiver::validateChecksum() {
     crcInput.insert(crcInput.end(), headerBuffer.bytes.begin(), headerBuffer.bytes.end());
     crcInput.insert(crcInput.end(), tempPayloadBuffer.begin(), tempPayloadBuffer.end());
 
-    uint32_t calculatedCRC = CRC::computeCrcUDP(crcInput.data(), crcInput.size());
+    uint32_t calculatedCRC = CRC::computeCrc32(crcInput.data(), crcInput.size());
 
     return (receivedCRC == calculatedCRC);
 }

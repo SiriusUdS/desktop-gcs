@@ -23,3 +23,11 @@ TEST_CASE("computeCrcSerial returns the expected checksum for a known buffer") {
     std::array<uint8_t, 16> data = kBuffer;
     CHECK(CRC::computeCrcSerial(data.data(), data.size()) == 0x081B46CAu);
 }
+
+TEST_CASE("computeCrc32 matches the canonical CRC-32 check value") {
+    // Standard CRC-32 (zlib / PNG): CRC32("123456789") == 0xCBF43926. This is the
+    // common-protocol wire CRC, so matching it confirms the GCS agrees with the
+    // boards' firmware.
+    const char* check = "123456789";
+    CHECK(CRC::computeCrc32(reinterpret_cast<const uint8_t*>(check), 9) == 0xCBF43926u);
+}

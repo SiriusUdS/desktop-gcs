@@ -34,7 +34,7 @@ TEST_CASE("UdpCom should successfully bind, read and process a UDP packet from l
     }
     
     // CRC over header + payload (networkBuffer currently holds exactly those bytes)
-    uint32_t crc = CRC::computeCrcUDP(networkBuffer.data(), networkBuffer.size());
+    uint32_t crc = CRC::computeCrc32(networkBuffer.data(), networkBuffer.size());
     networkBuffer.push_back(crc & 0xFF);
     networkBuffer.push_back((crc>>8) & 0xFF);
     networkBuffer.push_back((crc>>16) & 0xFF);
