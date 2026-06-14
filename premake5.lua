@@ -49,7 +49,6 @@ workspace "sirius-gcs"
         "src/ui/windows/experimental",
         "external/ceSerial",
         "external/mINI",
-        "external/sirius-headers-common",
         "external/common-protocol"
     }
 
@@ -59,7 +58,6 @@ workspace "sirius-gcs"
         "src/**.cpp",
         "external/ceSerial/ceserial.h",
         "external/mINI/ini.h",
-        "external/sirius-headers-common/**.h",
         "external/common-protocol/**.hpp",
     }
 

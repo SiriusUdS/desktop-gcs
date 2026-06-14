@@ -1,9 +1,6 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg
-[submodule "sirius-headers-common"]
-	path = external/sirius-headers-common
-	url = https://github.com/SiriusUdS/sirius-headers-common
 [submodule "tools/premake-ecc"]
 	path = tools/premake-ecc
 	url = https://github.com/MattBystrin/premake-ecc.git
