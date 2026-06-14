@@ -82,7 +82,16 @@ void UdpPacketReceiver::receiveByte(uint8_t byte, bool isTesting = false) {
 
 bool UdpPacketReceiver::validateChecksum() {
     uint32_t receivedCRC = (std::bit_cast<uint32_t>(crcBuffer));
-    uint32_t calculatedCRC = CRC::computeCrcUDP(tempPayloadBuffer.data(), expectedPayloadLength);
+
+    // The CRC covers our EthernetHeader + payload (the UDP/IP transport header has
+    // its own checksum and is excluded). Mirrors the GCS command-frame CRC so both
+    // directions agree.
+    std::vector<uint8_t> crcInput;
+    crcInput.reserve(headerBuffer.bytes.size() + tempPayloadBuffer.size());
+    crcInput.insert(crcInput.end(), headerBuffer.bytes.begin(), headerBuffer.bytes.end());
+    crcInput.insert(crcInput.end(), tempPayloadBuffer.begin(), tempPayloadBuffer.end());
+
+    uint32_t calculatedCRC = CRC::computeCrcUDP(crcInput.data(), crcInput.size());
 
     return (receivedCRC == calculatedCRC);
 }
