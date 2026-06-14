@@ -13,32 +13,30 @@
 #include "SensorPlotData.h"
 #include "SerialConfig.h"
 #include "SwitchData.h"
-#include "Telecommunication/PacketHeaderVariable.h"
-#include "Telecommunication/TelemetryPacket.h"
 #include "TemperatureSensor.h"
 #include "UdpCom.h"
-#include "UDPTelemetryPacket.h"
 #include "ValveData.h"
 
+#include "framing/payload_type.hpp"
 #include "system/board_id.hpp"
-
-#include <Engine/EngineState.h>
-#include <FillingStation/FillingStationState.h>
+#include "system/valves/ecu.hpp"
+#include "system/valves/fcu.hpp"
+#include "telemetry/ecu_system_state.hpp"
+#include "telemetry/fcu_system_state.hpp"
+#include "telemetry/telemetry_type.hpp"
 
 namespace PacketProcessing {
 bool processIncomingSerialPacket();
 bool processIncomingUdpPacket();
 bool processUDPHeader(std::optional<UdpPacketMetadata> udpPacketMetadata, std::optional<std::vector<std::string>> logData);
 bool processEngineTelemetryPacket(uint8_t* packetBuf);
-bool processEnginePacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata);
 bool processFillingStationTelemetryPacket(uint8_t* packetBuf);
-bool processFillingStationTelemetryPacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata);
 bool processGSControlPacket(uint8_t* packetBuf);
-bool processGSControlPacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata);
 bool processEngineStatusPacket(uint8_t* packetBuf);
 bool processFillingStationStatusPacket(uint8_t* packetBuf);
 bool routeDecodedSerialPacket();
 bool routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt);
+bool processSystemStatePacket(uint8_t* payloadBuf, const UdpPacketMetadata& meta);
 void computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId);
 void computePressureSensorValues(uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD], uint16_t boardId);
 void computeLoadCellValues(uint16_t loadCellAdcValues[GSDataCenterConfig::LOAD_CELL_AMOUNT]);
@@ -76,9 +74,8 @@ bool PacketProcessing::processIncomingUdpPacket() {
 
     packetSize = udpMetadataOpt->size;
 
-    if (packetSize < sizeof(TelemetryHeader)) {
-        GCS_APP_LOG_WARN("PacketProcessing: Invalid UDP packet size");
-
+    if (packetSize == 0) {
+        GCS_APP_LOG_WARN("PacketProcessing: Empty UDP payload, ignoring.");
         return false;
     }
 
@@ -90,25 +87,18 @@ bool PacketProcessing::processIncomingUdpPacket() {
 }
 
 bool PacketProcessing::routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt) {
-    switch (udpMetadataOpt.payloadID) {
-    /*
-    case (uint32_t) 0x01:
-        processEnginePacketUdp(udpPacketBuf, udpMetadataOpt);
-        return true;
-    case(uint32_t) 0x02:
-        processFillingStationTelemetryPacketUdp(udpPacketBuf, udpMetadataOpt);
-        return true;
-    case(uint32_t) 0x03:
-        processGSControlPacketUdp(udpPacketBuf, udpMetadataOpt);
-        return true;
-    */
-    case GET_SYSTEM:
-        //TODO
-        return true;
-    default:
-        GCS_APP_LOG_WARN("PacketProcessing: Received UDP packet with unknown payload ID, ignoring)");
+    // Telemetry is the only inbound payload class the GCS decodes today.
+    if (udpMetadataOpt.payloadType == static_cast<uint8_t>(PayloadType::Telemetry)) {
+        if (udpMetadataOpt.payloadID == static_cast<uint8_t>(TelemetryType::SystemState)) {
+            return processSystemStatePacket(udpPacketBuf, udpMetadataOpt);
+        }
+        GCS_APP_LOG_WARN("PacketProcessing: Unknown telemetry id {}, ignoring.", udpMetadataOpt.payloadID);
         return false;
     }
+
+    // TODO: handle PayloadType::Response (and command echoes) as the protocol grows.
+    GCS_APP_LOG_WARN("PacketProcessing: Unhandled UDP payload type {}, ignoring.", udpMetadataOpt.payloadType);
+    return false;
 }
 
 #if 0 // SERIAL PATH RETIRED — UDP-only for now; revive when serial returns.
@@ -214,51 +204,78 @@ bool PacketProcessing::processUDPHeader(std::optional<UdpPacketMetadata> udpPack
     return true;
 }
 
-bool PacketProcessing::processEnginePacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata) {
-    EngineTelemetryUDPPacket* packet = reinterpret_cast<EngineTelemetryUDPPacket*>(packetBuf);
-    //TODO
-    //Telemetry part
-    float timestamp =  static_cast<float>(udpMetadata.deviceTsMs);
-    uint16_t* adcValues = packet->fields.adcValues;
+namespace {
+// Map a common-protocol ValveInfo telemetry record onto the GCS's ValveData.
+// Measured open-% is no longer on the wire; current_set_value (the commanded %)
+// stands in for positionOpened_pct per the migration decision.
+void updateValveData(ValveData& dst, const ValveInfo& src) {
+    dst.isIdle = !src.status.in_transition; // moving toward a target => not idle
+    dst.closedSwitchHigh = src.status.closed_limit_high;
+    dst.openedSwitchHigh = src.status.open_limit_high;
+    dst.positionOpened_pct = src.current_set_value;
+}
+} // namespace
 
-    uint16_t* thermistorAdcValues = adcValues + SerialConfig::THERMISTOR_ADC_VALUES_INDEX_OFFSET;     //TODO modify when known
-    uint16_t* pressureSensorAdcValues = adcValues + SerialConfig::THERMISTOR_ADC_VALUES_INDEX_OFFSET; //TODO modify when known
+bool PacketProcessing::processSystemStatePacket(uint8_t* payloadBuf, const UdpPacketMetadata& meta) {
+    const BoardId board = static_cast<BoardId>(meta.deviceID);
+    const uint8_t boardState = meta.deviceState; // board state now rides in the EthernetHeader (sender_state)
+    const float timestamp = static_cast<float>(meta.deviceTsMs);
 
-    computeThermistorValues(thermistorAdcValues, static_cast<uint8_t>(BoardId::Engine));         //TODO need to change function??
-    computePressureSensorValues(pressureSensorAdcValues, static_cast<uint8_t>(BoardId::Engine)); //TODO same as above
+    if (board == BoardId::Engine) {
+        if (!validateIncomingPacketSize(sizeof(EcuSystemState), "EcuSystemState")) {
+            return false;
+        }
+        const SystemStateBase& base = reinterpret_cast<const EcuSystemState*>(payloadBuf)->base;
 
-    //TODO not sure again
-    addPlotData<GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD>(GSDataCenter::Thermistor_Motor_PlotData.data,
-                                                                 thermistorAdcValues,
-                                                                 thermistorValues_C,
-                                                                 timestamp);
-    addPlotData<GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD>(GSDataCenter::PressureSensor_Motor_PlotData.data,
-                                                                      pressureSensorAdcValues,
-                                                                      pressureSensorValues_psi,
-                                                                      timestamp);
-    PacketCSVLogging::logEngineTelemetryPacket(timestamp, thermistorAdcValues, thermistorValues_C, pressureSensorAdcValues, pressureSensorValues_psi);
-    
-    //Status Part
-    ValveStatus& nosValveStatus = packet->fields.valveStatus[SerialConfig::NOS_VALVE_STATUS_INDEX];
-    ValveStatus& ipaValveStatus = packet->fields.valveStatus[SerialConfig::IPA_VALVE_STATUS_INDEX];
+        GSDataCenter::motorBoardState = boardState;
+        GSDataCenter::motorBoardStorageErrorStatus = static_cast<uint16_t>(base.storage_info.status.error);
+        updateValveData(GSDataCenter::nosValveData, base.valve_info[static_cast<size_t>(EcuValves::NOS)]);
+        updateValveData(GSDataCenter::ipaValveData, base.valve_info[static_cast<size_t>(EcuValves::IPA)]);
 
-    GSDataCenter::nosValveData.isIdle = nosValveStatus.bits.isIdle;
-    GSDataCenter::nosValveData.closedSwitchHigh = nosValveStatus.bits.closedSwitchHigh;
-    GSDataCenter::nosValveData.openedSwitchHigh = nosValveStatus.bits.openedSwitchHigh;
+        ComTask::packetRateMonitor.trackPacket();
+        ComTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
 
-    GSDataCenter::ipaValveData.isIdle = ipaValveStatus.bits.isIdle;
-    GSDataCenter::ipaValveData.closedSwitchHigh = ipaValveStatus.bits.closedSwitchHigh;
-    GSDataCenter::ipaValveData.openedSwitchHigh = ipaValveStatus.bits.openedSwitchHigh;
+        PacketCSVLogging::logEngineStatus(timestamp,
+                                          boardState,
+                                          base.valve_info[static_cast<size_t>(EcuValves::NOS)],
+                                          base.valve_info[static_cast<size_t>(EcuValves::IPA)],
+                                          static_cast<uint16_t>(base.storage_info.status.error));
+    } else if (board == BoardId::FillingStation) {
+        if (!validateIncomingPacketSize(sizeof(FcuSystemState), "FcuSystemState")) {
+            return false;
+        }
+        const SystemStateBase& base = reinterpret_cast<const FcuSystemState*>(payloadBuf)->base;
 
-    GSDataCenter::igniteTimestamp_ms = packet->fields.igniteTimestamp_ms;
-    GSDataCenter::launchTimestamp_ms = packet->fields.launchTimestamp_ms;
-    GSDataCenter::timeSinceLastCommandMotorBoard_ms = packet->fields.timeSinceLastCommand_ms;
-    GSDataCenter::lastReceivedCommandCodeMotorBoard = packet->fields.lastReceivedCommandCode;
+        GSDataCenter::fillingStationBoardState = boardState;
+        GSDataCenter::fillingStationBoardStorageErrorStatus = static_cast<uint16_t>(base.storage_info.status.error);
+        updateValveData(GSDataCenter::fillValveData, base.valve_info[static_cast<size_t>(FcuValves::Fill)]);
+        updateValveData(GSDataCenter::dumpValveData, base.valve_info[static_cast<size_t>(FcuValves::Dump)]);
 
-    GSDataCenter::motorBoardState = packet->fields.status.bits.state;
-    GSDataCenter::motorBoardStorageErrorStatus = packet->fields.storageErrorStatus.value;
+        ComTask::packetRateMonitor.trackPacket();
+        ComTask::fillingStationBoardComStateMonitor.trackSuccessfulPacketRead();
+
+        PacketCSVLogging::logFillingStationStatus(timestamp,
+                                                  boardState,
+                                                  base.valve_info[static_cast<size_t>(FcuValves::Fill)],
+                                                  base.valve_info[static_cast<size_t>(FcuValves::Dump)],
+                                                  static_cast<uint16_t>(base.storage_info.status.error));
+    } else {
+        GCS_APP_LOG_WARN("PacketProcessing: SystemState from unsupported board id {}, ignoring.", meta.deviceID);
+        return false;
+    }
+
+    // TODO(ADC): base.adc_info carries 8 signed int32 channels. The per-board
+    // channel->sensor map and the int32->engineering-value conversion are not yet
+    // confirmed by firmware, and the 8-channel layout does not fit the current
+    // GSDataCenterConfig counts (8 thermistor + 2 pressure + 2 load cell). Plot
+    // wiring (computeThermistor/Pressure/LoadCellValues + addPlotData) is deferred.
+    // TODO(commands): ignite/launch timestamps, lastReceivedCommandCode and
+    // timeSinceLastCommand are not in SystemStateBase; those fields stay unfed.
+    // TODO(GS-control): GSControl switch states are intentionally not decoded yet
+    // (no SystemState source); the GS-control telemetry is expected to return soon.
     return true;
 }
+
 
 #if 0 // SERIAL PATH RETIRED — UDP-only for now; revive when serial returns.
 bool PacketProcessing::processEngineTelemetryPacket(uint8_t* packetBuf) {
@@ -300,39 +317,6 @@ bool PacketProcessing::processEngineTelemetryPacket(uint8_t* packetBuf) {
 
 #endif // SERIAL PATH RETIRED
 
-bool PacketProcessing::processFillingStationTelemetryPacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata) {
-    FillStationTelemetryUDPPacket* packet = reinterpret_cast<FillStationTelemetryUDPPacket*>(packetBuf);
-    float timestamp = static_cast<float>(udpMetadata.deviceTsMs);
-    uint16_t* adcValues = packet->fields.adcValues; 
-    
-    uint16_t* thermistorAdcValues = adcValues + SerialConfig::THERMISTOR_ADC_VALUES_INDEX_OFFSET;
-    uint16_t* pressureSensorAdcValues = adcValues + SerialConfig::PRESSURE_SENSOR_ADC_VALUES_INDEX_OFFSET;
-    uint16_t* loadCellAdcValues = adcValues + SerialConfig::LOAD_CELL_ADC_VALUES_INDEX_OFFSET;
-    
-    computeThermistorValues(thermistorAdcValues, static_cast<uint8_t>(BoardId::Engine));
-    computePressureSensorValues(pressureSensorAdcValues, static_cast<uint8_t>(BoardId::FillingStation));
-    computeLoadCellValues(loadCellAdcValues);
-    addPlotData<GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD>(GSDataCenter::Thermistor_FillingStation_PlotData.data,
-                                                                 thermistorAdcValues,
-                                                                 thermistorValues_C,
-                                                                 timestamp);
-    addPlotData<GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD>(GSDataCenter::PressureSensor_FillingStation_PlotData.data,
-                                                                      pressureSensorAdcValues,
-                                                                      pressureSensorValues_psi,
-                                                                      timestamp);
-    addPlotData<GSDataCenterConfig::LOAD_CELL_AMOUNT>(GSDataCenter::LoadCell_FillingStation_PlotData.data,
-                                                      loadCellAdcValues,
-                                                      loadCellValues_lb,
-                                                      timestamp);
-    PacketCSVLogging::logFillingStationTelemetryPacket(timestamp,
-                                                       thermistorAdcValues,
-                                                       thermistorValues_C,
-                                                       pressureSensorAdcValues,
-                                                       pressureSensorValues_psi,
-                                                       loadCellAdcValues,
-                                                       loadCellValues_lb);
-    return true;
-}
 
 #if 0 // SERIAL PATH RETIRED — UDP-only for now; revive when serial returns.
 bool PacketProcessing::processFillingStationTelemetryPacket(uint8_t* packetBuf) {
@@ -386,30 +370,6 @@ bool PacketProcessing::processFillingStationTelemetryPacket(uint8_t* packetBuf) 
 
 #endif // SERIAL PATH RETIRED
 
-bool PacketProcessing::processGSControlPacketUdp(uint8_t* packetBuf, UdpPacketMetadata udpMetadata) {
-    GSControlUdpPacket* packet = reinterpret_cast<GSControlUdpPacket*>(packetBuf);
-    float timestamp = static_cast<float>(udpMetadata.deviceTsMs);
-    GSControlStatus& status = packet->fields.status;
-    
-    GSDataCenter::AllowDumpSwitchData.isOn = status.bits.isAllowDumpSwitchOn;
-    GSDataCenter::AllowFillSwitchData.isOn = status.bits.isAllowFillSwitchOn;
-    GSDataCenter::ArmIgniterSwitchData.isOn = status.bits.isArmIgniterSwitchOn;
-    GSDataCenter::ArmServoSwitchData.isOn = status.bits.isArmServoSwitchOn;
-    GSDataCenter::EmergencyStopButtonData.isOn = status.bits.isEmergencyStopButtonPressed;
-    GSDataCenter::FireIgniterButtonData.isOn = status.bits.isFireIgniterButtonPressed;
-    GSDataCenter::UnsafeKeySwitchData.isOn = status.bits.isUnsafeKeySwitchPressed;
-    GSDataCenter::ValveStartButtonData.isOn = status.bits.isValveStartButtonPressed;
-
-    GSDataCenter::lastReceivedGSCommandTimestamp_ms = packet->fields.lastReceivedGSCommandTimestamp_ms;
-    GSDataCenter::lastBoardSentCommandCode = packet->fields.lastBoardSentCommandCode;
-    GSDataCenter::lastSentCommandTimestamp_ms = packet->fields.lastSentCommandTimestamp_ms;
-    
-    GSDataCenter::gsControlBoardState = status.bits.state;
-    
-    //TODO
-    //PacketCSVLogging::logGSControlPacket(packet);
-    return true;
-}
 
 #if 0 // SERIAL PATH RETIRED — UDP-only for now; revive when serial returns.
 bool PacketProcessing::processGSControlPacket(uint8_t* packetBuf) {

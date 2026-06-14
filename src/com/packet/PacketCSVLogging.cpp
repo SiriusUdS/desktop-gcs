@@ -1,7 +1,6 @@
 #include "PacketCSVLogging.h"
 
 #include "Logging.h"
-#include "SerialConfig.h"
 
 #include <ctime>
 #include <filesystem>
@@ -14,7 +13,6 @@ void createDataLogDir();
 std::string getCurrentDateTimeForDir();
 void initEngineTelemetryLogger();
 void initFillingStationTelemetryLogger();
-void initGsControlLogger();
 void initEngineStatusLogger();
 void initFillingStationStatusLogger();
 
@@ -22,7 +20,6 @@ std::string dataLogDir;
 
 CSVLogger engineTelemetryLogger;
 CSVLogger fillingStationTelemetryLogger;
-CSVLogger gsControlLogger;
 CSVLogger engineStatusLogger;
 CSVLogger fillingStationStatusLogger;
 
@@ -31,7 +28,6 @@ bool dataLogDirExists{};
 
 bool engineTelemetryHasInit{};
 bool fillingStationTelemetryHasInit{};
-bool gsControlHasInit{};
 bool engineStatusHasInit{};
 bool fillingStationStatusHasInit{};
 } // namespace PacketCSVLogging
@@ -121,35 +117,24 @@ void PacketCSVLogging::logFillingStationTelemetryPacket(float timestamp,
     fillingStationTelemetryLogger.log();
 }
 
-void PacketCSVLogging::logGSControlPacket(const GSControlStatusPacket* packet) {
-    if (!gsControlHasInit) {
-        initGsControlLogger();
-        gsControlHasInit = true;
-    }
-
-    if (!dataLogDirExists) {
-        return;
-    }
-
-    if (!gsControlLogger.fileIsOpen()) {
-        GCS_APP_LOG_WARN("PacketCSVLogging: Can't log GS control packet, log file isn't open.");
-        return;
-    }
-
-    const GSControlStatus& status = packet->fields.status;
-
-    gsControlLogger.setValue(0, static_cast<float>(packet->fields.timestamp_ms));
-    gsControlLogger.setValue(1, static_cast<float>(status.bits.isAllowDumpSwitchOn));
-    gsControlLogger.setValue(2, static_cast<float>(status.bits.isAllowFillSwitchOn));
-    gsControlLogger.setValue(3, static_cast<float>(status.bits.isArmIgniterSwitchOn));
-    gsControlLogger.setValue(4, static_cast<float>(status.bits.isArmServoSwitchOn));
-    gsControlLogger.setValue(5, static_cast<float>(status.bits.isEmergencyStopButtonPressed));
-    gsControlLogger.setValue(6, static_cast<float>(status.bits.isFireIgniterButtonPressed));
-    gsControlLogger.setValue(7, static_cast<float>(status.bits.isValveStartButtonPressed));
-    gsControlLogger.log();
+namespace {
+// Append a single valve's telemetry (state, switch flags, commanded %) to a row,
+// starting at column `col`; returns the next free column.
+size_t logValveInfo(CSVLogger& logger, size_t col, const ValveInfo& valve) {
+    logger.setValue(col++, static_cast<float>(static_cast<uint8_t>(valve.state)));
+    logger.setValue(col++, static_cast<float>(!valve.status.in_transition)); // idle = not moving
+    logger.setValue(col++, static_cast<float>(valve.status.closed_limit_high));
+    logger.setValue(col++, static_cast<float>(valve.status.open_limit_high));
+    logger.setValue(col++, static_cast<float>(valve.current_set_value));
+    return col;
 }
+} // namespace
 
-void PacketCSVLogging::logEngineStatusPacket(const EngineStatusPacket* packet) {
+void PacketCSVLogging::logEngineStatus(float timestamp,
+                                       uint8_t boardState,
+                                       const ValveInfo& nosValve,
+                                       const ValveInfo& ipaValve,
+                                       uint16_t storageError) {
     if (!engineStatusHasInit) {
         initEngineStatusLogger();
         engineStatusHasInit = true;
@@ -160,27 +145,24 @@ void PacketCSVLogging::logEngineStatusPacket(const EngineStatusPacket* packet) {
     }
 
     if (!engineStatusLogger.fileIsOpen()) {
-        GCS_APP_LOG_WARN("PacketCSVLogging: Can't log engine status packet, log file isn't open.");
+        GCS_APP_LOG_WARN("PacketCSVLogging: Can't log engine status, log file isn't open.");
         return;
     }
 
-    const ValveStatus& nosValve = packet->fields.valveStatus[SerialConfig::NOS_VALVE_STATUS_INDEX];
-    const ValveStatus& ipaValve = packet->fields.valveStatus[SerialConfig::IPA_VALVE_STATUS_INDEX];
-
-    engineStatusLogger.setValue(0, static_cast<float>(packet->fields.timestamp_ms));
-    engineStatusLogger.setValue(1, static_cast<float>(packet->fields.igniteTimestamp_ms));
-    engineStatusLogger.setValue(2, static_cast<float>(packet->fields.launchTimestamp_ms));
-    engineStatusLogger.setValue(3, static_cast<float>(nosValve.bits.isIdle));
-    engineStatusLogger.setValue(4, static_cast<float>(nosValve.bits.closedSwitchHigh));
-    engineStatusLogger.setValue(5, static_cast<float>(nosValve.bits.openedSwitchHigh));
-    engineStatusLogger.setValue(6, static_cast<float>(ipaValve.bits.isIdle));
-    engineStatusLogger.setValue(7, static_cast<float>(ipaValve.bits.closedSwitchHigh));
-    engineStatusLogger.setValue(8, static_cast<float>(ipaValve.bits.openedSwitchHigh));
-    engineStatusLogger.setValue(9, static_cast<float>(packet->fields.storageErrorStatus.value));
+    size_t col = 0;
+    engineStatusLogger.setValue(col++, timestamp);
+    engineStatusLogger.setValue(col++, static_cast<float>(boardState));
+    col = logValveInfo(engineStatusLogger, col, nosValve);
+    col = logValveInfo(engineStatusLogger, col, ipaValve);
+    engineStatusLogger.setValue(col++, static_cast<float>(storageError));
     engineStatusLogger.log();
 }
 
-void PacketCSVLogging::logFillingStationStatusPacket(const FillingStationStatusPacket* packet) {
+void PacketCSVLogging::logFillingStationStatus(float timestamp,
+                                               uint8_t boardState,
+                                               const ValveInfo& fillValve,
+                                               const ValveInfo& dumpValve,
+                                               uint16_t storageError) {
     if (!fillingStationStatusHasInit) {
         initFillingStationStatusLogger();
         fillingStationStatusHasInit = true;
@@ -191,21 +173,16 @@ void PacketCSVLogging::logFillingStationStatusPacket(const FillingStationStatusP
     }
 
     if (!fillingStationStatusLogger.fileIsOpen()) {
-        GCS_APP_LOG_WARN("PacketCSVLogging: Can't log filling station status packet, log file isn't open.");
+        GCS_APP_LOG_WARN("PacketCSVLogging: Can't log filling station status, log file isn't open.");
         return;
     }
 
-    const ValveStatus& fillValve = packet->fields.valveStatus[SerialConfig::FILL_VALVE_STATUS_INDEX];
-    const ValveStatus& dumpValve = packet->fields.valveStatus[SerialConfig::DUMP_VALVE_STATUS_INDEX];
-
-    fillingStationStatusLogger.setValue(0, static_cast<float>(packet->fields.timestamp_ms));
-    fillingStationStatusLogger.setValue(1, static_cast<float>(fillValve.bits.isIdle));
-    fillingStationStatusLogger.setValue(2, static_cast<float>(fillValve.bits.closedSwitchHigh));
-    fillingStationStatusLogger.setValue(3, static_cast<float>(fillValve.bits.openedSwitchHigh));
-    fillingStationStatusLogger.setValue(4, static_cast<float>(dumpValve.bits.isIdle));
-    fillingStationStatusLogger.setValue(5, static_cast<float>(dumpValve.bits.closedSwitchHigh));
-    fillingStationStatusLogger.setValue(6, static_cast<float>(dumpValve.bits.openedSwitchHigh));
-    fillingStationStatusLogger.setValue(7, static_cast<float>(packet->fields.storageErrorStatus.value));
+    size_t col = 0;
+    fillingStationStatusLogger.setValue(col++, timestamp);
+    fillingStationStatusLogger.setValue(col++, static_cast<float>(boardState));
+    col = logValveInfo(fillingStationStatusLogger, col, fillValve);
+    col = logValveInfo(fillingStationStatusLogger, col, dumpValve);
+    fillingStationStatusLogger.setValue(col++, static_cast<float>(storageError));
     fillingStationStatusLogger.log();
 }
 
@@ -296,22 +273,6 @@ void PacketCSVLogging::initFillingStationTelemetryLogger() {
     fillingStationTelemetryLogger.addColumn("Tank Load Cell (lb)");
 }
 
-void PacketCSVLogging::initGsControlLogger() {
-    if (!triedCreatingDataLogDir) {
-        createDataLogDir();
-    }
-
-    gsControlLogger.openFile(dataLogDir + "/GSControl.log");
-    gsControlLogger.addColumn("Timestamp");
-    gsControlLogger.addColumn("Allow Dump");
-    gsControlLogger.addColumn("Allow Fill");
-    gsControlLogger.addColumn("Arm Igniter");
-    gsControlLogger.addColumn("Arm Servo");
-    gsControlLogger.addColumn("Emergency Stop");
-    gsControlLogger.addColumn("Fire Igniter");
-    gsControlLogger.addColumn("Valve Start");
-}
-
 void PacketCSVLogging::initEngineStatusLogger() {
     if (!triedCreatingDataLogDir) {
         createDataLogDir();
@@ -319,14 +280,17 @@ void PacketCSVLogging::initEngineStatusLogger() {
 
     engineStatusLogger.openFile(dataLogDir + "/EngineStatus.log");
     engineStatusLogger.addColumn("Timestamp");
-    engineStatusLogger.addColumn("Ignite Timestamp");
-    engineStatusLogger.addColumn("Launch Timestamp");
+    engineStatusLogger.addColumn("Board State");
+    engineStatusLogger.addColumn("NOS Valve State");
     engineStatusLogger.addColumn("NOS Valve Idle");
     engineStatusLogger.addColumn("NOS Valve Closed Switch High");
     engineStatusLogger.addColumn("NOS Valve Opened Switch High");
+    engineStatusLogger.addColumn("NOS Valve Set %");
+    engineStatusLogger.addColumn("IPA Valve State");
     engineStatusLogger.addColumn("IPA Valve Idle");
     engineStatusLogger.addColumn("IPA Valve Closed Switch High");
     engineStatusLogger.addColumn("IPA Valve Opened Switch High");
+    engineStatusLogger.addColumn("IPA Valve Set %");
     engineStatusLogger.addColumn("Storage Error Status");
 }
 
@@ -337,11 +301,16 @@ void PacketCSVLogging::initFillingStationStatusLogger() {
 
     fillingStationStatusLogger.openFile(dataLogDir + "/FillingStationStatus.log");
     fillingStationStatusLogger.addColumn("Timestamp");
+    fillingStationStatusLogger.addColumn("Board State");
+    fillingStationStatusLogger.addColumn("Fill Valve State");
     fillingStationStatusLogger.addColumn("Fill Valve Idle");
     fillingStationStatusLogger.addColumn("Fill Valve Closed Switch High");
     fillingStationStatusLogger.addColumn("Fill Valve Opened Switch High");
+    fillingStationStatusLogger.addColumn("Fill Valve Set %");
+    fillingStationStatusLogger.addColumn("Dump Valve State");
     fillingStationStatusLogger.addColumn("Dump Valve Idle");
     fillingStationStatusLogger.addColumn("Dump Valve Closed Switch High");
     fillingStationStatusLogger.addColumn("Dump Valve Opened Switch High");
+    fillingStationStatusLogger.addColumn("Dump Valve Set %");
     fillingStationStatusLogger.addColumn("Storage Error Status");
 }
