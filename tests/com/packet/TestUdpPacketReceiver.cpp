@@ -87,7 +87,7 @@ TEST_CASE("UdpPacketReceiver should queue and handle multiple packets sequential
     std::vector<uint8_t> payload2 = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
     
     pushUdpPacket(pr, 10, 20, payload1);
-    pushUdpPacket(pr, 30, 40, payload2);
+    pushUdpPacket(pr, 3, 40, payload2); // sender_id is a 4-bit field (max 15)
     
     CHECK(pr.packetAvailable());
     
@@ -108,7 +108,7 @@ TEST_CASE("UdpPacketReceiver should queue and handle multiple packets sequential
     auto meta2 = pr.nextPacketMetadata();
     REQUIRE(meta2.has_value());
     CHECK(meta2->size == 8);
-    CHECK(meta2->deviceID == 30);
+    CHECK(meta2->deviceID == 3);
     
     uint8_t buf2[8] = {0};
     CHECK(pr.getPacket(buf2));

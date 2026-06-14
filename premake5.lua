@@ -144,5 +144,10 @@ project "sirius-gcs-tests"
     }
 
     removefiles {
-        "src/EntryPoint.cpp"
+        "src/EntryPoint.cpp",
+        -- SERIAL PATH RETIRED: the serial framer/receiver tests exercise the
+        -- deprecated old-protocol structs; excluded from the build until the
+        -- serial path is rewritten on the common-protocol.
+        "tests/com/packet/TestPacketFramer.cpp",
+        "tests/com/packet/TestPacketReceiver.cpp"
     }

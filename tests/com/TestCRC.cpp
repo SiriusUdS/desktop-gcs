@@ -1,64 +1,25 @@
 #include "CRC.h"
-#include "GSControl/GSControlErrorStatus.h"
-#include "GSControl/GSControlStatus.h"
-#include "Telecommunication/BoardCommand.h"
-#include "Telecommunication/PacketHeaderVariable.h"
-#include "Telecommunication/TelemetryPacket.h"
 
 #include <doctest.h>
 
-TEST_CASE("CRC should work with engine telemetry packet") {
-    EngineTelemetryPacket packet;
-    packet.fields.header.bits.type = TELEMETRY_TYPE_CODE;
-    packet.fields.header.bits.boardId = ENGINE_BOARD_ID;
-    packet.fields.header.bits.RESERVED = 0;
-    packet.fields.timestamp_ms = 1465975;
+#include <array>
+#include <cstdint>
 
-    uint16_t adcValues[ENGINE_ADC_CHANNEL_AMOUNT] = {3, 2, 2, 2, 2, 2, 2, 2, 121, 180, 92, 800, 4095, 1136, 19, 6};
-    for (size_t i = 0; i < ENGINE_ADC_CHANNEL_AMOUNT; i++) {
-        packet.fields.adcValues[i] = adcValues[i];
-    }
-
-    const uint32_t expectedCRC = 2665198462;
-    const uint32_t computedCRC = CRC::computeCrcSerial(packet.data, sizeof(packet) - sizeof(packet.fields.crc));
-    CHECK(expectedCRC == computedCRC);
+// CRC regression tests over a fixed byte buffer, decoupled from any protocol
+// struct. Reference values match the CRC.h implementation: init 0xFFFFFFFF,
+// polynomial 0x04C11DB7, MSB-first, no final reflection or XOR-out.
+namespace {
+constexpr std::array<uint8_t, 16> kBuffer = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 }
 
-TEST_CASE("CRC should work with GS control status packet") {
-    GSControlStatusPacket packet;
-    packet.fields.header.bits.type = STATUS_TYPE_CODE;
-    packet.fields.header.bits.boardId = GS_CONTROL_BOARD_ID;
-    packet.fields.header.bits.RESERVED = 0;
-    packet.fields.timestamp_ms = 1644465;
+TEST_CASE("computeCrcUDP returns the expected checksum for a known buffer") {
+    std::array<uint8_t, 16> data = kBuffer;
+    CHECK(CRC::computeCrcUDP(data.data(), data.size()) == 0xA97AFF4Du);
+}
 
-    GSControlStatus status;
-    status.bits.RESERVED = 0;
-    status.bits.state = 0;
-    status.bits.isAllowDumpSwitchOn = 1;
-    status.bits.isAllowFillSwitchOn = 1;
-    status.bits.isArmIgniterSwitchOn = 0;
-    status.bits.isArmServoSwitchOn = 1;
-    status.bits.isEmergencyStopButtonPressed = 1;
-    status.bits.isFireIgniterButtonPressed = 0;
-    status.bits.isUnsafeKeySwitchPressed = 0;
-    status.bits.isValveStartButtonPressed = 0;
-    packet.fields.status = status;
-
-    GSControlErrorStatus errorStatus;
-    errorStatus.bits.invalidState = 0;
-    errorStatus.bits.notInitialized = 0;
-    errorStatus.bits.RESERVED = 0;
-    packet.fields.errorStatus = errorStatus;
-
-    packet.fields.lastReceivedGSCommandTimestamp_ms = 1643584;
-    packet.fields.lastBoardSentCommandCode = BOARD_COMMAND_CODE_UNSAFE;
-    packet.fields.lastSentCommandTimestamp_ms = 1644402;
-
-    for (size_t i = 0; i < 16; i++) {
-        packet.fields.padding[i] = 0;
-    }
-
-    const uint32_t expectedCRC = 2077763144;
-    const uint32_t computedCRC = CRC::computeCrcSerial(packet.data, sizeof(packet) - sizeof(packet.fields.crc));
-    CHECK(expectedCRC == computedCRC);
+TEST_CASE("computeCrcSerial returns the expected checksum for a known buffer") {
+    // computeCrcSerial reads the buffer 4 bytes at a time, so the size must be a
+    // multiple of 4.
+    std::array<uint8_t, 16> data = kBuffer;
+    CHECK(CRC::computeCrcSerial(data.data(), data.size()) == 0x081B46CAu);
 }
