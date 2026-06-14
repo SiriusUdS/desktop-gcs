@@ -134,7 +134,8 @@ void PacketCSVLogging::logEngineStatus(float timestamp,
                                        uint8_t boardState,
                                        const ValveInfo& nosValve,
                                        const ValveInfo& ipaValve,
-                                       uint16_t storageError) {
+                                       uint16_t storageError,
+                                       const int32_t adcChannels[GSDataCenterConfig::ADC_CHANNEL_AMOUNT]) {
     if (!engineStatusHasInit) {
         initEngineStatusLogger();
         engineStatusHasInit = true;
@@ -155,6 +156,9 @@ void PacketCSVLogging::logEngineStatus(float timestamp,
     col = logValveInfo(engineStatusLogger, col, nosValve);
     col = logValveInfo(engineStatusLogger, col, ipaValve);
     engineStatusLogger.setValue(col++, static_cast<float>(storageError));
+    for (size_t i = 0; i < GSDataCenterConfig::ADC_CHANNEL_AMOUNT; i++) {
+        engineStatusLogger.setValue(col++, static_cast<float>(adcChannels[i]));
+    }
     engineStatusLogger.log();
 }
 
@@ -162,7 +166,8 @@ void PacketCSVLogging::logFillingStationStatus(float timestamp,
                                                uint8_t boardState,
                                                const ValveInfo& fillValve,
                                                const ValveInfo& dumpValve,
-                                               uint16_t storageError) {
+                                               uint16_t storageError,
+                                               const int32_t adcChannels[GSDataCenterConfig::ADC_CHANNEL_AMOUNT]) {
     if (!fillingStationStatusHasInit) {
         initFillingStationStatusLogger();
         fillingStationStatusHasInit = true;
@@ -183,6 +188,9 @@ void PacketCSVLogging::logFillingStationStatus(float timestamp,
     col = logValveInfo(fillingStationStatusLogger, col, fillValve);
     col = logValveInfo(fillingStationStatusLogger, col, dumpValve);
     fillingStationStatusLogger.setValue(col++, static_cast<float>(storageError));
+    for (size_t i = 0; i < GSDataCenterConfig::ADC_CHANNEL_AMOUNT; i++) {
+        fillingStationStatusLogger.setValue(col++, static_cast<float>(adcChannels[i]));
+    }
     fillingStationStatusLogger.log();
 }
 
@@ -292,6 +300,9 @@ void PacketCSVLogging::initEngineStatusLogger() {
     engineStatusLogger.addColumn("IPA Valve Opened Switch High");
     engineStatusLogger.addColumn("IPA Valve Set %");
     engineStatusLogger.addColumn("Storage Error Status");
+    for (size_t i = 0; i < GSDataCenterConfig::ADC_CHANNEL_AMOUNT; i++) {
+        engineStatusLogger.addColumn("ADC Channel " + std::to_string(i + 1));
+    }
 }
 
 void PacketCSVLogging::initFillingStationStatusLogger() {
@@ -313,4 +324,7 @@ void PacketCSVLogging::initFillingStationStatusLogger() {
     fillingStationStatusLogger.addColumn("Dump Valve Opened Switch High");
     fillingStationStatusLogger.addColumn("Dump Valve Set %");
     fillingStationStatusLogger.addColumn("Storage Error Status");
+    for (size_t i = 0; i < GSDataCenterConfig::ADC_CHANNEL_AMOUNT; i++) {
+        fillingStationStatusLogger.addColumn("ADC Channel " + std::to_string(i + 1));
+    }
 }

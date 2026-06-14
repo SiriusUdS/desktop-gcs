@@ -240,7 +240,8 @@ void decodeEngineState(const SystemStateBase& base, uint8_t boardState) {
                                       boardState,
                                       base.valve_info[static_cast<size_t>(EcuValves::NOS)],
                                       base.valve_info[static_cast<size_t>(EcuValves::IPA)],
-                                      static_cast<uint16_t>(base.storage_info.status.error));
+                                      static_cast<uint16_t>(base.storage_info.status.error),
+                                      base.adc_info.channels);
 }
 
 // Decode one filling-station (FCU) SystemState record into GSDataCenter + the CSV log.
@@ -255,7 +256,8 @@ void decodeFillingStationState(const SystemStateBase& base, uint8_t boardState) 
                                               boardState,
                                               base.valve_info[static_cast<size_t>(FcuValves::Fill)],
                                               base.valve_info[static_cast<size_t>(FcuValves::Dump)],
-                                              static_cast<uint16_t>(base.storage_info.status.error));
+                                              static_cast<uint16_t>(base.storage_info.status.error),
+                                              base.adc_info.channels);
 }
 
 // Decode one low-rate ECU ExtendedSystemState record (just the live control-flag

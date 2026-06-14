@@ -25,6 +25,16 @@ void logFillingStationTelemetryPacket(float timestamp,
 // --- Status logs -----------------------------------------------------------
 // Board state, per-valve telemetry (common-protocol ValveInfo) and storage
 // error, fed from the SystemState decode.
-void logEngineStatus(float timestamp, uint8_t boardState, const ValveInfo& nosValve, const ValveInfo& ipaValve, uint16_t storageError);
-void logFillingStationStatus(float timestamp, uint8_t boardState, const ValveInfo& fillValve, const ValveInfo& dumpValve, uint16_t storageError);
+void logEngineStatus(float timestamp,
+                     uint8_t boardState,
+                     const ValveInfo& nosValve,
+                     const ValveInfo& ipaValve,
+                     uint16_t storageError,
+                     const int32_t adcChannels[GSDataCenterConfig::ADC_CHANNEL_AMOUNT]);
+void logFillingStationStatus(float timestamp,
+                             uint8_t boardState,
+                             const ValveInfo& fillValve,
+                             const ValveInfo& dumpValve,
+                             uint16_t storageError,
+                             const int32_t adcChannels[GSDataCenterConfig::ADC_CHANNEL_AMOUNT]);
 } // namespace PacketCSVLogging
