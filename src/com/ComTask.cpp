@@ -51,9 +51,10 @@ void ComTask::execute() {
     while (!shouldStop) {
         intervalTimer.waitUntilNextInterval();
         ComControl::startComIfNeeded();
+        // Commands take priority: flush any pending command before spending the loop on telemetry.
+        CommandControl::processCommands();
         com->read();
         PacketProcessing::processIncomingPackets();
-        CommandControl::processCommands();
     }
 }
 

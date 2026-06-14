@@ -21,8 +21,8 @@ enum class State {
 };
 
 constexpr size_t MAX_DATA_SIZE = 256;                       ///< Maximum size of the command's data
-constexpr size_t NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND = 20; ///< Each command is sent this many times to improve communication with the boards
-constexpr double TIME_BETWEEN_COMMAND_SENDS_SEC = 0.131;    ///< Wait this much between each command send
+constexpr size_t NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND = 100; ///< Each command is sent this many times to improve communication with the boards
+constexpr double TIME_BETWEEN_COMMAND_SENDS_SEC = 0.010;     ///< Wait this much between each command send (UDP: tight 10 ms cadence)
 
 using SsCommandType = logic::communication::command::CommandType; ///< On-wire (SSOT) command id
 
@@ -77,31 +77,31 @@ size_t buildCommandFrame(uint8_t* out, BoardId target, uint8_t payloadId, const 
 } // namespace
 
 void CommandControl::processCommands() {
-    switch (state) {
-    case State::IDLE:
-        getNextCommand();
-        break;
+    if (state == State::IDLE) {
+        getNextCommand(); // dequeue + set up; transitions to SENDING for a real command (stubs stay IDLE)
+        if (state != State::SENDING) {
+            return;
+        }
+        timesSent = 0;    // new command: transmit its first copy immediately (no extra loop of latency)
+    } else if (lastTimeSentTimer.getElapsedTimeInSeconds() < TIME_BETWEEN_COMMAND_SENDS_SEC) {
+        return;           // mid-resend: wait for the inter-send interval
+    }
 
-    case State::SENDING:
-        if (lastTimeSentTimer.getElapsedTimeInSeconds() < TIME_BETWEEN_COMMAND_SENDS_SEC) {
-            break;
+    lastTimeSentTimer.reset();
+    if (!ComTask::com->write(std::span<const uint8_t>(data, dataSize))) {
+        std::string protocolName = ComTask::com->getProtocolName();
+        GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over {} communication.", protocolName);
+    }
+    timesSent++;
+
+    if (NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND <= timesSent) {
+        state = State::IDLE;
+        if (currentCommand.has_value()) {
+            currentCommand.value()->processed = true;
+            currentCommand.value()->processed.notify_one();
+            currentCommand = std::nullopt;
         }
-        lastTimeSentTimer.reset();
-        if (!ComTask::com->write(std::span<const uint8_t>(data, dataSize))) {
-            std::string protocolName = ComTask::com->getProtocolName();
-            GCS_APP_LOG_ERROR("CommandControl: Couldn't send command over {} communication.", protocolName);
-        }
-        timesSent++;
-        if (NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND <= timesSent) {
-            state = State::IDLE;
-            if (currentCommand.has_value()) {
-                currentCommand.value()->processed = true;
-                currentCommand.value()->processed.notify_one();
-                currentCommand = std::nullopt;
-            }
-            timesSent = 0;
-        }
-        break;
+        timesSent = 0;
     }
 }
 

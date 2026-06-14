@@ -3,7 +3,7 @@
 namespace SerialConfig {
 constexpr size_t MAX_PACKET_SIZE = 64;
 constexpr size_t PACKET_CIRCULAR_BUFFER_SIZE = 10'000;
-constexpr size_t SERIAL_TASK_LOOPS_PER_SECOND = 20;
+constexpr size_t SERIAL_TASK_LOOPS_PER_SECOND = 100; ///< 100 Hz (10 ms) ComTask loop so commands can be flushed every 10 ms
 
 // TODO: Move constants below to another config file?
 constexpr size_t THERMISTOR_ADC_VALUES_INDEX_OFFSET = 0;
