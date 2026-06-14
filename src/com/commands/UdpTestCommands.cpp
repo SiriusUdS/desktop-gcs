@@ -1,28 +1,14 @@
 #include "UdpTestCommands.h"
 
-#include "ComTask.h"
-#include "CRC.h"
-#include "ICom.h"
-#include "UDPTelemetryPacket.h"
-
-#include <ctime>
+#include "Logging.h"
 
 void UdpTestCommands::testValve(uint16_t valueToSend) {
-    ServoPacket* servoPacket = new ServoPacket();
-    
-    servoPacket->frame.status = SERVO_MANUAL; 
-    servoPacket->frame.reserved = 0; 
-    servoPacket->frame.value = valueToSend;
-    
-    servoPacket->frame.header.frame.deviceId = 0x01; // Example device ID
-    servoPacket->frame.header.frame.payloadId = SET_SERVO; // Command to set servo
-    servoPacket->frame.header.frame.payloadLength = sizeof(servoPacket->data) - sizeof(servoPacket->frame.crc);
-    servoPacket->frame.header.frame.deviceState = 0; // Example device state
-    servoPacket->frame.header.frame.reserved = 0;
-    servoPacket->frame.header.frame.deviceTsMs = 0; //Example
-    
-    servoPacket->frame.crc = CRC::computeCrcUDP(servoPacket->data, sizeof(servoPacket->data) - sizeof(servoPacket->frame.crc));
-    ComTask::com->write(servoPacket->data);
-    
-    delete servoPacket;
+    // TODO: rebuild on the common-protocol command SSOT — a PayloadType::Command
+    // frame carrying CommandType::SetValvePosition with a SetValvePositionFrame
+    // payload (valve selector + ValveCommand::SetOpenedPct + value). The old
+    // ServoPacket / SET_SERVO / SERVO_MANUAL constructs are GCS-local, not part of
+    // the protocol submodule (the SSOT), so they were dropped here. This needs a
+    // valve selector — the Test-Over-UDP window currently sends only a value.
+    (void)valueToSend;
+    GCS_APP_LOG_WARN("UdpTestCommands: testValve is disabled pending migration to the common-protocol SetValvePosition command.");
 }

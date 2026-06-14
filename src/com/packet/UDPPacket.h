@@ -1,41 +1,27 @@
-﻿#pragma once
-
+#pragma once
 #include <array>
-#include "UDPDeviceCtrlFlags.h"
+#include <cstdint>
+
+#include "framing/ethernet_header.hpp"
 
 namespace networking {
 
 /**
  * UDP PACKET :
- * UDPPacketHeader (12 bytes)
+ * EthernetHeader (12 bytes)  -- common-protocol framing
  * Payload (length is a multiple of 4 bytes)
  * CRC (4 bytes)
  */
 
-#pragma pack(push, 1)
-
-struct FrameUDPPacketHeader {
-    std::uint32_t deviceId      : 8;
-    std::uint32_t payloadId     : 8;
-    std::uint32_t payloadLength : 16;
-
-    UDPDeviceCtrlFlags deviceCtrlFlags;
-    std::uint8_t  deviceState;
-    std::uint16_t reserved;
-    std::uint32_t deviceTsMs;
-};
-
+// Thin union over common-protocol's EthernetHeader so the receiver can fill the
+// 12 header bytes incrementally, then read typed fields out of `frame`.
 union UDPPacketHeader {
-    FrameUDPPacketHeader frame;
-    std::array<std::uint8_t, sizeof(FrameUDPPacketHeader)> bytes;
-    
+    EthernetHeader frame;
+    std::array<std::uint8_t, sizeof(EthernetHeader)> bytes;
+
     bool isValid() const {
-        return frame.deviceId != 0;
+        return frame.sender_id != 0;
     }
 };
-
-#pragma pack(pop)
-
-static_assert(sizeof(FrameUDPPacketHeader) == 12, "UDPPacketHeader size must be 12 bytes");
 
 } // namespace networking

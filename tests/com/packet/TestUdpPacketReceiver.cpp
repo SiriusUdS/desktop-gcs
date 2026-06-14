@@ -11,15 +11,13 @@ void pushUdpPacket(UdpPacketReceiver& pr, uint8_t deviceId, uint8_t payloadId, s
         header.bytes[i] = 0;
     }
     
-    header.frame.deviceId = deviceId;
-    header.frame.payloadId = payloadId;
-    
-    header.frame.payloadLength = (static_cast<uint16_t>(payload.size()));
-    
-    header.frame.deviceCtrlFlags.flags = 0;
-    header.frame.deviceState = 0;
-    header.frame.reserved = 0;
-    header.frame.deviceTsMs = htonl(12345);
+    header.frame.sender_id = deviceId;
+    header.frame.payload_id = payloadId;
+
+    header.frame.payload_size_bytes = (static_cast<uint16_t>(payload.size()));
+
+    header.frame.sender_state = 0;
+    header.frame.sender_timestamp_ms = 12345; // native little-endian end-to-end; no byte swap
     
     //Header
     for (size_t i = 0; i < sizeof(networking::UDPPacketHeader); i++) {

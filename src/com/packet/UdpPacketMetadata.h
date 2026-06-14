@@ -1,39 +1,40 @@
-﻿#pragma once
+#pragma once
 
 #include "UDPPacket.h"
 #include "UDPDeviceCtrlFlags.h"
 #include <cstdint>
-#include <winsock2.h>
+
+#include "framing/ethernet_header.hpp"
 
 struct UdpPacketMetadata {
     //From original PacketMetadata
     enum class Status {NONE, VALID, INVALID, DUMP_IMMEDIATELY};
-    
+
     Status status{Status::NONE};
     size_t size{};
-    
+
     //UDP purposes
     std::uint32_t deviceID{};
+    std::uint8_t  payloadType{}; // common-protocol PayloadType (Command / Telemetry / Response)
     std::uint32_t payloadID{};
     std::uint32_t deviceTsMs{};
-    
-    UDPDeviceCtrlFlags deviceCtrlFlags{};
+
+    UDPDeviceCtrlFlags deviceCtrlFlags{}; // TODO: no equivalent in EthernetHeader; left default until GS-control telemetry returns
     std::uint8_t deviceState{};
-    
-    
-    static UdpPacketMetadata fromNetworkFrame(const networking::FrameUDPPacketHeader& rawFrame, size_t verifiedPayloadSize) {
+
+
+    static UdpPacketMetadata fromNetworkFrame(const EthernetHeader& rawFrame, size_t verifiedPayloadSize) {
         UdpPacketMetadata cleanData;
-        
+
         cleanData.status = Status::VALID;
         cleanData.size = verifiedPayloadSize;
-        
-        cleanData.deviceID = rawFrame.deviceId;
-        cleanData.payloadID = rawFrame.payloadId;
-        
-        cleanData.deviceCtrlFlags = rawFrame.deviceCtrlFlags;
-        cleanData.deviceState = rawFrame.deviceState;
-        
-        cleanData.deviceTsMs = ntohl(rawFrame.deviceTsMs);
+
+        cleanData.deviceID = rawFrame.sender_id;
+        cleanData.payloadType = rawFrame.payload_type;
+        cleanData.payloadID = rawFrame.payload_id;
+
+        cleanData.deviceState = rawFrame.sender_state;
+        cleanData.deviceTsMs = rawFrame.sender_timestamp_ms; // native little-endian end-to-end in the new protocol; no ntohl
         return cleanData;
     }
 };

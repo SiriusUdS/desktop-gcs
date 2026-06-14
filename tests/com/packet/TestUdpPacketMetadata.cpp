@@ -5,17 +5,17 @@
 #include <winsock2.h>
 
 TEST_CASE("UdpPacketMetadata should correctly parse network endianness") {
-    networking::FrameUDPPacketHeader rawFrame;
-    
-    for (int i = 0; i < sizeof(networking::FrameUDPPacketHeader); i++) {
+    EthernetHeader rawFrame;
+
+    for (int i = 0; i < sizeof(EthernetHeader); i++) {
         ((uint8_t*)&rawFrame)[i] = 0;
     }
-    
-    rawFrame.deviceId = 1;
-    rawFrame.payloadId = 1;
-    
+
+    rawFrame.sender_id = 1;
+    rawFrame.payload_id = 1;
+
     uint32_t expectedTime = 987654321;
-    rawFrame.deviceTsMs = htonl(expectedTime);
+    rawFrame.sender_timestamp_ms = expectedTime; // native little-endian end-to-end; no byte swap
     
     UdpPacketMetadata meta = UdpPacketMetadata::fromNetworkFrame(rawFrame, 16);
     

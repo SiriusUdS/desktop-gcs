@@ -24,7 +24,7 @@ void UdpPacketReceiver::receiveByte(uint8_t byte, bool isTesting = false) {
         headerBuffer.bytes[currentByteCount++] = byte;
 
         if (currentByteCount == sizeof(networking::UDPPacketHeader)) {
-            expectedPayloadLength = (headerBuffer.frame.payloadLength); //Switch bcs Network use MSB
+            expectedPayloadLength = headerBuffer.frame.payload_size_bytes;
 
             tempPayloadBuffer.clear();
             tempPayloadBuffer.reserve(expectedPayloadLength);

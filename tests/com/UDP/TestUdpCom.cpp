@@ -20,10 +20,10 @@ TEST_CASE("UdpCom should successfully bind, read and process a UDP packet from l
         header.bytes[i] = 0;
     }
     
-    header.frame.deviceTsMs = 1;
-    header.frame.payloadId = 2;
-    header.frame.payloadLength = (static_cast<uint16_t>(payload.size()));
-    header.frame.deviceTsMs = (12345);
+    header.frame.sender_id = 1;
+    header.frame.payload_id = 2;
+    header.frame.payload_size_bytes = (static_cast<uint16_t>(payload.size()));
+    header.frame.sender_timestamp_ms = (12345);
     
     for (size_t i = 0; i < sizeof(header); i++) {
         networkBuffer.push_back(header.bytes[i]);
