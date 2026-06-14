@@ -12,7 +12,6 @@ class BoardComStateMonitor;
 
 class IntervalTimer;
 class PacketRateMonitor;
-class PacketReceiver;
 class ICom;
 class UdpPacketReceiver;
 
@@ -33,7 +32,6 @@ extern PacketRateMonitor fillingStationTelemetryPacketRateMonitor;
 extern PacketRateMonitor gsControlPacketRateMonitor;
 extern PacketRateMonitor engineStatusPacketRateMonitor;
 extern PacketRateMonitor fillingStationStatusPacketRateMonitor;
-extern PacketReceiver packetReceiver;
 extern UdpPacketReceiver udpPacketReceiver;
 extern BoardComStateMonitor motorBoardComStateMonitor;
 extern BoardComStateMonitor fillingStationBoardComStateMonitor;

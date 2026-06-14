@@ -6,7 +6,6 @@
 #include "ICom.h"
 #include <sockpp/inet_address.h>
 #include "PacketRateMonitor.h"
-#include "PacketReceiver.h"
 #include <sockpp/socket.h>
 #include <string>
 #include "Timer.h"

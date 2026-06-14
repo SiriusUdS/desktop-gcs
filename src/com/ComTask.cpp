@@ -7,7 +7,6 @@
 #include "IntervalTimer.h"
 #include "PacketProcessing.h"
 #include "PacketRateMonitor.h"
-#include "PacketReceiver.h"
 #include "SerialConfig.h"
 #include "UdpCom.h"
 #include "UdpPacketReceiver.h"
@@ -19,7 +18,6 @@ PacketRateMonitor fillingStationTelemetryPacketRateMonitor;
 PacketRateMonitor gsControlPacketRateMonitor;
 PacketRateMonitor engineStatusPacketRateMonitor;
 PacketRateMonitor fillingStationStatusPacketRateMonitor;
-PacketReceiver packetReceiver;
 UdpPacketReceiver udpPacketReceiver;
 BoardComStateMonitor motorBoardComStateMonitor;
 BoardComStateMonitor fillingStationBoardComStateMonitor;

@@ -63,6 +63,16 @@ workspace "sirius-gcs"
         "external/common-protocol/**.hpp",
     }
 
+    -- SERIAL PATH RETIRED: exclude the serial transport / framer / receiver and
+    -- the serial diagnostics window from the build. They depend on the deprecated
+    -- old-protocol structs; preserved on disk until the serial path is rewritten.
+    removefiles {
+        "src/com/serial/SerialCom.cpp",
+        "src/com/packet/PacketFramer.cpp",
+        "src/com/packet/PacketReceiver.cpp",
+        "src/ui/windows/SerialComWindow.cpp",
+    }
+
     pchheader "pch.h"
     pchsource "src/pch.cpp"
     forceincludes { "pch.h" }

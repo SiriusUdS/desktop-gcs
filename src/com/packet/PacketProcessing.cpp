@@ -8,7 +8,6 @@
 #include "Logging.h"
 #include "PacketCSVLogging.h"
 #include "PacketRateMonitor.h"
-#include "PacketReceiver.h"
 #include "PressureTransducer.h"
 #include "SensorPlotData.h"
 #include "SerialConfig.h"
