@@ -63,6 +63,10 @@ workspace "sirius-gcs"
         "external/common-protocol/**.hpp",
     }
 
+    pchheader "pch.h"
+    pchsource "src/pch.cpp"
+    forceincludes { "pch.h" }
+
     filter "configurations:Debug"
         symbols "On"
 
