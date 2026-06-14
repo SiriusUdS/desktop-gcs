@@ -63,10 +63,11 @@ TEST_CASE("UdpCom should successfully bind, read and process a UDP packet from l
 
 TEST_CASE("UdpCom should write data to the destination address") {
     UdpCom com;
-    com.start();
+    // Target loopback explicitly so the test is independent of the production default dest IP.
+    com.openConnectionTo("127.0.0.1", UdpConfig::defaultDestPort, UdpConfig::defaultReceivePort);
     com.setIsTest(true);
     REQUIRE(com.comOpened());
-    
+
     sockpp::udp_socket receiver;
     receiver.bind(sockpp::inet_address("0.0.0.0", UdpConfig::defaultDestPort));
     
