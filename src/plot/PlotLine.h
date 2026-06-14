@@ -8,7 +8,7 @@ class PlotLine {
 public:
     PlotLine(const PlotData& data, const PlotStyle& style);
 
-    void plot(bool showCompressed = false) const;
+    void plot(bool showCompressed = false, bool hidden = false) const;
     const PlotData& getData() const;
     const PlotStyle& getStyle() const;
 

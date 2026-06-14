@@ -8,8 +8,9 @@
 PlotLine::PlotLine(const PlotData& data, const PlotStyle& style) : data(data), style(style) {
 }
 
-void PlotLine::plot(bool showCompressed) const {
+void PlotLine::plot(bool showCompressed, bool hidden) const {
     ImPlot::SetNextLineStyle(style.color.resolve(), style.weight);
+    ImPlot::HideNextItem(hidden, ImPlotCond_Once);
     if (showCompressed) {
         ImPlot::PlotLine(style.name,
                          data.getTimeline().compressed().data(),
