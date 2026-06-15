@@ -168,7 +168,7 @@ void PrefillWindow::renderImpl() {
         ImPlot::SetupAxis(weightAxis, "Weight (lb)");
 
         ImPlot::SetAxis(adcValueAxis);
-        tankLoadCellADCPlotLine.plot(IniParams::compressPlots.currentValue);
+        tankLoadCellADCPlotLine.plot(IniParams::compressPlots.currentValue, true);
 
         ImPlot::SetAxis(weightAxis);
         tankLoadCellPlotLine.plot(IniParams::compressPlots.currentValue);
@@ -193,8 +193,15 @@ void PrefillWindow::renderImpl() {
     SensorPlotData& d1 = GSDataCenter::Thermistor_Motor_PlotData.tank();
     SensorPlotData& d2 = GSDataCenter::PressureSensor_Motor_PlotData.tank();
     static float t = 0.0f;
-    tankLoadCellData.addData(t, t, t);
-    motorLoadCellData.addData(t, t, t);
+    const float h = 5000.0f;
+    const float sqrt_h = sqrt(h);
+    const float duration = 200000.0f;
+    
+    float value = h - pow(t * sqrt_h * 2 / duration - sqrt_h, 2.0f);
+    value = value < 0.0f ? 0.0f : value;
+
+    tankLoadCellData.addData(value, value, t);
+    motorLoadCellData.addData(value, value, t);
     d1.addData(t, t, t);
     d2.addData(t, t, t);
     t += 100.0f;

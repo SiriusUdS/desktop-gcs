@@ -47,7 +47,7 @@ void PrelaunchWindow::renderImpl() {
         ImPlot::SetupAxis(weightAxis, "Weight (lb)");
 
         ImPlot::SetAxis(adcValueAxis);
-        tankLoadCellADCPlotLine.plot(IniParams::compressPlots.currentValue);
+        tankLoadCellADCPlotLine.plot(IniParams::compressPlots.currentValue, true);
 
         ImPlot::SetAxis(weightAxis);
         tankLoadCellPlotLine.plot(IniParams::compressPlots.currentValue);
