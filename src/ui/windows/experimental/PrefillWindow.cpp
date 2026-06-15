@@ -45,18 +45,6 @@ void PrefillWindow::renderImpl() {
     case SensorTestSequencer::TestType::DUMP_VALVE:
         ImGui::Text("Dump Valve");
         break;
-    case SensorTestSequencer::TestType::NOS_HEATPAD:
-        ImGui::Text("NOS Heat Pad");
-        break;
-    case SensorTestSequencer::TestType::IPA_HEATPAD:
-        ImGui::Text("IPA Heat Pad");
-        break;
-    case SensorTestSequencer::TestType::FILL_HEATPAD:
-        ImGui::Text("Fill Heat Pad");
-        break;
-    case SensorTestSequencer::TestType::DUMP_HEATPAD:
-        ImGui::Text("Dump Heat Pad");
-        break;
     default:
         ImGui::Text("None");
         break;
@@ -72,12 +60,6 @@ void PrefillWindow::renderImpl() {
     case SensorTestSequencer::TestAction::CLOSE_VALVE:
         ImGui::Text("Close Valve");
         break;
-    case SensorTestSequencer::TestAction::START_HEATPAD:
-        ImGui::Text("Start Heat Pad");
-        break;
-    case SensorTestSequencer::TestAction::STOP_HEATPAD:
-        ImGui::Text("Stop Heat Pad");
-        break;
     default:
         ImGui::Text("None");
         break;
@@ -85,9 +67,8 @@ void PrefillWindow::renderImpl() {
 
     ImGui::BeginDisabled(sensorTestSequencer.isBusy());
 
-    if (ImGui::BeginTable("PrefillTestTable", 2)) {
+    if (ImGui::BeginTable("PrefillTestTable", 1)) {
         ImGui::TableSetupColumn("Valve");
-        ImGui::TableSetupColumn("Heat Pad");
 
         const ImVec2 buttonSize = {-1.0f, 0.0f};
 
@@ -97,20 +78,11 @@ void PrefillWindow::renderImpl() {
             sensorTestSequencer.testNOSValve();
         }
 
-        ImGui::TableSetColumnIndex(1);
-        if (ImGui::Button("Test NOS Heat Pad", buttonSize)) {
-            sensorTestSequencer.testNOSHeatPad();
-        }
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
         if (ImGui::Button("Test IPA Valve", buttonSize)) {
             sensorTestSequencer.testIPAValve();
-        }
-
-        ImGui::TableSetColumnIndex(1);
-        if (ImGui::Button("Test IPA Heat Pad", buttonSize)) {
-            sensorTestSequencer.testIPAHeatPad();
         }
 
         ImGui::TableNextRow();
@@ -120,21 +92,11 @@ void PrefillWindow::renderImpl() {
             sensorTestSequencer.testFillValve();
         }
 
-        ImGui::TableSetColumnIndex(1);
-        if (ImGui::Button("Test Fill Heat Pad", buttonSize)) {
-            sensorTestSequencer.testFillHeatPad();
-        }
-
         ImGui::TableNextRow();
 
         ImGui::TableSetColumnIndex(0);
         if (ImGui::Button("Test Dump Valve", buttonSize)) {
             sensorTestSequencer.testDumpValve();
-        }
-
-        ImGui::TableSetColumnIndex(1);
-        if (ImGui::Button("Test Dump Heat Pad", buttonSize)) {
-            sensorTestSequencer.testDumpHeatPad();
         }
 
         ImGui::EndTable();
