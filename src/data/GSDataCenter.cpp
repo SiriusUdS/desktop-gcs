@@ -13,6 +13,7 @@ LoadCellFillingStationPlotData LoadCell_FillingStation_PlotData;
 ThermocoupleFillingStationPlotData Thermocouple_FillingStation_PlotData;
 
 PlotData NOSTankMass_PlotData(Units::TimeUnit::Seconds, Units::WeightUnit::Pounds); // TODO What unit is this provided in
+PlotData TankMass_PlotData(Units::TimeUnit::Seconds, Units::WeightUnit::Pounds); // TODO What unit is this provided in
 PlotData TankGasLeft_perc_PlotData(Units::TimeUnit::Seconds, Units::QuantityUnit::Percentage); // TODO What unit is this provided in
 
 SwitchData AllowDumpSwitchData;

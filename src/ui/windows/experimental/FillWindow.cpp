@@ -18,13 +18,13 @@
 const char* const FillWindow::name = "Fill";
 
 FillWindow::FillWindow()
-    : tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
-                           PlotStyle("Tank Load Cell", ThemedColors::PlotLine::blue)},
-      tankTransducerPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getValuePlotData(), // TODO: Is this correct index?
-                             PlotStyle("Tank Pressure", ThemedColors::PlotLine::red)},
-      tankTempPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.t1().getValuePlotData(), // TODO: Is this correct index?
-                       PlotStyle("Tank Temperature", ThemedColors::PlotLine::green)},
-      tankMassPlotLine{GSDataCenter::NOSTankMass_PlotData, PlotStyle("Tank Mass", ThemedColors::PlotLine::yellow)} {
+    : tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(), PlotStyle("Tank Load Cell", ThemedColors::PlotLine::blue)}, 
+      tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(), PlotStyle("Tank Load Cell ADC", ThemedColors::PlotLine::blue)},
+      tankTransducerPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getValuePlotData(), PlotStyle("Tank Pressure", ThemedColors::PlotLine::red)},
+      tankTransducerADCPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getAdcPlotData(), PlotStyle("Tank Pressure ADC", ThemedColors::PlotLine::red)},
+      tankTempPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.t1().getValuePlotData(), PlotStyle("Tank Temperature", ThemedColors::PlotLine::green)},
+      tankTempADCPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.t1().getAdcPlotData(), PlotStyle("Tank Temperature ADC", ThemedColors::PlotLine::green)},
+      tankMassPlotLine{GSDataCenter::TankMass_PlotData, PlotStyle("Tank Mass", ThemedColors::PlotLine::yellow)} {
 }
 
 const char* FillWindow::getName() const {
@@ -36,6 +36,7 @@ void FillWindow::renderImpl() {
     constexpr Units::WeightUnit WEIGHT_UNIT = Units::DEFAULT_WEIGHT_UNIT;
     constexpr Units::PressureUnit PRESSURE_UNIT = Units::DEFAULT_PRESSURE_UNIT;
     constexpr Units::TemperatureUnit TEMPERATURE_UNIT = Units::DEFAULT_TEMPERATURE_UNIT;
+    constexpr Units::Unit ADC_UNIT = Units::QuantityUnit::Scalar;
     
 
     const bool nosAndIpaValveSliderEnabled = GSDataCenter::motorBoardState == static_cast<uint8_t>(logic::control::State::Unsafe) && GSDataCenter::ArmServoSwitchData.isOn
@@ -48,7 +49,7 @@ void FillWindow::renderImpl() {
     ImGui::SeparatorText("Tank Data Plot");
 
     ImPlot::SetNextAxesToFit();
-    if (ImPlot::BeginPlot("Tank Data", {-1.0f, 800.0f}, ImPlotFlags_NoInputs)) {
+    if (ImPlot::BeginPlot("Tank Data", {-1.0f, 400.0f}, ImPlotFlags_NoInputs)) {
         constexpr ImAxis weightAxis = ImAxis_Y1;
         constexpr ImAxis pressureAxis = ImAxis_Y2;
         constexpr ImAxis tempAxis = ImAxis_Y3;
@@ -67,6 +68,21 @@ void FillWindow::renderImpl() {
 
         ImPlot::SetAxis(tempAxis);
         tankTempPlotLine.plot(TIME_UNIT, TEMPERATURE_UNIT, IniParams::compressPlots.currentValue);
+
+        ImPlot::EndPlot();
+    }
+
+    if (ImPlot::BeginPlot("Tank Data ADC", {-1.0f, 400.0f}, ImPlotFlags_NoInputs)) {
+        constexpr ImAxis weightAxis = ImAxis_Y1;
+        constexpr ImAxis adcAxis = ImAxis_Y2;
+
+        ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT));
+        ImPlot::SetupAxis(adcAxis, Units::as_label(ADC_UNIT));
+
+        ImPlot::SetAxis(adcAxis);
+        tankLoadCellADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
+        tankTransducerADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
+        tankTempADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
 
         ImPlot::EndPlot();
     }

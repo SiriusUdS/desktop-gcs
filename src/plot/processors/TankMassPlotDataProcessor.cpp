@@ -5,6 +5,8 @@
 #include "SensorPlotData.h"
 #include "TankMass.h"
 
+#include "AppState.h"
+
 TankMassPlotDataProcessor::TankMassPlotDataProcessor()
     : PlotDataProcessor({&GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData(),
                          &GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData()}) {
@@ -32,6 +34,9 @@ void TankMassPlotDataProcessor::processNewData() {
     const double tankPressure_psi = static_cast<double>(tankPressurePlotDataUpdate.value);
     const float tankMass = TankMass::getNOSTankMass_lb(tankTemperature_C, tankPressure_psi);
 
+    const float postIPAADC = AppState::TankLoadCell::postIPAADCValue.value;
+    const float postIPA_lb = postIPAADC; // # TODO Convert ADC value to lb
+
     // Get latest timestamp for new tank mass data point
     float latestX = 0.0f;
     for (const auto& [_, update] : plotDataUpdateMap) {
@@ -44,5 +49,6 @@ void TankMassPlotDataProcessor::processNewData() {
         GCS_APP_LOG_ERROR("TankMassPlotDataProcessor: Computed tank mass is \"inf\".");
     } else {
         GSDataCenter::NOSTankMass_PlotData.addData(latestX, tankMass);
+        GSDataCenter::TankMass_PlotData.addData(latestX, tankMass - postIPA_lb);
     }
 }

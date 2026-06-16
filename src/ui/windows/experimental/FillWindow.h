@@ -30,8 +30,11 @@ private:
     void addDisabledTooltip(const char* tooltipDisabled, bool inputEnabled) const;
 
     PlotLine tankLoadCellPlotLine;
+    PlotLine tankLoadCellADCPlotLine;
     PlotLine tankTransducerPlotLine;
+    PlotLine tankTransducerADCPlotLine;
     PlotLine tankTempPlotLine;
+    PlotLine tankTempADCPlotLine;
     PlotLine tankMassPlotLine;
 
     PercentageInput fillValveSlider;

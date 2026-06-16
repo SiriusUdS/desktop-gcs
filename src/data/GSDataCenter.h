@@ -17,6 +17,7 @@ extern LoadCellFillingStationPlotData LoadCell_FillingStation_PlotData;
 extern ThermocoupleFillingStationPlotData Thermocouple_FillingStation_PlotData;
 
 extern PlotData NOSTankMass_PlotData;
+extern PlotData TankMass_PlotData;
 extern PlotData TankGasLeft_perc_PlotData;
 
 extern SwitchData AllowDumpSwitchData;
