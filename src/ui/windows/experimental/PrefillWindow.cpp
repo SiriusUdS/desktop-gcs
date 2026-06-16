@@ -111,7 +111,7 @@ void PrefillWindow::renderImpl() {
 
     ImGui::EndDisabled();
 
-    ImGui::SeparatorText("Calibration");
+    ImGui::SeparatorText("Calibration GS");
 
     ImGui::Text("Tank Load Cell ADC Values");
 
