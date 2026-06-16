@@ -13,6 +13,7 @@
 
 #include <imgui.h>
 #include <implot.h>
+#include <cstdint>
 
 const char* const FillWindow::name = "Fill";
 
@@ -81,12 +82,14 @@ void FillWindow::renderImpl() {
         renderPercentageInputRow("Fill Valve",
                                  fillValveSlider,
                                  CommandType::FillValve,
+                                 {10, 25, 50, 75},
                                  "To control the FILL valve -> [UNSAFE, FILL] need to be ON.",
                                  GSDataCenter::AllowFillSwitchData.isOn);
 
         renderPercentageInputRow("Dump Valve",
                                  dumpValveSlider,
                                  CommandType::DumpValve,
+                                 {10, 25, 50, 75},
                                  "To control the DUMP valve -> [UNSAFE, DUMP] need to be ON.",
                                  GSDataCenter::AllowDumpSwitchData.isOn);
 
@@ -94,6 +97,7 @@ void FillWindow::renderImpl() {
         renderPercentageInputRow("Solenoid Valve",
                                  dumpHeatPadSlider,
                                  CommandType::DumpHeatPad,
+                                 {},
                                  "To control the solenoid valve -> [UNSAFE] needs to be ON.",
                                  solenoidValveSliderEnabled);
         ImGui::EndTable();
@@ -123,6 +127,7 @@ void FillWindow::renderImpl() {
 void FillWindow::renderPercentageInputRow(const char* name,
                                           PercentageInput& input,
                                           CommandType commandType,
+                                          std::initializer_list<uint32_t> presets,
                                           const char* tooltipDisabled,
                                           bool inputEnabled) const {
     ImGui::BeginDisabled(!inputEnabled);
@@ -153,6 +158,22 @@ void FillWindow::renderPercentageInputRow(const char* name,
         CommandControl::sendCommand(commandType, input.openedValue_perc);
     }
     addDisabledTooltip(tooltipDisabled, inputEnabled);
+    
+    for (int i = 0; i < presets.size(); i++) {
+        uint32_t preset = *(presets.begin() + i);
+
+        if (i != 0)
+            ImGui::SameLine();
+        else
+            ImGui::TableSetColumnIndex(3);
+            
+        std::string buttonStr = std::to_string(preset) + "%##" + name;
+        if (ImGui::Button(buttonStr.c_str())) {
+            input.openedValue_perc = preset;
+            input.lastSetOpenedValue_perc = input.openedValue_perc;
+            CommandControl::sendCommand(commandType, input.openedValue_perc);
+        }
+    } 
 
     ImGui::EndDisabled();
 }

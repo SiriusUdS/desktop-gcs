@@ -3,6 +3,7 @@
 #include "CommandTypes.h"
 #include "PlotLine.h"
 #include "UIWindow.h"
+#include <initializer_list>
 
 class FillWindow : public UIWindow {
 public:
@@ -22,8 +23,10 @@ private:
     void renderPercentageInputRow(const char* name,
                                   PercentageInput& input,
                                   CommandType commandType,
+                                  std::initializer_list<uint32_t> presets = {},
                                   const char* tooltipDisabled = "",
                                   bool inputEnabled = true) const;
+    
     void addDisabledTooltip(const char* tooltipDisabled, bool inputEnabled) const;
 
     PlotLine tankLoadCellPlotLine;
