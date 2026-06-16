@@ -31,8 +31,6 @@ private:
     PlotLine tankTempPlotLine;
     PlotLine tankMassPlotLine;
 
-    PercentageInput nosValveSlider;
-    PercentageInput ipaValveSlider;
     PercentageInput fillValveSlider;
     PercentageInput dumpValveSlider;
     PercentageInput nosHeatPadSlider;
