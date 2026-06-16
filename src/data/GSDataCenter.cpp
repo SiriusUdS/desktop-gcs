@@ -2,6 +2,7 @@
 
 #include "SwitchData.h"
 #include "ValveData.h"
+#include "units.h"
 
 namespace GSDataCenter {
 ThermistorMotorPlotData Thermistor_Motor_PlotData;
@@ -11,8 +12,8 @@ PressureSensorFillingStationPlotData PressureSensor_FillingStation_PlotData;
 LoadCellFillingStationPlotData LoadCell_FillingStation_PlotData;
 ThermocoupleFillingStationPlotData Thermocouple_FillingStation_PlotData;
 
-PlotData NOSTankMass_PlotData;
-PlotData TankGasLeft_perc_PlotData;
+PlotData NOSTankMass_PlotData(Units::TimeUnit::Seconds, Units::WeightUnit::Pounds); // TODO What unit is this provided in
+PlotData TankGasLeft_perc_PlotData(Units::TimeUnit::Seconds, Units::QuantityUnit::Percentage); // TODO What unit is this provided in
 
 SwitchData AllowDumpSwitchData;
 SwitchData AllowFillSwitchData;

@@ -2,6 +2,7 @@
 
 #include "DataSelector.h"
 #include "PlotStyle.h"
+#include "units.h"
 
 class PlotData;
 
@@ -10,7 +11,7 @@ public:
     PlotDataView(const PlotData& data, const PlotStyle& style);
     virtual ~PlotDataView() = default;
 
-    void plot(bool showCompressedData = false);
+    void plot(Units::Unit time_unit, Units::Unit unit, bool showCompressedData = false, bool hidden = false);
 
 protected:
     virtual DataSelector::Window getDataSelectorWindow(bool getCompressedData, const std::vector<float>& timeline) = 0;

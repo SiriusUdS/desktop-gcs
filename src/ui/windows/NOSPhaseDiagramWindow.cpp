@@ -3,6 +3,7 @@
 #include "DataSeries.h"
 #include "GSDataCenter.h"
 #include "VaporPressure.h"
+#include "units.h"
 
 #include <implot.h>
 
@@ -19,9 +20,10 @@ void NOSPhaseDiagramWindow::init() {
     bottomLine.clear();
 
     for (float temp_C = minTempAntoineEquation_C; temp_C <= maxTempAntoineEquation_C; temp_C += .1f) {
-        const float pressure_psi = static_cast<float>(VaporPressure::vaporPressureNOS_psi(temp_C));
-        vaporizationCurveTemperatures.push_back(temp_C);
-        vaporizationCurvePressures.push_back(pressure_psi);
+        const float pressure = Units::convert(static_cast<float>(VaporPressure::vaporPressureNOS_psi(temp_C)), Units::PressureUnit::Psi, Units::DEFAULT_PRESSURE_UNIT);
+        const float temperature = Units::convert(temp_C, Units::TemperatureUnit::Celcius, Units::DEFAULT_TEMPERATURE_UNIT);
+        vaporizationCurveTemperatures.push_back(temperature);
+        vaporizationCurvePressures.push_back(pressure);
     }
 
     topLine.resize(static_cast<int>(vaporizationCurveTemperatures.size()));
@@ -42,7 +44,7 @@ const char* NOSPhaseDiagramWindow::getName() const {
 void NOSPhaseDiagramWindow::renderImpl() {
     ImPlot::SetNextAxesToFit();
     if (ImPlot::BeginPlot("NOS Phase Diagram", ImGui::GetContentRegionAvail(), ImPlotFlags_NoInputs)) {
-        ImPlot::SetupAxes("Temperature (C)", "Pressure (psi)");
+        ImPlot::SetupAxes(Units::as_label(Units::DEFAULT_TEMPERATURE_UNIT), Units::as_label(Units::DEFAULT_PRESSURE_UNIT));
 
         ImPlot::PushStyleColor(ImPlotCol_Fill, IM_COL32(40, 120, 255, 80)); // Blue
         ImPlot::PlotShaded("Liquid phase",

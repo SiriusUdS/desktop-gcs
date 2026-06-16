@@ -4,10 +4,20 @@
 #include "SensorPlotData.h"
 
 #include <array>
+#include "units.h"
 
 // clang-format off
 struct ThermistorMotorPlotData {
-    std::array<SensorPlotData, GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD> data;
+    std::array<SensorPlotData, GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD> data{
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius)
+    };
 
     SensorPlotData& t1() { return data[0]; }
     SensorPlotData& t2() { return data[1]; }
@@ -20,14 +30,26 @@ struct ThermistorMotorPlotData {
 };
 
 struct PressureSensorMotorPlotData {
-    std::array<SensorPlotData, GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD> data;
+    std::array<SensorPlotData, GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD> data{
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::PressureUnit::Psi),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::PressureUnit::Psi)
+    };
 
     SensorPlotData& tank() { return data[0]; }
     SensorPlotData& p2() { return data[1]; }
 };
 
 struct ThermistorFillingStationPlotData {
-    std::array<SensorPlotData, GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD> data;
+    std::array<SensorPlotData, GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD> data{
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius)
+    };
 
     SensorPlotData& t1() { return data[0]; }
     SensorPlotData& t2() { return data[1]; }
@@ -40,21 +62,32 @@ struct ThermistorFillingStationPlotData {
 };
 
 struct PressureSensorFillingStationPlotData {
-    std::array<SensorPlotData, GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD> data;
+    std::array<SensorPlotData, GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD> data{
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::PressureUnit::Psi),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::PressureUnit::Psi)
+    };
 
     SensorPlotData& p1() { return data[0]; }
     SensorPlotData& p2() { return data[1]; }
 };
 
 struct LoadCellFillingStationPlotData {
-    std::array<SensorPlotData, GSDataCenterConfig::LOAD_CELL_AMOUNT> data;
+    std::array<SensorPlotData, GSDataCenterConfig::LOAD_CELL_AMOUNT> data{
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::WeightUnit::Pounds),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::WeightUnit::Pounds)
+    };
 
     SensorPlotData& motor() { return data[0]; }
     SensorPlotData& tank() { return data[1]; }
 };
 
 struct ThermocoupleFillingStationPlotData {
-    std::array<SensorPlotData, GSDataCenterConfig::THERMOCOUPLE_AMOUNT> data;
+    std::array<SensorPlotData, GSDataCenterConfig::THERMOCOUPLE_AMOUNT> data{
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+        SensorPlotData(Units::TimeUnit::Milliseconds, Units::TemperatureUnit::Celcius),
+    };
 
     SensorPlotData& tc1() { return data[0]; }
     SensorPlotData& tc2() { return data[1]; }

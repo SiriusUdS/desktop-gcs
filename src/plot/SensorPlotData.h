@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PlotData.h"
+#include "units.h"
 
 class PlotDataUpdateListener;
 struct ThemedColor;
@@ -11,6 +12,7 @@ struct ThemedColor;
  */
 class SensorPlotData {
 public:
+    SensorPlotData(Units::TimeUnit time_unit, Units::Unit unit, Units::Unit adc_unit = Units::QuantityUnit::Scalar);
     void addData(float adc, float value, float timestamp);
     void addListenerAdc(PlotDataUpdateListener* listener);
     void addListenerValue(PlotDataUpdateListener* listener);

@@ -21,7 +21,7 @@ const DataSeries& PlotData::LockedView::getValues() const {
 /**
  * @brief Constructs a plot data object
  */
-PlotData::PlotData() : timeline(TARGET_COMPRESSED_DATA_SIZE), values(TARGET_COMPRESSED_DATA_SIZE) {
+PlotData::PlotData(Units::TimeUnit time_unit, Units::Unit unit) : timeline(TARGET_COMPRESSED_DATA_SIZE, time_unit), values(TARGET_COMPRESSED_DATA_SIZE, unit) {
 }
 
 /**

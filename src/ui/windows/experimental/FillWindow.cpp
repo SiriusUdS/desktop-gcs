@@ -7,6 +7,7 @@
 #include "SensorPlotData.h"
 #include "SwitchData.h"
 #include "ThemedColors.h"
+#include "units.h"
 
 #include "system/state.hpp"
 
@@ -30,6 +31,12 @@ const char* FillWindow::getName() const {
 }
 
 void FillWindow::renderImpl() {
+    constexpr Units::TimeUnit TIME_UNIT = Units::TimeUnit::Seconds;
+    constexpr Units::WeightUnit WEIGHT_UNIT = Units::DEFAULT_WEIGHT_UNIT;
+    constexpr Units::PressureUnit PRESSURE_UNIT = Units::DEFAULT_PRESSURE_UNIT;
+    constexpr Units::TemperatureUnit TEMPERATURE_UNIT = Units::DEFAULT_TEMPERATURE_UNIT;
+    
+
     const bool nosAndIpaValveSliderEnabled = GSDataCenter::motorBoardState == static_cast<uint8_t>(logic::control::State::Unsafe) && GSDataCenter::ArmServoSwitchData.isOn
                                              && !GSDataCenter::AllowDumpSwitchData.isOn && !GSDataCenter::AllowFillSwitchData.isOn
                                              && !GSDataCenter::ArmIgniterSwitchData.isOn;
@@ -45,20 +52,20 @@ void FillWindow::renderImpl() {
         constexpr ImAxis pressureAxis = ImAxis_Y2;
         constexpr ImAxis tempAxis = ImAxis_Y3;
 
-        ImPlot::SetupAxis(ImAxis_X1, "Timestamp (ms)");
-        ImPlot::SetupAxis(weightAxis, "Weight (lb)");
-        ImPlot::SetupAxis(pressureAxis, "Pressure (psi)");
-        ImPlot::SetupAxis(tempAxis, "Temperature (C)");
+        ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT));
+        ImPlot::SetupAxis(weightAxis, Units::as_label(WEIGHT_UNIT));
+        ImPlot::SetupAxis(pressureAxis, Units::as_label(PRESSURE_UNIT));
+        ImPlot::SetupAxis(tempAxis, Units::as_label(TEMPERATURE_UNIT));
 
         ImPlot::SetAxis(weightAxis);
-        tankLoadCellPlotLine.plot(IniParams::compressPlots.currentValue);
-        tankMassPlotLine.plot(IniParams::compressPlots.currentValue);
+        tankLoadCellPlotLine.plot(TIME_UNIT, WEIGHT_UNIT, IniParams::compressPlots.currentValue);
+        tankMassPlotLine.plot(TIME_UNIT, WEIGHT_UNIT, IniParams::compressPlots.currentValue);
 
         ImPlot::SetAxis(pressureAxis);
-        tankTransducerPlotLine.plot(IniParams::compressPlots.currentValue);
+        tankTransducerPlotLine.plot(TIME_UNIT, PRESSURE_UNIT, IniParams::compressPlots.currentValue);
 
         ImPlot::SetAxis(tempAxis);
-        tankTempPlotLine.plot(IniParams::compressPlots.currentValue);
+        tankTempPlotLine.plot(TIME_UNIT, TEMPERATURE_UNIT, IniParams::compressPlots.currentValue);
 
         ImPlot::EndPlot();
     }

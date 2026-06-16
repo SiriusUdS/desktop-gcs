@@ -1,5 +1,7 @@
 #include "SensorPlotData.h"
 
+SensorPlotData::SensorPlotData(Units::TimeUnit time_unit, Units::Unit unit, Units::Unit adc_unit) : valuePlotData(time_unit, unit), adcPlotData(time_unit, adc_unit) {}
+
 /**
  * @brief Add ADC and value data to the sensor plot.
  */

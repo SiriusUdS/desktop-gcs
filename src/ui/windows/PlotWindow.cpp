@@ -82,7 +82,7 @@ void PlotWindow::render() {
             const SensorPlotLine& sensorPlotLine = sensorPlotLineVec[i];
             const PlotLine& plotLine = dataType == VALUE ? sensorPlotLine.valuePlotLine : sensorPlotLine.adcPlotLine;
 
-            plotLine.plot(showCompressedData);
+            plotLine.plot_raw(showCompressedData);
             if (showAvgValues) {
                 showAvgRecentValue(plotLine.getStyle().name, plotLine.getData().recentAverageValue(recentAvgValueDurationMs), i);
             }

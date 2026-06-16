@@ -6,6 +6,7 @@
 #include "ITileLoader.h"
 #include "Logging.h"
 #include "UdpConfig.h"
+#include "units.h"
 
 #include "devices/valve/valve_state.hpp"
 #include "peripherals/thermocouple/thermocouple_state.hpp"
@@ -129,7 +130,7 @@ void renderBoardSection(const char* boardName, uint8_t state, uint32_t timestamp
     if (tcTemps != nullptr && tcStates != nullptr && tcCount > 0) {
         if (ImGui::BeginTable("thermocouples", 3, tableFlags)) {
             ImGui::TableSetupColumn("Thermocouple");
-            ImGui::TableSetupColumn("Temp (C)");
+            ImGui::TableSetupColumn(Units::as_label(Units::DEFAULT_TEMPERATURE_UNIT));
             ImGui::TableSetupColumn("State");
             ImGui::TableHeadersRow();
             for (size_t i = 0; i < tcCount; i++) {

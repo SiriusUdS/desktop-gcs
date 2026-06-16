@@ -22,9 +22,10 @@ public:
 
 private:
     static constexpr size_t DEFAULT_RECENT_AVG_VAL_DURATION_MS = 1000;
+    
 
 public:
-    PlotData();
+    PlotData(Units::TimeUnit time_unit, Units::Unit unit);
     void addData(float timestamp, float value);
     void clear();
     void eraseOld(size_t amount);

@@ -6,6 +6,7 @@
 #include "LaunchWindow.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
+#include "units.h"
 
 #include <imgui.h>
 #include <implot.h>
@@ -25,6 +26,12 @@ const char* PrelaunchWindow::getName() const {
 }
 
 void PrelaunchWindow::renderImpl() {
+    constexpr Units::TimeUnit TIME_UNIT = Units::TimeUnit::Seconds;
+    constexpr Units::WeightUnit WEIGHT_UNIT = Units::DEFAULT_WEIGHT_UNIT;
+    constexpr Units::PressureUnit PRESSURE_UNIT = Units::DEFAULT_PRESSURE_UNIT;
+    constexpr Units::TemperatureUnit TEMPERATURE_UNIT = Units::DEFAULT_TEMPERATURE_UNIT;
+    constexpr Units::Unit ADC_UNIT = Units::QuantityUnit::Scalar;
+
     ImGui::SeparatorText("Calibration");
     ImGui::Text("Tank Load Cell ADC Value");
     if (ImGui::BeginTable("PrefillTankLoadCellADCTable", 6, ImGuiTableFlags_SizingFixedFit)) {
@@ -42,15 +49,15 @@ void PrelaunchWindow::renderImpl() {
         constexpr ImAxis adcValueAxis = ImAxis_Y1;
         constexpr ImAxis weightAxis = ImAxis_Y2;
 
-        ImPlot::SetupAxis(ImAxis_X1, "Timestamp (ms)");
-        ImPlot::SetupAxis(adcValueAxis, "ADC Value");
-        ImPlot::SetupAxis(weightAxis, "Weight (lb)");
+        ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT));
+        ImPlot::SetupAxis(adcValueAxis, Units::as_label(ADC_UNIT));
+        ImPlot::SetupAxis(weightAxis, Units::as_label(WEIGHT_UNIT));
 
         ImPlot::SetAxis(adcValueAxis);
-        tankLoadCellADCPlotLine.plot(IniParams::compressPlots.currentValue, true);
+        tankLoadCellADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
 
         ImPlot::SetAxis(weightAxis);
-        tankLoadCellPlotLine.plot(IniParams::compressPlots.currentValue);
+        tankLoadCellPlotLine.plot(TIME_UNIT, WEIGHT_UNIT, IniParams::compressPlots.currentValue);
 
         ImPlot::EndPlot();
     }
