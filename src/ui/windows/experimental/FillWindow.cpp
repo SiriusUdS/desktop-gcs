@@ -78,18 +78,6 @@ void FillWindow::renderImpl() {
         ImGui::TableSetupColumn("Open Percentage");
         ImGui::TableSetupColumn("Set Value Button");
 
-        renderPercentageInputRow("NOS Valve",
-                                 nosValveSlider,
-                                 CommandType::NosValve,
-                                 "To control the NOS valve -> [UNSAFE, ARM VALVE] need to be ON, [DUMP, FILL, ARM IGNITER] need to be OFF.",
-                                 nosAndIpaValveSliderEnabled);
-
-        renderPercentageInputRow("IPA Valve",
-                                 ipaValveSlider,
-                                 CommandType::IpaValve,
-                                 "To control the IPA valve -> [UNSAFE, ARM VALVE] need to be ON, [DUMP, FILL, ARM IGNITER] need to be OFF.",
-                                 nosAndIpaValveSliderEnabled);
-
         renderPercentageInputRow("Fill Valve",
                                  fillValveSlider,
                                  CommandType::FillValve,
