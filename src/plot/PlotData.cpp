@@ -6,9 +6,11 @@
 
 #include <implot.h>
 
-PlotData::LockedView::LockedView(std::mutex& mtx, const DataSeries& timeline, const DataSeries& values)
-    : lock(mtx), timeline(timeline), values(values) {
-}
+PlotData::LockedView::LockedView(std::mutex& mtx, const DataSeries& timeline,const DataSeries& values):
+    lock(mtx),
+    timeline(timeline),
+    values(values)
+{}
 
 const DataSeries& PlotData::LockedView::getTimeline() const {
     return timeline;

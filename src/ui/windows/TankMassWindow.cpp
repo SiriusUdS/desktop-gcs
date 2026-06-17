@@ -5,6 +5,7 @@
 #include "StringUtils.h"
 #include "ThemedColors.h"
 #include "VaporPressure.h"
+#include "RecentDataSelector.h"
 #include "units.h"
 
 #include <imgui.h>
@@ -14,26 +15,28 @@
 TankMassWindow::TankMassWindow()
     : recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData(),
                                  PlotStyle("Pressure Sensor 1 (Motor)", ThemedColors::PlotLine::blue),
-                                 RECENT_TIME_WINDOW_MS},
+                                 std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData.p2().getValuePlotData(),
                                  PlotStyle("Pressure Sensor 2 (Motor)", ThemedColors::PlotLine::red),
-                                 RECENT_TIME_WINDOW_MS},
+                                 std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getValuePlotData(),
                                 PlotStyle("Pressure Sensor 1 (Fill)", ThemedColors::PlotLine::green),
-                                RECENT_TIME_WINDOW_MS},
+                                std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData.p2().getValuePlotData(),
                                 PlotStyle("Pressure Sensor 2 (Fill)", ThemedColors::PlotLine::yellow),
-                                RECENT_TIME_WINDOW_MS},
+                                std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData(),
                             PlotStyle("Tank Thermistor", ThemedColors::PlotLine::blue),
-                            RECENT_TIME_WINDOW_MS},
+                            std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentEngineThrust{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
                          PlotStyle("Motor Load Cell", ThemedColors::PlotLine::blue),
-                         RECENT_TIME_WINDOW_MS},
-      recentTankMass{GSDataCenter::NOSTankMass_PlotData, PlotStyle("NOS Tank Mass", ThemedColors::PlotLine::blue), RECENT_TIME_WINDOW_MS},
+                         std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
+      recentTankMass{GSDataCenter::NOSTankMass_PlotData,
+                         PlotStyle("NOS Tank Mass", ThemedColors::PlotLine::blue),
+                         std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentTankLoadCell{GSDataCenter::LoadCell_FillingStation_PlotData.tank().getValuePlotData(),
                          PlotStyle("Tank Load Cell", ThemedColors::PlotLine::red),
-                         RECENT_TIME_WINDOW_MS} {
+                         std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)} {
 }
 
 void TankMassWindow::init() {

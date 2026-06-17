@@ -7,6 +7,7 @@
 #include "SensorPlotData.h"
 #include "SwitchData.h"
 #include "ThemedColors.h"
+#include "RecentDataSelector.h"
 #include "units.h"
 
 #include "system/state.hpp"
@@ -18,13 +19,13 @@
 const char* const FillWindow::name = "Fill";
 
 FillWindow::FillWindow()
-    : tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(), PlotStyle("Tank Load Cell", ThemedColors::PlotLine::blue)}, 
-      tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(), PlotStyle("Tank Load Cell ADC", ThemedColors::PlotLine::blue)},
-      tankTransducerPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getValuePlotData(), PlotStyle("Tank Pressure", ThemedColors::PlotLine::red)},
-      tankTransducerADCPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getAdcPlotData(), PlotStyle("Tank Pressure ADC", ThemedColors::PlotLine::red)},
-      tankTempPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.t1().getValuePlotData(), PlotStyle("Tank Temperature", ThemedColors::PlotLine::green)},
-      tankTempADCPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.t1().getAdcPlotData(), PlotStyle("Tank Temperature ADC", ThemedColors::PlotLine::green)},
-      tankMassPlotLine{GSDataCenter::TankMass_PlotData, PlotStyle("Tank Mass", ThemedColors::PlotLine::yellow)} {
+    : tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(), PlotStyle("Tank Load Cell", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)}, 
+      tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(), PlotStyle("Tank Load Cell ADC", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
+      tankTransducerPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getValuePlotData(), PlotStyle("Tank Pressure", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
+      tankTransducerADCPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getAdcPlotData(), PlotStyle("Tank Pressure ADC", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
+      tankTempPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.t1().getValuePlotData(), PlotStyle("Tank Temperature", ThemedColors::PlotLine::green), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
+      tankTempADCPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.t1().getAdcPlotData(), PlotStyle("Tank Temperature ADC", ThemedColors::PlotLine::green), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
+      tankMassPlotLine{GSDataCenter::TankMass_PlotData, PlotStyle("Tank Mass", ThemedColors::PlotLine::yellow), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)} {
 }
 
 const char* FillWindow::getName() const {

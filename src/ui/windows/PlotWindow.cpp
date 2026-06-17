@@ -3,64 +3,76 @@
 #include "FontConfig.h"
 #include "IniConfig.h"
 #include "StringUtils.h"
+#include "ThemedColors.h"
 
 #include <imgui.h>
 #include <implot.h>
-#include <ini.h>
 #include <iomanip>
+#include <sstream>
 
-/**
- * @brief Constructs a plot window.
- * @param name Name of the plot window.
- * @param xLabel Text to display along the X axis.
- * @param yLabel Text to display along the Y axis.
- * @param sensorPlotParamsVec A vector of the params of all the sensor plot lines to be displayed in this window.
- */
-PlotWindow::PlotWindow(const char* name, const char* xLabel, const char* yLabel, std::vector<SensorPlotParam> sensorPlotParamsVec)
-    : name(name), xLabel(xLabel), yLabel(yLabel) {
+PlotWindow::PlotWindow(const char* name, const char* xLabel, Units::Unit xUnit, const char* yLabel, Units::Unit yUnit, Units::Unit adcUnit, std::vector<SensorPlotParam> sensorPlotParamsVec): name(name), xLabel(xLabel), xUnit(xUnit), yLabel(yLabel), yUnit(yUnit), adcUnit(adcUnit) {
     for (auto& params : sensorPlotParamsVec) {
-        sensorPlotLineVec.emplace_back(params.data,
-                                       PlotLine(params.data.getValuePlotData(), params.style),
-                                       PlotLine(params.data.getAdcPlotData(), params.style));
+        sensorPlotLineVec.push_back({params.data, params.style});
     }
 
-    autofitIniId = std::string(name) + "_plot_window_auto_fit";
-    showCompressedDataIniId = std::string(name) + "_plot_window_show_compressed_data";
-    showAvgValuesId = std::string(name) + "_plot_window_show_avg_values";
-    dataTypeIniId = std::string(name) + "_plot_window_data_type";
+    autofitIniId = std::string(name) + "_autofit";
+    showAvgValuesId = std::string(name) + "_avg";
+    plotModeIniId = std::string(name) + "_plot_mode";
+    timeWindowIniId = std::string(name) + "_twindow";
+
     StringUtils::convertStringToIniId(autofitIniId);
-    StringUtils::convertStringToIniId(showCompressedDataIniId);
     StringUtils::convertStringToIniId(showAvgValuesId);
-    StringUtils::convertStringToIniId(dataTypeIniId);
+    StringUtils::convertStringToIniId(plotModeIniId);
+    StringUtils::convertStringToIniId(timeWindowIniId);
 }
 
-/**
- * @brief Renders the plot window with ImGui.
- */
-void PlotWindow::render() {
+float PlotWindow::timeWindowToMs(TimeWindowMode mode)
+{
+    switch (mode) {
+        case TimeWindowMode::Last2s:  return 2000.f;
+        case TimeWindowMode::Last10s: return 10000.f;
+        case TimeWindowMode::Last30s: return 30000.f;
+        default: return 0.f;
+    }
+}
+
+std::string PlotWindow::formatLabel(std::string label, Units::Unit unit) {
+    std::string unitSymbol = Units::as_symbol(unit);
+    std::string unitLabel  = Units::as_label(unit);
+
+    if (label.empty()) {
+        label = unitLabel;
+    }
+
+    std::string labelText = label;
+
+    if (!unitSymbol.empty()) {
+        if (!labelText.empty()) {
+            labelText += " ";
+        }
+        labelText += "(" + unitSymbol + ")";
+    }
+
+    return labelText;
+}
+
+void PlotWindow::render()
+{
     ImGui::Checkbox("Auto-fit", &autofit);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Automatically adjusts the view to fit all data. Disables zooming and panning.");
-    }
     ImGui::SameLine();
-    ImGui::Checkbox("Compressed", &showCompressedData);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Reduces the number of displayed data points to improve performance.");
-    }
-    ImGui::SameLine();
-    ImGui::Checkbox("Avg. values", &showAvgValues);
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Shows the recent average of each plot line.");
-    }
-    ImGui::SameLine();
-    ImGui::RadioButton("Value", &dataType, VALUE);
-    ImGui::SameLine();
-    ImGui::RadioButton("ADC", &dataType, ADC);
+    ImGui::Checkbox("Avg", &showAvgValues);
     ImGui::SameLine();
 
+    ImGui::RadioButton("Value", reinterpret_cast<int*>(&plotMode), 0);
+    ImGui::SameLine();
+    ImGui::RadioButton("ADC", reinterpret_cast<int*>(&plotMode), 1);
+
+    ImGui::SameLine();
+    ImGui::Combo("Time", reinterpret_cast<int*>(&timeWindow), "All\0Last 2s\0Last 10s\0Last 30s\0");
+
     if (ImGui::Button("Clear data")) {
-        for (auto& sensorPlotLine : sensorPlotLineVec) {
-            sensorPlotLine.data.clear();
+        for (auto& s : sensorPlotLineVec) {
+            s.data.clear();
         }
     }
 
@@ -71,104 +83,95 @@ void PlotWindow::render() {
         flags = ImPlotFlags_None;
     }
 
-    if (ImPlot::BeginPlot(name.c_str(), ImGui::GetContentRegionAvail(), flags)) {
-        const char* actualYLabel = dataType == ADC ? "ADC Value" : yLabel.c_str();
-        ImPlot::SetupAxes(xLabel.c_str(), actualYLabel);
+    if (!ImPlot::BeginPlot(name.c_str(), ImGui::GetContentRegionAvail(), flags))
+        return;
 
-        static constexpr size_t recentAvgValueDurationMs = 2000;
-        static constexpr size_t recentAvgValueDurationSec = recentAvgValueDurationMs / 1000;
+    ImPlot::SetupAxes(formatLabel(xLabel, xUnit).c_str(), formatLabel((plotMode == PlotMode::ADC) ? "ADC" : yLabel, yUnit).c_str());
 
-        for (size_t i = 0; i < sensorPlotLineVec.size(); i++) {
-            const SensorPlotLine& sensorPlotLine = sensorPlotLineVec[i];
-            const PlotLine& plotLine = dataType == VALUE ? sensorPlotLine.valuePlotLine : sensorPlotLine.adcPlotLine;
+    const float windowMs = timeWindowToMs(static_cast<TimeWindowMode>(timeWindow));
 
-            plotLine.plot_raw(showCompressedData);
-            if (showAvgValues) {
-                showAvgRecentValue(plotLine.getStyle().name, plotLine.getData().recentAverageValue(recentAvgValueDurationMs), i);
-            }
-        }
+    const size_t avgWindowMs = 2000;
+
+    for (size_t i = 0; i < sensorPlotLineVec.size(); i++) {
+        auto& sensor = sensorPlotLineVec[i];
+
+        const PlotData& plotData = sensor.data.getPlotData(plotMode);
+
+        PlotLine line(plotData, sensor.style);
+        line.plot(plotData.getTimeline().getUnit(), yUnit);
 
         if (showAvgValues) {
-            showAvgRecentLabel(recentAvgValueDurationSec);
+            float avg = plotData.recentAverageValue(avgWindowMs);
+            showAvgRecentValue(sensor.style.name, avg, i);
         }
-
-        ImPlot::EndPlot();
     }
+
+    if (showAvgValues) {
+        showAvgRecentLabel(avgWindowMs / 1000);
+    }
+
+    ImPlot::EndPlot();
 }
 
-/**
- * @brief Loads the state of the window from an ini file.
- * @param ini The struct of the ini file.
- */
 void PlotWindow::loadState(const mINI::INIStructure& ini) {
     if (ini.has(IniConfig::GCS_SECTION)) {
-        if (ini.get(IniConfig::GCS_SECTION).has(autofitIniId)) {
-            autofit = std::stoi(ini.get(IniConfig::GCS_SECTION).get(autofitIniId));
-        }
-        if (ini.get(IniConfig::GCS_SECTION).has(showCompressedDataIniId)) {
-            showCompressedData = std::stoi(ini.get(IniConfig::GCS_SECTION).get(showCompressedDataIniId));
-        }
-        if (ini.get(IniConfig::GCS_SECTION).has(showAvgValuesId)) {
-            showAvgValues = std::stoi(ini.get(IniConfig::GCS_SECTION).get(showAvgValuesId));
-        }
-        if (ini.get(IniConfig::GCS_SECTION).has(dataTypeIniId)) {
-            dataType = std::stoi(ini.get(IniConfig::GCS_SECTION).get(dataTypeIniId));
-        }
+        auto sec = ini.get(IniConfig::GCS_SECTION);
+
+        if (sec.has(autofitIniId))
+            autofit = std::stoi(sec.get(autofitIniId));
+
+        if (sec.has(showAvgValuesId))
+            showAvgValues = std::stoi(sec.get(showAvgValuesId));
+
+        if (sec.has(plotModeIniId))
+            plotMode = static_cast<PlotMode>(std::stoi(sec.get(plotModeIniId)));
+
+        if (sec.has(timeWindowIniId))
+            timeWindow = static_cast<TimeWindowMode>(std::stoi(sec.get(timeWindowIniId)));
     }
 }
 
-/**
- * @brief Saves the state of the window to an ini file.
- * @param ini The struct of the ini file.
- */
 void PlotWindow::saveState(mINI::INIStructure& ini) {
     ini[IniConfig::GCS_SECTION].set(autofitIniId, std::to_string(autofit));
-    ini[IniConfig::GCS_SECTION].set(showCompressedDataIniId, std::to_string(showCompressedData));
     ini[IniConfig::GCS_SECTION].set(showAvgValuesId, std::to_string(showAvgValues));
-    ini[IniConfig::GCS_SECTION].set(dataTypeIniId, std::to_string(dataType));
+    ini[IniConfig::GCS_SECTION].set(plotModeIniId, std::to_string(static_cast<int>(plotMode)));
+    ini[IniConfig::GCS_SECTION].set(timeWindowIniId, std::to_string(static_cast<int>(timeWindow)));
 }
 
-/**
- * @brief Generates a window id to uniquely identify different plot windows.
- * @returns The generatsed window id.
- */
 std::string PlotWindow::getWindowId() {
     return "Plot - " + name;
 }
 
 void PlotWindow::showAvgRecentLabel(const size_t durationSec) {
-    const std::string avgValueLabelStr = "Avg. values in the last " + std::to_string(durationSec) + "s";
-    const char* avgValueLabelText = avgValueLabelStr.c_str();
+    std::string txt = "Avg last " + std::to_string(durationSec) + "s";
 
-    ImDrawList* drawList = ImPlot::GetPlotDrawList();
-    const ImVec2 plotPos = ImPlot::GetPlotPos();
-    const ImVec2 plotSize = ImPlot::GetPlotSize();
-    const ImVec2 textSize = ImGui::CalcTextSize(avgValueLabelText);
-    const ImVec2 textPos = {plotPos.x + plotSize.x - textSize.x - 10.f, plotPos.y + 10.f};
-    const ImU32 textColor = ImGui::GetColorU32(ImGuiCol_Text);
-    drawList->AddText(textPos, textColor, avgValueLabelText);
+    ImDrawList* dl = ImPlot::GetPlotDrawList();
 
-    constexpr float underlineThickness = 1.0f;
-    constexpr float underlineOffsetY = -3.0f;
-    ImVec2 underlineStart = {textPos.x, textPos.y + textSize.y + underlineOffsetY};
-    ImVec2 underlineEnd = {textPos.x + textSize.x, textPos.y + textSize.y + underlineOffsetY};
-    drawList->AddLine(underlineStart, underlineEnd, textColor, underlineThickness);
+    ImVec2 pos = ImPlot::GetPlotPos();
+    ImVec2 size = ImPlot::GetPlotSize();
+    ImVec2 ts = ImGui::CalcTextSize(txt.c_str());
+
+    ImVec2 p = {pos.x + size.x - ts.x - 10.f, pos.y + 10.f};
+
+    dl->AddText(p, IM_COL32_WHITE, txt.c_str());
 }
 
 void PlotWindow::showAvgRecentValue(const char* name, float value, size_t idx) {
     std::ostringstream oss;
     oss << name << ": " << std::fixed << std::setprecision(1) << value;
-    const std::string avgValueStr = oss.str();
-    const char* avgValueText = avgValueStr.c_str();
 
-    constexpr float fontSize = 25.f;
-    constexpr float spacingBetweenLines = 2.f;
+    std::string txt = oss.str();
 
-    ImDrawList* drawList = ImPlot::GetPlotDrawList();
-    const ImVec2 plotPos = ImPlot::GetPlotPos();
-    const ImVec2 plotSize = ImPlot::GetPlotSize();
-    const ImVec2 textSize = FontConfig::mainFont->CalcTextSizeA(fontSize, FLT_MAX, -1.0f, avgValueText);
-    const ImVec2 textPos = {plotPos.x + plotSize.x - textSize.x - 10.f, plotPos.y + (textSize.y + spacingBetweenLines) * (idx + 1) + 20.f};
-    const ImU32 textColor = ImGui::GetColorU32(ImGuiCol_Text);
-    drawList->AddText(FontConfig::mainFont, fontSize, textPos, textColor, avgValueText);
+    float fontSize = 25.f;
+
+    ImDrawList* dl = ImPlot::GetPlotDrawList();
+
+    ImVec2 pos = ImPlot::GetPlotPos();
+    ImVec2 size = ImPlot::GetPlotSize();
+
+    ImVec2 ts = FontConfig::mainFont->CalcTextSizeA(fontSize, FLT_MAX, -1.f, txt.c_str());
+
+    ImVec2 p = {pos.x + size.x - ts.x - 10.f, pos.y + (ts.y + 2.f) * (idx + 1) + 20.f};
+
+    dl->AddText(FontConfig::mainFont, fontSize, p, IM_COL32_WHITE,txt.c_str());
 }

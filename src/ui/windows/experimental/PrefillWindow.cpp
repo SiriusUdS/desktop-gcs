@@ -6,6 +6,7 @@
 #include "IniParams.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
+#include "RecentDataSelector.h"
 #include "units.h"
 
 #include <imgui.h>
@@ -18,9 +19,9 @@ PrefillWindow::PrefillWindow()
       postwrapTankLoadCellState{AppState::TankLoadCell::postwrapADCValue, "Postwrap"},
       postIPATankLoadCellState{AppState::TankLoadCell::postIPAADCValue, "Post IPA"},
       tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
-                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)},
+                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(6000, Units::TimeUnit::Milliseconds)},
       tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
-                           PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red)} {
+                           PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(6000, Units::TimeUnit::Milliseconds)} {
 }
 
 const char* PrefillWindow::getName() const {

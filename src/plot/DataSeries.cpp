@@ -28,7 +28,7 @@ void DataSeries::eraseOld(size_t count) {
     compress();
 }
 
-Units::Unit DataSeries::getUnit() {
+Units::Unit DataSeries::getUnit() const {
     return unit;
 }
 

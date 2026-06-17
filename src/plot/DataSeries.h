@@ -10,7 +10,7 @@ public:
     void clear();
     void compress();
     void eraseOld(size_t count);
-    Units::Unit getUnit();
+    Units::Unit getUnit() const;
 
     std::vector<float> raw() const;
     std::vector<float> raw(Units::Unit unit) const;

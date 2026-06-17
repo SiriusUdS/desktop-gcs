@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include "PlotView.h"
 
 class DataSelector {
 public:
@@ -11,6 +11,5 @@ public:
         size_t size;
     };
 
-public:
-    virtual Window getWindow(const std::vector<float>& data) = 0;
+    virtual Window getWindow(const PlotView& view) = 0;
 };
