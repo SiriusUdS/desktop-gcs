@@ -19,9 +19,9 @@ PrefillWindow::PrefillWindow()
       postwrapTankLoadCellState{AppState::TankLoadCell::postwrapADCValue, "Postwrap"},
       postIPATankLoadCellState{AppState::TankLoadCell::postIPAADCValue, "Post IPA"},
       tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
-                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(6000, Units::TimeUnit::Milliseconds)},
+                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
       tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
-                           PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(6000, Units::TimeUnit::Milliseconds)} {
+                           PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)} {
 }
 
 const char* PrefillWindow::getName() const {
@@ -34,86 +34,8 @@ void PrefillWindow::renderImpl() {
     constexpr Units::PressureUnit PRESSURE_UNIT = Units::DEFAULT_PRESSURE_UNIT;
     constexpr Units::TemperatureUnit TEMPERATURE_UNIT = Units::DEFAULT_TEMPERATURE_UNIT;
     constexpr Units::Unit ADC_UNIT = Units::QuantityUnit::Scalar;
-
-    ImGui::SeparatorText("Tests");
-
-    ImGui::Text("Test: ");
-    ImGui::SameLine();
-
-    switch (sensorTestSequencer.currentTestType()) {
-    case SensorTestSequencer::TestType::NOS_VALVE:
-        ImGui::Text("NOS Valve");
-        break;
-    case SensorTestSequencer::TestType::IPA_VALVE:
-        ImGui::Text("IPA Valve");
-        break;
-    case SensorTestSequencer::TestType::FILL_VALVE:
-        ImGui::Text("Fill Valve");
-        break;
-    case SensorTestSequencer::TestType::DUMP_VALVE:
-        ImGui::Text("Dump Valve");
-        break;
-    default:
-        ImGui::Text("None");
-        break;
-    }
-
-    ImGui::Text("Test Action: ");
-    ImGui::SameLine();
-
-    switch (sensorTestSequencer.currentTestAction()) {
-    case SensorTestSequencer::TestAction::OPEN_VALVE:
-        ImGui::Text("Open Valve");
-        break;
-    case SensorTestSequencer::TestAction::CLOSE_VALVE:
-        ImGui::Text("Close Valve");
-        break;
-    default:
-        ImGui::Text("None");
-        break;
-    }
-
-    ImGui::BeginDisabled(sensorTestSequencer.isBusy());
-
-    if (ImGui::BeginTable("PrefillTestTable", 1)) {
-        ImGui::TableSetupColumn("Valve");
-
-        const ImVec2 buttonSize = {-1.0f, 0.0f};
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        if (ImGui::Button("Test NOS Valve", buttonSize)) {
-            sensorTestSequencer.testNOSValve();
-        }
-
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        if (ImGui::Button("Test IPA Valve", buttonSize)) {
-            sensorTestSequencer.testIPAValve();
-        }
-
-        ImGui::TableNextRow();
-
-        ImGui::TableSetColumnIndex(0);
-        if (ImGui::Button("Test Fill Valve", buttonSize)) {
-            sensorTestSequencer.testFillValve();
-        }
-
-        ImGui::TableNextRow();
-
-        ImGui::TableSetColumnIndex(0);
-        if (ImGui::Button("Test Dump Valve", buttonSize)) {
-            sensorTestSequencer.testDumpValve();
-        }
-
-        ImGui::EndTable();
-    }
-
-    ImGui::EndDisabled();
-
+    
     ImGui::SeparatorText("Calibration GS");
-
     ImGui::Text("Tank Load Cell ADC Values");
 
     if (ImGui::BeginTable("PrefillTankLoadCellADCTable", 6, ImGuiTableFlags_SizingFixedFit)) {
