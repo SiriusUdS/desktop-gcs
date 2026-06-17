@@ -5,6 +5,8 @@
 #include "StringUtils.h"
 #include "ThemedColors.h"
 #include "VaporPressure.h"
+#include "RecentDataSelector.h"
+#include "units.h"
 
 #include <imgui.h>
 #include <implot.h>
@@ -13,26 +15,28 @@
 TankMassWindow::TankMassWindow()
     : recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData(),
                                  PlotStyle("Pressure Sensor 1 (Motor)", ThemedColors::PlotLine::blue),
-                                 RECENT_TIME_WINDOW_MS},
+                                 std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData.p2().getValuePlotData(),
                                  PlotStyle("Pressure Sensor 2 (Motor)", ThemedColors::PlotLine::red),
-                                 RECENT_TIME_WINDOW_MS},
+                                 std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getValuePlotData(),
                                 PlotStyle("Pressure Sensor 1 (Fill)", ThemedColors::PlotLine::green),
-                                RECENT_TIME_WINDOW_MS},
+                                std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData.p2().getValuePlotData(),
                                 PlotStyle("Pressure Sensor 2 (Fill)", ThemedColors::PlotLine::yellow),
-                                RECENT_TIME_WINDOW_MS},
+                                std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData(),
                             PlotStyle("Tank Thermistor", ThemedColors::PlotLine::blue),
-                            RECENT_TIME_WINDOW_MS},
+                            std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentEngineThrust{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
                          PlotStyle("Motor Load Cell", ThemedColors::PlotLine::blue),
-                         RECENT_TIME_WINDOW_MS},
-      recentTankMass{GSDataCenter::NOSTankMass_PlotData, PlotStyle("NOS Tank Mass", ThemedColors::PlotLine::blue), RECENT_TIME_WINDOW_MS},
+                         std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
+      recentTankMass{GSDataCenter::NOSTankMass_PlotData,
+                         PlotStyle("NOS Tank Mass", ThemedColors::PlotLine::blue),
+                         std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentTankLoadCell{GSDataCenter::LoadCell_FillingStation_PlotData.tank().getValuePlotData(),
                          PlotStyle("Tank Load Cell", ThemedColors::PlotLine::red),
-                         RECENT_TIME_WINDOW_MS} {
+                         std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)} {
 }
 
 void TankMassWindow::init() {
@@ -51,6 +55,8 @@ void TankMassWindow::renderImpl() {
 
     constexpr int PLOT_ROWS = 2;
 
+    constexpr Units::TimeUnit TIME_UNIT = Units::TimeUnit::Seconds;
+
     const ImVec2 avail = ImGui::GetContentRegionAvail();
     const float paddingY = ImGui::GetStyle().CellPadding.y * 3.0f;
     const float plotRowHeight = (avail.y / PLOT_ROWS) - paddingY;
@@ -61,19 +67,23 @@ void TankMassWindow::renderImpl() {
         ImGui::TableNextRow();
 
         float tankTemperature_C = GSDataCenter::Thermistor_Motor_PlotData.tank().getSize()
-                                    ? GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData().getValues().raw().back()
+                                    ? GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData().getValues().raw(Units::TemperatureUnit::Celcius).back()
                                     : 0;
         float tankPressure_psi = GSDataCenter::PressureSensor_Motor_PlotData.tank().getSize()
-                                   ? GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData().getValues().raw().back()
+                                   ? GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData().getValues().raw(Units::PressureUnit::Psi).back()
                                    : 0;
-        float tankMass_lb = GSDataCenter::NOSTankMass_PlotData.getSize() ? GSDataCenter::NOSTankMass_PlotData.getValues().raw().back() : 0;
+        float tankMass_lb = GSDataCenter::NOSTankMass_PlotData.getSize() ? GSDataCenter::NOSTankMass_PlotData.getValues().raw(Units::WeightUnit::Pounds).back() : 0;
         const double vaporPressure_psi = VaporPressure::vaporPressureNOS_psi(tankTemperature_C);
         const std::string phaseStr = tankPressure_psi > vaporPressure_psi ? "Liquid" : "Gas";
 
+        float tankTemperature = Units::convert(tankTemperature_C, Units::TemperatureUnit::Celcius, Units::DEFAULT_TEMPERATURE_UNIT);
+        float tankPressure = Units::convert(tankPressure_psi, Units::PressureUnit::Psi, Units::DEFAULT_PRESSURE_UNIT);
+        float tankMass = Units::convert(tankMass_lb, Units::WeightUnit::Pounds, Units::DEFAULT_WEIGHT_UNIT);
+
         ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Temp Tank (C): %f", tankTemperature_C);
-        ImGui::Text("PT Tank (psi): %f", tankPressure_psi);
-        ImGui::Text("LC Tank (lb): %f", tankMass_lb);
+        ImGui::Text("Temp Tank (%s): %f", Units::as_symbol(Units::DEFAULT_TEMPERATURE_UNIT), tankTemperature);
+        ImGui::Text("PT Tank (%s): %f", Units::as_symbol(Units::DEFAULT_FORCE_UNIT), tankPressure);
+        ImGui::Text("LC Tank (%s): %f", Units::as_symbol(Units::DEFAULT_WEIGHT_UNIT), tankMass);
         ImGui::Text("Phase: %s", phaseStr.c_str());
 
         ImGui::TableSetColumnIndex(1);
@@ -82,18 +92,18 @@ void TankMassWindow::renderImpl() {
             ImGui::TableSetColumnIndex(0);
             ImPlot::SetNextAxesToFit();
             if (ImPlot::BeginPlot(tankPressurePlotTitle.c_str(), ImVec2(-1, plotRowHeight), ImPlotFlags_NoInputs)) {
-                ImPlot::SetupAxes("Timestamp (ms)", "Pressure (psi)");
-                recentMotorPressureSensor1.plot(false);
-                recentMotorPressureSensor2.plot(false);
-                recentFillPressureSensor1.plot(false);
-                recentFillPressureSensor2.plot(false);
+                ImPlot::SetupAxes(Units::as_label(TIME_UNIT), Units::as_label(Units::DEFAULT_PRESSURE_UNIT));
+                recentMotorPressureSensor1.plot(TIME_UNIT, Units::DEFAULT_PRESSURE_UNIT, false);
+                recentMotorPressureSensor2.plot(TIME_UNIT, Units::DEFAULT_PRESSURE_UNIT, false);
+                recentFillPressureSensor1.plot(TIME_UNIT, Units::DEFAULT_PRESSURE_UNIT, false);
+                recentFillPressureSensor2.plot(TIME_UNIT, Units::DEFAULT_PRESSURE_UNIT, false);
                 ImPlot::EndPlot();
             }
             ImGui::TableSetColumnIndex(1);
             ImPlot::SetNextAxesToFit();
             if (ImPlot::BeginPlot(tankTemperaturePlotTitle.c_str(), ImVec2(-1, plotRowHeight), ImPlotFlags_NoInputs)) {
-                ImPlot::SetupAxes("Timestamp (ms)", "Temperature (C)");
-                recentTankTemperature.plot(false);
+                ImPlot::SetupAxes(Units::as_label(TIME_UNIT), Units::as_label(Units::DEFAULT_TEMPERATURE_UNIT));
+                recentTankTemperature.plot(TIME_UNIT, Units::DEFAULT_TEMPERATURE_UNIT, false);
                 ImPlot::EndPlot();
             }
 
@@ -101,16 +111,16 @@ void TankMassWindow::renderImpl() {
             ImGui::TableSetColumnIndex(0);
             ImPlot::SetNextAxesToFit();
             if (ImPlot::BeginPlot(engineThrustPlotTitle.c_str(), ImVec2(-1, plotRowHeight), ImPlotFlags_NoInputs)) {
-                ImPlot::SetupAxes("Timestamp (ms)", "Thrust (lb)");
-                recentEngineThrust.plot(false);
+                ImPlot::SetupAxes(Units::as_label(TIME_UNIT), Units::as_label(Units::DEFAULT_FORCE_UNIT));
+                recentEngineThrust.plot(TIME_UNIT, Units::DEFAULT_FORCE_UNIT);
                 ImPlot::EndPlot();
             }
 
             ImGui::TableSetColumnIndex(1);
             ImPlot::SetNextAxesToFit();
             if (ImPlot::BeginPlot(tankMassPlotTitle.c_str(), ImVec2(-1, plotRowHeight), ImPlotFlags_NoInputs)) {
-                ImPlot::SetupAxes("Timestamp (ms)", "Mass (lb)");
-                recentTankMass.plot();
+                ImPlot::SetupAxes(Units::as_label(TIME_UNIT), Units::as_label(Units::DEFAULT_WEIGHT_UNIT));
+                recentTankMass.plot(TIME_UNIT, Units::DEFAULT_WEIGHT_UNIT);
                 // recentTankLoadCell.plot(); TODO : Temporarily commented out for tests
                 ImPlot::EndPlot();
             }

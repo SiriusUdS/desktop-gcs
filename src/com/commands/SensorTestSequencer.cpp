@@ -45,34 +45,6 @@ void SensorTestSequencer::testDumpValve() {
     });
 }
 
-void SensorTestSequencer::testNOSHeatPad() {
-    tryPerformTest([this] {
-        testType = TestType::NOS_HEATPAD;
-        performHeatPadTest(CommandType::NosHeatPad);
-    });
-}
-
-void SensorTestSequencer::testIPAHeatPad() {
-    tryPerformTest([this] {
-        testType = TestType::IPA_HEATPAD;
-        performHeatPadTest(CommandType::IpaHeatPad);
-    });
-}
-
-void SensorTestSequencer::testFillHeatPad() {
-    tryPerformTest([this] {
-        testType = TestType::FILL_HEATPAD;
-        performHeatPadTest(CommandType::FillHeatPad);
-    });
-}
-
-void SensorTestSequencer::testDumpHeatPad() {
-    tryPerformTest([this] {
-        testType = TestType::DUMP_HEATPAD;
-        performHeatPadTest(CommandType::DumpHeatPad);
-    });
-}
-
 void SensorTestSequencer::tryPerformTest(std::function<void()> testFn) {
     if (isTesting.exchange(true)) {
         return;
@@ -112,24 +84,4 @@ void SensorTestSequencer::performValveTest(CommandType valveType) {
     GCS_APP_LOG_DEBUG("SensorTestSequencer: Valve \"close\" command processed.", command->processed.load());
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-}
-
-void SensorTestSequencer::performHeatPadTest(CommandType heatPadType) {
-    std::shared_ptr<QueuedCommand> command;
-
-    command = CommandControl::sendCommand(heatPadType, 100);
-    testAction = TestAction::START_HEATPAD;
-    command->processed.wait(false);
-
-    GCS_APP_LOG_DEBUG("SensorTestSequencer: Heat pad \"on\" command processed.", command->processed.load());
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-
-    command = CommandControl::sendCommand(heatPadType, 0);
-    testAction = TestAction::STOP_HEATPAD;
-    command->processed.wait(false);
-
-    GCS_APP_LOG_DEBUG("SensorTestSequencer: Heat pad \"off\" command processed.", command->processed.load());
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 }

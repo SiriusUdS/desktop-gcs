@@ -414,3 +414,8 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 imgui.ini
+
+# vcpkg
+vcpkg_cache/
+vcpkg_installed/
+._vcpkg.json

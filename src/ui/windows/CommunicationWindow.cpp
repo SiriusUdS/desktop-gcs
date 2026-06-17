@@ -7,6 +7,7 @@
 #include "ITileLoader.h"
 #include "Logging.h"
 #include "UdpConfig.h"
+#include "units.h"
 
 #include "command/set_control_flag.hpp"
 #include "framing/ethernet_header.hpp"

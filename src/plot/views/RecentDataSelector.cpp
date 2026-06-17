@@ -1,26 +1,33 @@
 #include "RecentDataSelector.h"
 
-RecentDataSelector::RecentDataSelector(size_t timelapseWindow_ms) : timelapseWindow_ms(timelapseWindow_ms) {
-}
+RecentDataSelector::RecentDataSelector(float duration, Units::TimeUnit durationUnit): duration(duration), durationUnit(durationUnit) {}
 
-RecentDataSelector::Window RecentDataSelector::getWindow(const std::vector<float>& timeline) {
+DataSelector::Window
+RecentDataSelector::getWindow(const PlotView& view) {
+    const auto& timeline = view.timeline;
     const size_t size = timeline.size();
+
+    if (size == 0) {
+        return {0, 0};
+    }
 
     if (start >= size) {
         start = 0;
     }
 
-    if (size > 0) {
-        const float minX = timeline.back() - timelapseWindow_ms;
+    const auto timelineUnit = std::get<Units::TimeUnit>(view.timelineUnit);
 
-        while (start > 0 && timeline.at(start - 1) > minX) {
-            start--;
-        }
+    const float durationInTimelineUnits = Units::convert(duration, durationUnit, timelineUnit);
 
-        while (start < size && timeline.at(start) < minX) {
-            start++;
-        }
+    const float minX = timeline.back() - durationInTimelineUnits;
+
+    while (start > 0 && timeline[start - 1] > minX) {
+        --start;
     }
 
-    return Window{start, size - start};
+    while (start < size && timeline[start] < minX) {
+        ++start;
+    }
+
+    return {start, size - start};
 }

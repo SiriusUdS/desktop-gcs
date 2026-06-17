@@ -6,6 +6,8 @@
 #include "IniParams.h"
 #include "SensorPlotData.h"
 #include "ThemedColors.h"
+#include "RecentDataSelector.h"
+#include "units.h"
 
 #include <imgui.h>
 #include <implot.h>
@@ -17,9 +19,9 @@ PrefillWindow::PrefillWindow()
       postwrapTankLoadCellState{AppState::TankLoadCell::postwrapADCValue, "Postwrap"},
       postIPATankLoadCellState{AppState::TankLoadCell::postIPAADCValue, "Post IPA"},
       tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
-                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue)},
+                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
       tankLoadCellPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
-                           PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red)} {
+                           PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)} {
 }
 
 const char* PrefillWindow::getName() const {
@@ -27,123 +29,13 @@ const char* PrefillWindow::getName() const {
 }
 
 void PrefillWindow::renderImpl() {
-    ImGui::SeparatorText("Tests");
-
-    ImGui::Text("Test: ");
-    ImGui::SameLine();
-
-    switch (sensorTestSequencer.currentTestType()) {
-    case SensorTestSequencer::TestType::NOS_VALVE:
-        ImGui::Text("NOS Valve");
-        break;
-    case SensorTestSequencer::TestType::IPA_VALVE:
-        ImGui::Text("IPA Valve");
-        break;
-    case SensorTestSequencer::TestType::FILL_VALVE:
-        ImGui::Text("Fill Valve");
-        break;
-    case SensorTestSequencer::TestType::DUMP_VALVE:
-        ImGui::Text("Dump Valve");
-        break;
-    case SensorTestSequencer::TestType::NOS_HEATPAD:
-        ImGui::Text("NOS Heat Pad");
-        break;
-    case SensorTestSequencer::TestType::IPA_HEATPAD:
-        ImGui::Text("IPA Heat Pad");
-        break;
-    case SensorTestSequencer::TestType::FILL_HEATPAD:
-        ImGui::Text("Fill Heat Pad");
-        break;
-    case SensorTestSequencer::TestType::DUMP_HEATPAD:
-        ImGui::Text("Dump Heat Pad");
-        break;
-    default:
-        ImGui::Text("None");
-        break;
-    }
-
-    ImGui::Text("Test Action: ");
-    ImGui::SameLine();
-
-    switch (sensorTestSequencer.currentTestAction()) {
-    case SensorTestSequencer::TestAction::OPEN_VALVE:
-        ImGui::Text("Open Valve");
-        break;
-    case SensorTestSequencer::TestAction::CLOSE_VALVE:
-        ImGui::Text("Close Valve");
-        break;
-    case SensorTestSequencer::TestAction::START_HEATPAD:
-        ImGui::Text("Start Heat Pad");
-        break;
-    case SensorTestSequencer::TestAction::STOP_HEATPAD:
-        ImGui::Text("Stop Heat Pad");
-        break;
-    default:
-        ImGui::Text("None");
-        break;
-    }
-
-    ImGui::BeginDisabled(sensorTestSequencer.isBusy());
-
-    if (ImGui::BeginTable("PrefillTestTable", 2)) {
-        ImGui::TableSetupColumn("Valve");
-        ImGui::TableSetupColumn("Heat Pad");
-
-        const ImVec2 buttonSize = {-1.0f, 0.0f};
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        if (ImGui::Button("Test NOS Valve", buttonSize)) {
-            sensorTestSequencer.testNOSValve();
-        }
-
-        ImGui::TableSetColumnIndex(1);
-        if (ImGui::Button("Test NOS Heat Pad", buttonSize)) {
-            sensorTestSequencer.testNOSHeatPad();
-        }
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        if (ImGui::Button("Test IPA Valve", buttonSize)) {
-            sensorTestSequencer.testIPAValve();
-        }
-
-        ImGui::TableSetColumnIndex(1);
-        if (ImGui::Button("Test IPA Heat Pad", buttonSize)) {
-            sensorTestSequencer.testIPAHeatPad();
-        }
-
-        ImGui::TableNextRow();
-
-        ImGui::TableSetColumnIndex(0);
-        if (ImGui::Button("Test Fill Valve", buttonSize)) {
-            sensorTestSequencer.testFillValve();
-        }
-
-        ImGui::TableSetColumnIndex(1);
-        if (ImGui::Button("Test Fill Heat Pad", buttonSize)) {
-            sensorTestSequencer.testFillHeatPad();
-        }
-
-        ImGui::TableNextRow();
-
-        ImGui::TableSetColumnIndex(0);
-        if (ImGui::Button("Test Dump Valve", buttonSize)) {
-            sensorTestSequencer.testDumpValve();
-        }
-
-        ImGui::TableSetColumnIndex(1);
-        if (ImGui::Button("Test Dump Heat Pad", buttonSize)) {
-            sensorTestSequencer.testDumpHeatPad();
-        }
-
-        ImGui::EndTable();
-    }
-
-    ImGui::EndDisabled();
-
-    ImGui::SeparatorText("Calibration");
-
+    constexpr Units::TimeUnit TIME_UNIT = Units::TimeUnit::Seconds;
+    constexpr Units::WeightUnit WEIGHT_UNIT = Units::DEFAULT_WEIGHT_UNIT;
+    constexpr Units::PressureUnit PRESSURE_UNIT = Units::DEFAULT_PRESSURE_UNIT;
+    constexpr Units::TemperatureUnit TEMPERATURE_UNIT = Units::DEFAULT_TEMPERATURE_UNIT;
+    constexpr Units::Unit ADC_UNIT = Units::QuantityUnit::Scalar;
+    
+    ImGui::SeparatorText("Calibration GS");
     ImGui::Text("Tank Load Cell ADC Values");
 
     if (ImGui::BeginTable("PrefillTankLoadCellADCTable", 6, ImGuiTableFlags_SizingFixedFit)) {
@@ -163,15 +55,15 @@ void PrefillWindow::renderImpl() {
         constexpr ImAxis adcValueAxis = ImAxis_Y1;
         constexpr ImAxis weightAxis = ImAxis_Y2;
 
-        ImPlot::SetupAxis(ImAxis_X1, "Timestamp (ms)");
-        ImPlot::SetupAxis(adcValueAxis, "ADC Value");
-        ImPlot::SetupAxis(weightAxis, "Weight (lb)");
+        ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT));
+        ImPlot::SetupAxis(adcValueAxis, Units::as_label(ADC_UNIT));
+        ImPlot::SetupAxis(weightAxis, Units::as_label(WEIGHT_UNIT));
 
         ImPlot::SetAxis(adcValueAxis);
-        tankLoadCellADCPlotLine.plot(IniParams::compressPlots.currentValue);
+        tankLoadCellADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
 
         ImPlot::SetAxis(weightAxis);
-        tankLoadCellPlotLine.plot(IniParams::compressPlots.currentValue);
+        tankLoadCellPlotLine.plot(TIME_UNIT, WEIGHT_UNIT, IniParams::compressPlots.currentValue);
 
         ImPlot::EndPlot();
     }

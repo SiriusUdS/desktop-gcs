@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RecentPlotDataView.h"
+#include "PlotLine.h"
 #include "UIWindow.h"
 
 class TankMassWindow : public UIWindow {
@@ -20,12 +20,12 @@ private:
     std::string engineThrustPlotTitle;
     std::string tankMassPlotTitle;
 
-    RecentPlotDataView recentMotorPressureSensor1;
-    RecentPlotDataView recentMotorPressureSensor2;
-    RecentPlotDataView recentFillPressureSensor1;
-    RecentPlotDataView recentFillPressureSensor2;
-    RecentPlotDataView recentTankTemperature;
-    RecentPlotDataView recentEngineThrust;
-    RecentPlotDataView recentTankMass;
-    RecentPlotDataView recentTankLoadCell;
+    PlotLine recentMotorPressureSensor1;
+    PlotLine recentMotorPressureSensor2;
+    PlotLine recentFillPressureSensor1;
+    PlotLine recentFillPressureSensor2;
+    PlotLine recentTankTemperature;
+    PlotLine recentEngineThrust;
+    PlotLine recentTankMass;
+    PlotLine recentTankLoadCell;
 };

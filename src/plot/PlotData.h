@@ -3,6 +3,7 @@
 #include "DataSeries.h"
 
 #include <mutex>
+#include <utility>
 
 class PlotDataUpdateListener;
 
@@ -10,21 +11,27 @@ class PlotData {
 public:
     class LockedView {
     public:
-        LockedView(std::mutex& mtx, const DataSeries& timeline, const DataSeries& values);
+        LockedView(
+            std::mutex& mtx,
+            const DataSeries& timeline,
+            const DataSeries& values);
+
         const DataSeries& getTimeline() const;
         const DataSeries& getValues() const;
 
     private:
-        const std::lock_guard<std::mutex> lock;
+        std::unique_lock<std::mutex> lock;
+
         const DataSeries& timeline;
         const DataSeries& values;
     };
 
 private:
     static constexpr size_t DEFAULT_RECENT_AVG_VAL_DURATION_MS = 1000;
+    
 
 public:
-    PlotData();
+    PlotData(Units::TimeUnit time_unit, Units::Unit unit);
     void addData(float timestamp, float value);
     void clear();
     void eraseOld(size_t amount);
