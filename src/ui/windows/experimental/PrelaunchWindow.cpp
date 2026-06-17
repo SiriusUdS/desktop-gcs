@@ -17,9 +17,9 @@ const char* const PrelaunchWindow::name = "Prelaunch";
 PrelaunchWindow::PrelaunchWindow()
     : postNOSTankLoadCellState(AppState::TankLoadCell::postNOSADCValue, "Post NOS"),
       tankLoadCellADCPlotLine(GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(),
-                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(6000, Units::TimeUnit::Milliseconds)),
+                              PlotStyle("Tank Load Cell ADC Value", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)),
       tankLoadCellPlotLine(GSDataCenter::LoadCell_FillingStation_PlotData.motor().getValuePlotData(),
-                           PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(6000, Units::TimeUnit::Milliseconds)) {
+                           PlotStyle("Tank Load Cell Weight", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)) {
 }
 
 const char* PrelaunchWindow::getName() const {
