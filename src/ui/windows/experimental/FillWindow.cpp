@@ -73,8 +73,7 @@ void FillWindow::renderImpl() {
     }
 
     if (ImPlot::BeginPlot("Tank Data ADC", {-1.0f, 400.0f}, ImPlotFlags_NoInputs)) {
-        constexpr ImAxis weightAxis = ImAxis_Y1;
-        constexpr ImAxis adcAxis = ImAxis_Y2;
+        constexpr ImAxis adcAxis = ImAxis_Y1;
 
         ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT));
         ImPlot::SetupAxis(adcAxis, Units::as_label(ADC_UNIT));
@@ -110,10 +109,13 @@ void FillWindow::renderImpl() {
                                  GSDataCenter::AllowDumpSwitchData.isOn);
 
         // TODO: Only fully open or closed
-        renderPercentageInputRow("Solenoid Valve",
-                                 dumpHeatPadSlider,
-                                 CommandType::DumpHeatPad,
-                                 {},
+        renderToggle("Solenoid Valve",
+                                 soleinoidValveToggle,
+                                 CommandType::DumpHeatPad, // TODO: This is wrong but there doesn't seem to be definined command for this valve
+                                 "OPEN",
+                                 "CLOSE",
+                                 "Opened",
+                                 "Closed",
                                  "To control the solenoid valve -> [UNSAFE] needs to be ON.",
                                  solenoidValveSliderEnabled);
         ImGui::EndTable();
@@ -127,9 +129,10 @@ void FillWindow::renderImpl() {
         ImGui::TableSetupColumn("Open Percentage");
         ImGui::TableSetupColumn("Set Value Button");
 
-        renderPercentageInputRow("Nos Heat Pad", nosHeatPadSlider, CommandType::NosHeatPad);
-        renderPercentageInputRow("Ipa Heat Pad", ipaHeatPadSlider, CommandType::IpaHeatPad);
-        renderPercentageInputRow("Fill Heat Pad", fillHeatPadSlider, CommandType::FillHeatPad);
+        renderToggle("Nos Heat Pad", nosHeatPadToggle, CommandType::NosHeatPad); // TODO Still sending percentage but only 0 or 100, is this right?
+        renderToggle("Ipa Heat Pad", ipaHeatPadToggle, CommandType::IpaHeatPad); // TODO Still sending percentage but only 0 or 100, is this right?
+        renderToggle("Fill Heat Pad", fillHeatPadToggle, CommandType::FillHeatPad); // TODO Still sending percentage but only 0 or 100, is this right?
+        renderToggle("Dump Heat Pad", dumpHeatPadToggle, CommandType::DumpHeatPad); // TODO Still sending percentage but only 0 or 100, is this right?
 
         ImGui::EndTable();
     }
@@ -138,6 +141,50 @@ void FillWindow::renderImpl() {
     if (ImGui::Button("Confirm")) {
         ImGui::SetWindowFocus(PrelaunchWindow::name);
     }
+}
+
+void FillWindow::renderToggle(const char *name,
+                      OnOffInput& input, 
+                      CommandType commandType, 
+                      const char *labelOn, 
+                      const char *labelOff, 
+                      const char *stateOn, 
+                      const char *stateOff, 
+                      const char* tooltipDisabled, 
+                      bool enabled) const {
+    ImGui::BeginDisabled(!enabled);
+    ImGui::TableNextRow();
+
+    // Current value text
+    ImGui::TableSetColumnIndex(0);
+    addDisabledTooltip(tooltipDisabled, enabled);
+    ImGui::BeginDisabled(input.on_value);
+    std::string buttonStr = std::string(labelOn) + "##" + name;
+    if (ImGui::Button(buttonStr.c_str())) {
+        input.on_value = true;
+        CommandControl::sendCommand(commandType, 100);
+    }
+    ImGui::EndDisabled();
+
+    ImGui::SameLine();
+    addDisabledTooltip(tooltipDisabled, enabled);
+    ImGui::BeginDisabled(!input.on_value);
+    buttonStr = std::string(labelOff) + "##" + name;
+    if (ImGui::Button(buttonStr.c_str())) {
+        input.on_value = false;
+        CommandControl::sendCommand(commandType, 0);
+    }
+    ImGui::EndDisabled();
+
+    ImGui::SameLine();
+    addDisabledTooltip(tooltipDisabled, enabled);
+    ImGui::Text(name);
+
+    ImGui::TableSetColumnIndex(1);
+    addDisabledTooltip(tooltipDisabled, enabled);
+    ImGui::Text("State: %s", input.on_value ? stateOn : stateOff);
+
+    ImGui::EndDisabled();
 }
 
 void FillWindow::renderPercentageInputRow(const char* name,
