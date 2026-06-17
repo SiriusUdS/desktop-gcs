@@ -21,6 +21,7 @@ struct UdpPacketMetadata {
 
     UDPDeviceCtrlFlags deviceCtrlFlags{}; // TODO: no equivalent in EthernetHeader; left default until GS-control telemetry returns
     std::uint8_t deviceState{};
+    std::uint8_t seq{}; // EthernetHeader seq: a command's reply (Pong/Ack) echoes the command's seq
 
 
     static UdpPacketMetadata fromNetworkFrame(const EthernetHeader& rawFrame, size_t verifiedPayloadSize) {
@@ -34,6 +35,7 @@ struct UdpPacketMetadata {
         cleanData.payloadID = rawFrame.payload_id;
 
         cleanData.deviceState = rawFrame.sender_state;
+        cleanData.seq = rawFrame.seq;
         cleanData.deviceTsMs = rawFrame.sender_timestamp_ms; // native little-endian end-to-end in the new protocol; no ntohl
         return cleanData;
     }

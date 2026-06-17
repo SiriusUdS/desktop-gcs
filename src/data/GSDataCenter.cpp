@@ -69,4 +69,11 @@ std::atomic<uint64_t> ecuSystemStateCount{};
 std::atomic<uint64_t> fcuSystemStateCount{};
 std::atomic<uint64_t> ecuExtendedSystemStateCount{};
 std::atomic<uint64_t> fcuExtendedSystemStateCount{};
+std::atomic<uint64_t> gsSystemStateCount{};
+
+std::atomic<EcuSystemState> latestEcuSystemState{};
+std::atomic<FcuSystemState> latestFcuSystemState{};
+std::atomic<EcuExtendedSystemState> latestEcuExtendedSystemState{};
+std::atomic<FcuExtendedSystemState> latestFcuExtendedSystemState{};
+std::atomic<GSSystemState> latestGsSystemState{};
 } // namespace GSDataCenter

@@ -22,6 +22,7 @@ public:
     void start() override;
     bool read() override;
     bool write(std::span<const uint8_t> msg) override;
+    bool writeTo(std::span<const uint8_t> msg, const std::string& ip, uint16_t port) override;
     bool openConnectionTo(std::string ipAddress, uint16_t sendPort, uint16_t receivePort);
     bool comOpened() override;
     void shutdown() override;

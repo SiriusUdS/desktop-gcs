@@ -3,6 +3,7 @@
 #include "DeviceInformation.h"
 #include "DeviceTracker.h"
 
+#include <atomic>
 #include <cstdint>
 #include <string>
 #include <thread>
@@ -38,4 +39,12 @@ extern BoardComStateMonitor fillingStationBoardComStateMonitor;
 extern BoardComStateMonitor gsControlBoardComStateMonitor;
 extern std::unique_ptr<ICom> com;
 extern std::unique_ptr<DeviceTracker> deviceTracker;
+
+// When true, the com loop streams a GSSystemState frame to the board on a fixed cadence
+// (addressed to board id 3 / GsControl), sent to the configured destination.
+extern std::atomic<bool> streamGsSystemState;
+
+// When true, the com loop queues one Ping command per second (a manual heartbeat the
+// boards report back via ExtendedSystemState::seconds_since_last_ping).
+extern std::atomic<bool> autoPing;
 } // namespace ComTask

@@ -5,6 +5,12 @@
 #include "SwitchData.h"
 #include "ValveData.h"
 
+#include "telemetry/ecu_extended_system_state.hpp"
+#include "telemetry/ecu_system_state.hpp"
+#include "telemetry/fcu_extended_system_state.hpp"
+#include "telemetry/fcu_system_state.hpp"
+#include "telemetry/gs_system_state.hpp"
+
 #include <atomic>
 #include <vector>
 
@@ -74,4 +80,14 @@ extern std::atomic<uint64_t> ecuSystemStateCount;
 extern std::atomic<uint64_t> fcuSystemStateCount;
 extern std::atomic<uint64_t> ecuExtendedSystemStateCount;
 extern std::atomic<uint64_t> fcuExtendedSystemStateCount;
+extern std::atomic<uint64_t> gsSystemStateCount;
+
+// Most recent fully-decoded telemetry record of each type, kept verbatim so the UI
+// can show every field (the curated atomics above hold only the subset used elsewhere).
+// The matching *Count above is non-zero once a record has landed here.
+extern std::atomic<EcuSystemState> latestEcuSystemState;
+extern std::atomic<FcuSystemState> latestFcuSystemState;
+extern std::atomic<EcuExtendedSystemState> latestEcuExtendedSystemState;
+extern std::atomic<FcuExtendedSystemState> latestFcuExtendedSystemState;
+extern std::atomic<GSSystemState> latestGsSystemState;
 } // namespace GSDataCenter
