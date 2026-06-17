@@ -1,5 +1,6 @@
 ﻿#include "UdpPacketReceiver.h"
 
+#include "Logging.h"
 #include "PacketProcessing.h"
 #include "UdpCom.h"
 
@@ -93,7 +94,20 @@ bool UdpPacketReceiver::validateChecksum() {
 
     uint32_t calculatedCRC = CRC::computeCrc32(crcInput.data(), crcInput.size());
 
-    return (receivedCRC == calculatedCRC);
+    if (receivedCRC != calculatedCRC) {
+        // Dropped here (packetLostCount++ in the caller). Log enough to tell a genuine corruption
+        // from a CRC-variant/coverage mismatch with the board: the two CRCs, the covered byte span,
+        // and which frame it was (sender / payload type+id) from the header.
+        GCS_APP_LOG_WARN("UdpPacketReceiver: CRC mismatch over {} bytes (header {} + payload {}) — "
+                         "received 0x{:08X}, computed 0x{:08X}; sender={} payload_type={} payload_id={}. Dropping.",
+                         crcInput.size(), headerBuffer.bytes.size(), tempPayloadBuffer.size(),
+                         receivedCRC, calculatedCRC,
+                         static_cast<unsigned>(headerBuffer.frame.sender_id),
+                         static_cast<unsigned>(headerBuffer.frame.payload_type),
+                         static_cast<unsigned>(headerBuffer.frame.payload_id));
+        return false;
+    }
+    return true;
 }
 
 bool UdpPacketReceiver::getPacket(uint8_t* recv) {

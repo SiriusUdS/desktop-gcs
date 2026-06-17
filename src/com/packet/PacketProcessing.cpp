@@ -16,6 +16,7 @@
 #include "UdpCom.h"
 #include "ValveData.h"
 
+#include "command/set_control_flag.hpp"
 #include "framing/payload_type.hpp"
 #include "response/response_type.hpp"
 #include "system/board_id.hpp"
@@ -25,6 +26,7 @@
 #include "telemetry/ecu_system_state.hpp"
 #include "telemetry/fcu_extended_system_state.hpp"
 #include "telemetry/fcu_system_state.hpp"
+#include "telemetry/gs_system_state.hpp"
 #include "telemetry/telemetry_type.hpp"
 
 namespace PacketProcessing {
@@ -40,6 +42,7 @@ bool routeDecodedSerialPacket();
 bool routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt);
 bool processSystemStatePacket(uint8_t* payloadBuf, const UdpPacketMetadata& meta);
 bool processExtendedSystemStatePacket(uint8_t* payloadBuf, const UdpPacketMetadata& meta);
+bool processGsSystemStatePacket(uint8_t* payloadBuf, const UdpPacketMetadata& meta);
 void computeThermistorValues(uint16_t thermistorAdcValues[GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD], uint16_t boardId);
 void computePressureSensorValues(uint16_t pressureSensorAdcValues[GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD], uint16_t boardId);
 void computeLoadCellValues(uint16_t loadCellAdcValues[GSDataCenterConfig::LOAD_CELL_AMOUNT]);
@@ -95,6 +98,9 @@ bool PacketProcessing::routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt) {
         if (udpMetadataOpt.payloadID == static_cast<uint8_t>(TelemetryType::ExtendedSystemState)) {
             return processExtendedSystemStatePacket(udpPacketBuf, udpMetadataOpt);
         }
+        if (udpMetadataOpt.payloadID == static_cast<uint8_t>(TelemetryType::GsSystemState)) {
+            return processGsSystemStatePacket(udpPacketBuf, udpMetadataOpt);
+        }
         GCS_APP_LOG_WARN("PacketProcessing: Unknown telemetry id {}, ignoring.", udpMetadataOpt.payloadID);
         return false;
     }
@@ -103,6 +109,11 @@ bool PacketProcessing::routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt) {
         if (udpMetadataOpt.payloadID == static_cast<uint8_t>(ResponseType::Pong)) {
             GSDataCenter::pongReceivedCount++;
             GSDataCenter::lastPongSenderId = static_cast<uint8_t>(udpMetadataOpt.deviceID);
+            return true;
+        }
+        if (udpMetadataOpt.payloadID == static_cast<uint8_t>(ResponseType::Ack)) {
+            GCS_APP_LOG_INFO("PacketProcessing: Ack received from board {} (seq {}).",
+                             udpMetadataOpt.deviceID, static_cast<unsigned>(udpMetadataOpt.seq));
             return true;
         }
         GCS_APP_LOG_WARN("PacketProcessing: Unknown response id {}, ignoring.", udpMetadataOpt.payloadID);
@@ -263,15 +274,17 @@ void decodeFillingStationState(const SystemStateBase& base, uint8_t boardState) 
 // Decode one low-rate ECU ExtendedSystemState record (just the live control-flag
 // bitmask for now; event timestamps will land here later).
 void decodeEcuExtendedState(const EcuExtendedSystemState& rec) {
-    GSDataCenter::motorBoardControlFlags = rec.control_flags;
+    GSDataCenter::motorBoardControlFlags =
+        rec.base.control_flags_base | (static_cast<uint32_t>(rec.base.control_flags_board) << CONTROL_FLAG_BOARD_OFFSET);
 }
 
 // Decode one low-rate FCU ExtendedSystemState record: control flags + the 4
 // thermocouple channels (raw code + linearized degC) into GSDataCenter plots.
 void decodeFcuExtendedState(const FcuExtendedSystemState& rec) {
-    GSDataCenter::fillingStationBoardControlFlags = rec.control_flags;
+    GSDataCenter::fillingStationBoardControlFlags =
+        rec.base.control_flags_base | (static_cast<uint32_t>(rec.base.control_flags_board) << CONTROL_FLAG_BOARD_OFFSET);
 
-    const float timestamp = static_cast<float>(rec.creation_timestamp_ms);
+    const float timestamp = static_cast<float>(rec.base.creation_timestamp_ms);
     for (size_t i = 0; i < GSDataCenterConfig::THERMOCOUPLE_AMOUNT; i++) {
         const ThermocoupleInfo& tc = rec.thermocouple_info[i];
         const float tempC = static_cast<float>(tc.thermocouple_code) / 128.0f; // LSB = 2^-7 degC
@@ -297,10 +310,12 @@ bool PacketProcessing::processSystemStatePacket(uint8_t* payloadBuf, const UdpPa
             return false;
         }
         const EcuSystemState* records = reinterpret_cast<const EcuSystemState*>(payloadBuf);
-        for (size_t i = 0; i < packetSize / recordSize; i++) {
+        const size_t recordCount = packetSize / recordSize;
+        for (size_t i = 0; i < recordCount; i++) {
             decodeEngineState(records[i].base, boardState);
         }
-        GSDataCenter::ecuSystemStateCount += packetSize / recordSize;
+        GSDataCenter::latestEcuSystemState.store(records[recordCount - 1]); // newest in the batch, for the full-field UI
+        GSDataCenter::ecuSystemStateCount += recordCount;
 
         ComTask::packetRateMonitor.trackPacket();
         ComTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
@@ -311,13 +326,19 @@ bool PacketProcessing::processSystemStatePacket(uint8_t* payloadBuf, const UdpPa
             return false;
         }
         const FcuSystemState* records = reinterpret_cast<const FcuSystemState*>(payloadBuf);
-        for (size_t i = 0; i < packetSize / recordSize; i++) {
+        const size_t recordCount = packetSize / recordSize;
+        for (size_t i = 0; i < recordCount; i++) {
             decodeFillingStationState(records[i].base, boardState);
         }
-        GSDataCenter::fcuSystemStateCount += packetSize / recordSize;
+        GSDataCenter::latestFcuSystemState.store(records[recordCount - 1]); // newest in the batch, for the full-field UI
+        GSDataCenter::fcuSystemStateCount += recordCount;
 
         ComTask::packetRateMonitor.trackPacket();
         ComTask::fillingStationBoardComStateMonitor.trackSuccessfulPacketRead();
+    } else if (board == BoardId::GsControl) {
+        // The GS-control board (id 3) reports its panel state under the SystemState telemetry id;
+        // decode it as a GSSystemState rather than an ECU/FCU record.
+        return processGsSystemStatePacket(payloadBuf, meta);
     } else {
         GCS_APP_LOG_WARN("PacketProcessing: SystemState from unsupported board id {}, ignoring.", meta.deviceID);
         return false;
@@ -346,10 +367,12 @@ bool PacketProcessing::processExtendedSystemStatePacket(uint8_t* payloadBuf, con
             return false;
         }
         const EcuExtendedSystemState* records = reinterpret_cast<const EcuExtendedSystemState*>(payloadBuf);
-        for (size_t i = 0; i < packetSize / recordSize; i++) {
+        const size_t recordCount = packetSize / recordSize;
+        for (size_t i = 0; i < recordCount; i++) {
             decodeEcuExtendedState(records[i]);
         }
-        GSDataCenter::ecuExtendedSystemStateCount += packetSize / recordSize;
+        GSDataCenter::latestEcuExtendedSystemState.store(records[recordCount - 1]); // newest in the batch, for the full-field UI
+        GSDataCenter::ecuExtendedSystemStateCount += recordCount;
         ComTask::packetRateMonitor.trackPacket();
         ComTask::motorBoardComStateMonitor.trackSuccessfulPacketRead();
     } else if (board == BoardId::FillingStation) {
@@ -359,16 +382,34 @@ bool PacketProcessing::processExtendedSystemStatePacket(uint8_t* payloadBuf, con
             return false;
         }
         const FcuExtendedSystemState* records = reinterpret_cast<const FcuExtendedSystemState*>(payloadBuf);
-        for (size_t i = 0; i < packetSize / recordSize; i++) {
+        const size_t recordCount = packetSize / recordSize;
+        for (size_t i = 0; i < recordCount; i++) {
             decodeFcuExtendedState(records[i]);
         }
-        GSDataCenter::fcuExtendedSystemStateCount += packetSize / recordSize;
+        GSDataCenter::latestFcuExtendedSystemState.store(records[recordCount - 1]); // newest in the batch, for the full-field UI
+        GSDataCenter::fcuExtendedSystemStateCount += recordCount;
         ComTask::packetRateMonitor.trackPacket();
         ComTask::fillingStationBoardComStateMonitor.trackSuccessfulPacketRead();
     } else {
         GCS_APP_LOG_WARN("PacketProcessing: ExtendedSystemState from unsupported board id {}, ignoring.", meta.deviceID);
         return false;
     }
+    return true;
+}
+
+bool PacketProcessing::processGsSystemStatePacket(uint8_t* payloadBuf, const UdpPacketMetadata& meta) {
+    // Batch of N back-to-back GSSystemState records (the ground-station panel state). Unlike the
+    // ECU/FCU SystemState there is a single source, so no per-board routing — keep the newest record.
+    constexpr size_t recordSize = sizeof(GSSystemState);
+    if (packetSize == 0 || packetSize % recordSize != 0) {
+        GCS_APP_LOG_WARN("PacketProcessing: GSSystemState batch ({} B) is not a whole multiple of {} B, ignoring.", packetSize, recordSize);
+        return false;
+    }
+    const GSSystemState* records = reinterpret_cast<const GSSystemState*>(payloadBuf);
+    const size_t recordCount = packetSize / recordSize;
+    GSDataCenter::latestGsSystemState.store(records[recordCount - 1]); // newest in the batch, for the UI table
+    GSDataCenter::gsSystemStateCount += recordCount;
+    ComTask::packetRateMonitor.trackPacket();
     return true;
 }
 

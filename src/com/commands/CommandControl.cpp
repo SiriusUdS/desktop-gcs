@@ -21,7 +21,7 @@ enum class State {
 };
 
 constexpr size_t MAX_DATA_SIZE = 256;                       ///< Maximum size of the command's data
-constexpr size_t NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND = 100; ///< Each command is sent this many times to improve communication with the boards
+constexpr size_t NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND = 1; ///< Each command is sent this many times to improve communication with the boards
 constexpr double TIME_BETWEEN_COMMAND_SENDS_SEC = 0.010;     ///< Wait this much between each command send (UDP: tight 10 ms cadence)
 
 using SsCommandType = logic::communication::command::CommandType; ///< On-wire (SSOT) command id
@@ -35,7 +35,11 @@ CommandQueue commandQueue;                                   ///< Queue containi
 std::optional<std::shared_ptr<QueuedCommand>> currentCommand; ///< Current command being sent
 
 void getNextCommand();
+void completeCurrentCommand();
 void setupValveCommand(BoardId target, uint8_t valveIndex);
+void setupSolenoidValveCommand(uint8_t on);
+void setupHeaterCommand(uint8_t on);
+void setupSetControlFlagCommand(uint16_t flagId, uint8_t on);
 void setupSetStateCommand(uint8_t requestedStateId);
 void setupPing();
 void stubUnimplementedCommand(const char* what);
@@ -92,6 +96,15 @@ size_t buildCommandFrame(uint8_t* out, BoardId target, uint8_t payloadId, const 
 } // namespace
 
 void CommandControl::processCommands() {
+    // Preempt: a freshly queued command supersedes the in-flight resend burst so the
+    // latest operator intent goes out on the next loop, instead of waiting up to ~1 s
+    // for the current command's 100 resends to drain. The abandoned command is still
+    // completed (below) so any waiter is released.
+    if (state == State::SENDING && !commandQueue.empty()) {
+        completeCurrentCommand();
+        state = State::IDLE;
+    }
+
     if (state == State::IDLE) {
         getNextCommand(); // dequeue + set up; transitions to SENDING for a real command (stubs stay IDLE)
         if (state != State::SENDING) {
@@ -110,13 +123,19 @@ void CommandControl::processCommands() {
     timesSent++;
 
     if (NUMBER_OF_TIMES_TO_SEND_SAME_COMMAND <= timesSent) {
+        completeCurrentCommand();
         state = State::IDLE;
-        if (currentCommand.has_value()) {
-            currentCommand.value()->processed = true;
-            currentCommand.value()->processed.notify_one();
-            currentCommand = std::nullopt;
-        }
         timesSent = 0;
+    }
+}
+
+// Mark the in-flight command processed and release any waiter (e.g. SensorTestSequencer),
+// then clear it. Safe to call with no command in flight.
+void CommandControl::completeCurrentCommand() {
+    if (currentCommand.has_value()) {
+        currentCommand.value()->processed = true;
+        currentCommand.value()->processed.notify_one();
+        currentCommand = std::nullopt;
     }
 }
 
@@ -157,6 +176,18 @@ void CommandControl::getNextCommand() {
     case CommandType::SetState:
         setupSetStateCommand(static_cast<uint8_t>(currentCommand.value()->value));
         break;
+    case CommandType::SolenoidValve:
+        setupSolenoidValveCommand(static_cast<uint8_t>(currentCommand.value()->value));
+        break;
+    case CommandType::Heater:
+        setupHeaterCommand(static_cast<uint8_t>(currentCommand.value()->value));
+        break;
+    case CommandType::SetControlFlag: {
+        // value packs the 16-bit global flag id and the on/off bit: (flagId << 1) | (on & 1).
+        const uint32_t packed = currentCommand.value()->value;
+        setupSetControlFlagCommand(static_cast<uint16_t>(packed >> 1), static_cast<uint8_t>(packed & 1u));
+        break;
+    }
     case CommandType::Ping:
         setupPing();
         break;
@@ -172,7 +203,9 @@ void CommandControl::setupValveCommand(BoardId target, uint8_t valveIndex) {
         return;
     }
 
-    uint32_t percentageOpen = currentCommand.value()->value;
+    const uint32_t value = currentCommand.value()->value;
+    const bool forced = (value & VALVE_FORCE_FLAG) != 0;
+    uint32_t percentageOpen = value & ~VALVE_FORCE_FLAG;
 
     if (percentageOpen > 100) {
         GCS_APP_LOG_WARN("CommandControl: Invalid valve percentage: {}. Must be between 0 and 100.", percentageOpen);
@@ -182,6 +215,7 @@ void CommandControl::setupValveCommand(BoardId target, uint8_t valveIndex) {
 
     SetValvePositionFrame frame{};
     frame.valve = static_cast<FcuValves>(valveIndex); // on-wire value is the per-board valve index (EcuValves / FcuValves)
+    frame.force = forced ? 1 : 0; // bypass the limit switches for this actuation (Open/Close only; ignored for SetOpenedPct)
     // The ECU treats valves as binary (opened/closed) and rejects SetOpenedPct, so map
     // the endpoints to the discrete Open/Close actions; only intermediate positions use the percentage.
     if (percentageOpen >= 100) {
@@ -198,6 +232,56 @@ void CommandControl::setupValveCommand(BoardId target, uint8_t valveIndex) {
     dataSize = buildCommandFrame(data,
                                  target,
                                  static_cast<uint8_t>(SsCommandType::SetValvePosition),
+                                 reinterpret_cast<const uint8_t*>(&frame),
+                                 sizeof(frame));
+    state = State::SENDING;
+}
+
+// Open (set) or close (clear) the FCU solenoid valve via a SetControlFlag command.
+// The solenoid is a per-board flag, so its global on-wire id is the board offset plus
+// the FcuControlFlag bit. The board gates actuation to Unsafe and auto-clears the flag
+// on leaving it; the GS just toggles the flag.
+void CommandControl::setupSolenoidValveCommand(uint8_t on) {
+    SetControlFlagFrame frame{};
+    frame.flag = CONTROL_FLAG_BOARD_OFFSET + static_cast<uint16_t>(FcuControlFlag::SolenoidValve);
+    frame.value = on ? 1 : 0;
+
+    dataSize = buildCommandFrame(data,
+                                 BoardId::FillingStation,
+                                 static_cast<uint8_t>(SsCommandType::SetControlFlag),
+                                 reinterpret_cast<const uint8_t*>(&frame),
+                                 sizeof(frame));
+    state = State::SENDING;
+}
+
+// Turn the FCU heater on (set) or off (clear) via a SetControlFlag command. Like the
+// solenoid it is a per-board flag, so its global on-wire id is the board offset plus the
+// FcuControlFlag bit. Unlike the solenoid it is not state-gated: the FCU follows the flag
+// in any state, so the GS just toggles it.
+void CommandControl::setupHeaterCommand(uint8_t on) {
+    SetControlFlagFrame frame{};
+    frame.flag = CONTROL_FLAG_BOARD_OFFSET + static_cast<uint16_t>(FcuControlFlag::Heater);
+    frame.value = on ? 1 : 0;
+
+    dataSize = buildCommandFrame(data,
+                                 BoardId::FillingStation,
+                                 static_cast<uint8_t>(SsCommandType::SetControlFlag),
+                                 reinterpret_cast<const uint8_t*>(&frame),
+                                 sizeof(frame));
+    state = State::SENDING;
+}
+
+// Set (or clear) a control flag by its 16-bit global id. Broadcast: the persistence
+// flags are BASE flags common to every board (ids 0..7), so every board toggles together.
+// Per-board flags (ids >= 8) would still be accepted by their owning board on a broadcast.
+void CommandControl::setupSetControlFlagCommand(uint16_t flagId, uint8_t on) {
+    SetControlFlagFrame frame{};
+    frame.flag = flagId;
+    frame.value = on ? 1 : 0;
+
+    dataSize = buildCommandFrame(data,
+                                 BoardId::Broadcast,
+                                 static_cast<uint8_t>(SsCommandType::SetControlFlag),
                                  reinterpret_cast<const uint8_t*>(&frame),
                                  sizeof(frame));
     state = State::SENDING;
@@ -231,10 +315,6 @@ void CommandControl::setupPing() {
 // queue keeps moving (the controls stay; their effect is a no-op for now).
 void CommandControl::stubUnimplementedCommand(const char* what) {
     GCS_APP_LOG_WARN("CommandControl: {} command is not implemented for the common-protocol yet; dropping.", what);
-    if (currentCommand.has_value()) {
-        currentCommand.value()->processed = true;
-        currentCommand.value()->processed.notify_one();
-        currentCommand = std::nullopt;
-    }
+    completeCurrentCommand();
     state = State::IDLE;
 }

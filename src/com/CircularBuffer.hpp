@@ -34,7 +34,7 @@ inline bool CircularBuffer<BUFSIZE>::read(uint8_t* recv, size_t size) {
     }
 
     if (size == 0) {
-        return false;
+        return true; // reading zero bytes is a trivial success — needed for no-payload frames (Pong/Ack)
     }
 
     for (size_t idx = 0; idx < size; idx++) {

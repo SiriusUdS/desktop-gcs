@@ -65,6 +65,20 @@ bool UdpCom::write(std::span<const uint8_t> msg) {
     return (static_cast<size_t>(bytesSent) == msg.size());
 }
 
+bool UdpCom::writeTo(std::span<const uint8_t> msg, const std::string& ip, uint16_t port) {
+    if (!initialized || !sock.is_open()) {
+        return false;
+    }
+
+    SSIZE_T bytesSent = sock.send_to(msg.data(), msg.size(), sockpp::inet_address(ip, port));
+
+    if (bytesSent <= 0) {
+        return false;
+    }
+
+    return (static_cast<size_t>(bytesSent) == msg.size());
+}
+
 bool UdpCom::openConnectionTo(std::string ipAddress, uint16_t sendPort, uint16_t receivePort) {
     if (comOpened()) {
         shutdown();
