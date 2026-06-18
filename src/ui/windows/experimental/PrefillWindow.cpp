@@ -78,4 +78,26 @@ void PrefillWindow::renderImpl() {
     if (!allowConfirm && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
         ImGui::SetTooltip("All calibration values need to be saved before proceeding to the \"Fill\" window.");
     }
+
+    ImGui::SeparatorText("Ematch Info");
+    renderIndicator("Energized", GSDataCenter::latestFcuExtendedSystemState.load().ematch_info.status.energised > 0);
+    renderIndicator("Detected", GSDataCenter::latestFcuExtendedSystemState.load().ematch_info.status.detected > 0);
+}
+
+void PrefillWindow::renderIndicator(const char* name, bool high, ImColor color_low, ImColor color_high, const char* label_low, const char* label_high) {
+    ImColor color = high ? color_high : color_low;
+    ImGui::PushStyleColor(ImGuiCol_Button, color.Value);         // Idle state
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color.Value);  // Hovered state
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, color.Value);   // Clicked state
+
+    std::string status = std::string(high ? label_high : label_low) + "##" + name;
+    ImGui::Button(status.c_str());
+
+    if (ImGui::IsItemHovered())
+        ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+
+    ImGui::SameLine();
+    ImGui::Text(name);
+
+    ImGui::PopStyleColor(3);
 }
