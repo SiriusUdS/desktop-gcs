@@ -411,7 +411,7 @@ void sendGsSystemStateBurst(const char* ip, uint16_t port, uint8_t count) {
         header.sender_id = static_cast<uint32_t>(BoardId::GsControl);
         header.target_id = static_cast<uint32_t>(BoardId::GsControl); // addressed to board id 3 (GsControl)
         header.payload_type = static_cast<uint32_t>(PayloadType::Telemetry);
-        header.payload_id = static_cast<uint32_t>(TelemetryType::GsSystemState);
+        header.payload_id = static_cast<uint32_t>(TelemetryType::SystemState);
         header.payload_size_bytes = sizeof(GSSystemState);
         header.sender_state = 0;
         header.seq = 0;                 // telemetry carries no command seq

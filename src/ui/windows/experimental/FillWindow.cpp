@@ -23,8 +23,10 @@ FillWindow::FillWindow()
       tankLoadCellADCPlotLine{GSDataCenter::LoadCell_FillingStation_PlotData.motor().getAdcPlotData(), PlotStyle("Tank Load Cell ADC", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(600000, Units::TimeUnit::Milliseconds)},
       tankTransducerPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getValuePlotData(), PlotStyle("Tank Pressure", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(600000, Units::TimeUnit::Milliseconds)},
       tankTransducerADCPlotLine{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getAdcPlotData(), PlotStyle("Tank Pressure ADC", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(600000, Units::TimeUnit::Milliseconds)},
-      tankTempPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.t1().getValuePlotData(), PlotStyle("Tank Temperature", ThemedColors::PlotLine::green), std::make_unique<RecentDataSelector>(600000, Units::TimeUnit::Milliseconds)},
-      tankTempADCPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.t1().getAdcPlotData(), PlotStyle("Tank Temperature ADC", ThemedColors::PlotLine::green), std::make_unique<RecentDataSelector>(600000, Units::TimeUnit::Milliseconds)},
+      tankTopTempPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.tank_top().getValuePlotData(), PlotStyle("Tank Top Temperature", ThemedColors::PlotLine::green), std::make_unique<RecentDataSelector>(600000, Units::TimeUnit::Milliseconds)},
+      tankTopTempADCPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.tank_top().getAdcPlotData(), PlotStyle("Tank Top Temperature ADC", ThemedColors::PlotLine::green), std::make_unique<RecentDataSelector>(600000, Units::TimeUnit::Milliseconds)},
+      tankBottomTempPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.tank_bottom().getValuePlotData(), PlotStyle("Tank Bottom Temperature", ThemedColors::PlotLine::yellow), std::make_unique<RecentDataSelector>(600000, Units::TimeUnit::Milliseconds)},
+      tankBottomTempADCPlotLine{GSDataCenter::Thermistor_FillingStation_PlotData.tank_bottom().getAdcPlotData(), PlotStyle("Tank Bottom Temperature ADC", ThemedColors::PlotLine::yellow), std::make_unique<RecentDataSelector>(600000, Units::TimeUnit::Milliseconds)},
       tankMassPlotLine{GSDataCenter::TankMass_PlotData, PlotStyle("Tank Mass", ThemedColors::PlotLine::yellow), std::make_unique<RecentDataSelector>(600000, Units::TimeUnit::Milliseconds)} {
 }
 
@@ -68,7 +70,8 @@ void FillWindow::renderImpl() {
         tankTransducerPlotLine.plot(TIME_UNIT, PRESSURE_UNIT, IniParams::compressPlots.currentValue);
 
         ImPlot::SetAxis(tempAxis);
-        tankTempPlotLine.plot(TIME_UNIT, TEMPERATURE_UNIT, IniParams::compressPlots.currentValue);
+        tankTopTempPlotLine.plot(TIME_UNIT, TEMPERATURE_UNIT, IniParams::compressPlots.currentValue);
+        tankBottomTempPlotLine.plot(TIME_UNIT, TEMPERATURE_UNIT, IniParams::compressPlots.currentValue);
 
         ImPlot::EndPlot();
     }
@@ -82,7 +85,8 @@ void FillWindow::renderImpl() {
         ImPlot::SetAxis(adcAxis);
         tankLoadCellADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
         tankTransducerADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
-        tankTempADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
+        tankTopTempADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
+        tankBottomTempADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
 
         ImPlot::EndPlot();
     }

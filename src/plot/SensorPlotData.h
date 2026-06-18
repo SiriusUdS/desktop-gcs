@@ -15,6 +15,7 @@ public:
     SensorPlotData(Units::TimeUnit time_unit, Units::Unit unit, Units::Unit adc_unit = Units::QuantityUnit::Scalar);
 
     void addData(float adc, float value, float timestamp);
+    void addData(float adc, float value, float timestamp, Units::Unit unit);
     void addListenerAdc(PlotDataUpdateListener* listener);
     void addListenerValue(PlotDataUpdateListener* listener);
 

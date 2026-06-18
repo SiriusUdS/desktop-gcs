@@ -22,6 +22,7 @@ private:
 
     PlotLine recentMotorPressureSensor1;
     PlotLine recentMotorPressureSensor2;
+    PlotLine recentMotorPressureSensor3;
     PlotLine recentFillPressureSensor1;
     PlotLine recentFillPressureSensor2;
     PlotLine recentTankTemperature;

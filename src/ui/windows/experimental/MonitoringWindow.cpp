@@ -19,8 +19,11 @@ MonitoringWindow::MonitoringWindow()
                              PlotStyle("Thrust Load Cell", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
       tankPressurePlotLine{GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData(),
                            PlotStyle("Tank Pressure", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
-      chamberPressurePlotLine{GSDataCenter::PressureSensor_Motor_PlotData.p2().getValuePlotData(),
+      chamberPressurePlotLine{GSDataCenter::PressureSensor_Motor_PlotData.chamber().getValuePlotData(),
                               PlotStyle("Chamber Pressure", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
+      NOSPressurePlotLine{GSDataCenter::PressureSensor_Motor_PlotData.NOS().getValuePlotData(),
+                              PlotStyle("NOS Pressure", ThemedColors::PlotLine::blue),
+                              std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
       motorThermistorPlotLines{
         {{GSDataCenter::Thermistor_Motor_PlotData.t1().getValuePlotData(), PlotStyle("Motor Thermistor 1", ThemedColors::PlotLine::blue), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
          {GSDataCenter::Thermistor_Motor_PlotData.t2().getValuePlotData(), PlotStyle("Motor Thermistor 2", ThemedColors::PlotLine::red), std::make_unique<RecentDataSelector>(60000, Units::TimeUnit::Milliseconds)},
@@ -72,6 +75,7 @@ void MonitoringWindow::renderImpl() {
         ImPlot::SetAxis(pressureAxis);
         tankPressurePlotLine.plot(TIME_UNIT, PRESSURE_UNIT, IniParams::compressPlots.currentValue);
         chamberPressurePlotLine.plot(TIME_UNIT, PRESSURE_UNIT, IniParams::compressPlots.currentValue);
+        NOSPressurePlotLine.plot(TIME_UNIT, PRESSURE_UNIT, IniParams::compressPlots.currentValue);
 
         ImPlot::SetAxis(temperatureAxis);
         for (const PlotLine& plotLine : motorThermistorPlotLines) {

@@ -20,6 +20,7 @@ private:
     PlotLine thrustLoadCellPlotLine;
     PlotLine tankPressurePlotLine;
     PlotLine chamberPressurePlotLine;
+    PlotLine NOSPressurePlotLine;
 
     std::array<PlotLine, GSDataCenterConfig::THERMISTOR_AMOUNT_PER_BOARD> motorThermistorPlotLines;
 };

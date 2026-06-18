@@ -44,7 +44,6 @@ std::atomic<uint32_t> fillingStationBoardTimestamp_ms{};
 std::atomic<uint32_t> motorBoardControlFlags{};
 std::atomic<uint32_t> fillingStationBoardControlFlags{};
 
-std::atomic<float> fillingStationThermocouple_C[GSDataCenterConfig::THERMOCOUPLE_AMOUNT]{};
 std::atomic<uint8_t> fillingStationThermocoupleState[GSDataCenterConfig::THERMOCOUPLE_AMOUNT]{};
 
 AdcChannelAverager motorAdcAverager;

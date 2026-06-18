@@ -4,17 +4,20 @@
 #include "ComTask.h"
 #include "DeviceInformation.h"
 #include "GSDataCenter.h"
-#include "LoadCell.h"
+#include "GSDataCenterConfig.h"
 #include "Logging.h"
 #include "PacketCSVLogging.h"
 #include "PacketRateMonitor.h"
-#include "PressureTransducer.h"
 #include "SensorPlotData.h"
 #include "SerialConfig.h"
 #include "SwitchData.h"
 #include "TemperatureSensor.h"
 #include "UdpCom.h"
 #include "ValveData.h"
+#include "hardware/Thermocouple.h"
+#include "hardware/LoadCell.h"
+#include "hardware/Thermistor.h"
+#include "hardware/PressureTransducer.h"
 
 #include "command/set_control_flag.hpp"
 #include "framing/payload_type.hpp"
@@ -98,7 +101,7 @@ bool PacketProcessing::routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt) {
         if (udpMetadataOpt.payloadID == static_cast<uint8_t>(TelemetryType::ExtendedSystemState)) {
             return processExtendedSystemStatePacket(udpPacketBuf, udpMetadataOpt);
         }
-        if (udpMetadataOpt.payloadID == static_cast<uint8_t>(TelemetryType::GsSystemState)) {
+        if (udpMetadataOpt.payloadID == static_cast<uint8_t>(TelemetryType::SystemState)) {
             return processGsSystemStatePacket(udpPacketBuf, udpMetadataOpt);
         }
         GCS_APP_LOG_WARN("PacketProcessing: Unknown telemetry id {}, ignoring.", udpMetadataOpt.payloadID);
@@ -247,6 +250,21 @@ void decodeEngineState(const SystemStateBase& base, uint8_t boardState) {
     updateValveData(GSDataCenter::nosValveData, base.valve_info[static_cast<size_t>(EcuValves::NOS)]);
     updateValveData(GSDataCenter::ipaValveData, base.valve_info[static_cast<size_t>(EcuValves::IPA)]);
     GSDataCenter::motorAdcAverager.submit(base.adc_info.channels);
+
+    float timestamp_ms = base.creation_timestamp_ms;
+
+    int32_t ADC_Tank_Pressure = base.adc_info.channels[3];
+    float tank_pressure = PressureTransducer::Unknown::ADC_to_Psi(ADC_Tank_Pressure, GSDataCenterConfig::TANK_PRESSURE_TRANSDUCER_V_ZERO, GSDataCenterConfig::TANK_PRESSURE_TRANSDUCER_V_ZERO);
+    GSDataCenter::PressureSensor_Motor_PlotData.tank().addData(static_cast<float>(ADC_Tank_Pressure), tank_pressure, timestamp_ms, Units::PressureUnit::Psi);
+
+    int32_t ADC_Chamber_Pressure = base.adc_info.channels[4];
+    float chamber_pressure = PressureTransducer::Unknown::ADC_to_Psi(ADC_Chamber_Pressure, GSDataCenterConfig::CHAMBER_PRESSURE_TRANSDUCER_V_ZERO, GSDataCenterConfig::CHAMBER_PRESSURE_TRANSDUCER_V_ZERO);
+    GSDataCenter::PressureSensor_Motor_PlotData.chamber().addData(static_cast<float>(ADC_Chamber_Pressure), chamber_pressure, timestamp_ms, Units::PressureUnit::Psi);
+
+    int32_t ADC_NOS_Pressure = base.adc_info.channels[5];
+    float NOS_pressure = PressureTransducer::Unknown::ADC_to_Psi(ADC_NOS_Pressure, GSDataCenterConfig::NOS_PRESSURE_TRANSDUCER_V_ZERO, GSDataCenterConfig::NOS_PRESSURE_TRANSDUCER_V_ZERO);
+    GSDataCenter::PressureSensor_Motor_PlotData.NOS().addData(static_cast<float>(ADC_NOS_Pressure), NOS_pressure, timestamp_ms, Units::PressureUnit::Psi);
+
     PacketCSVLogging::logEngineStatus(static_cast<float>(base.creation_timestamp_ms),
                                       boardState,
                                       base.valve_info[static_cast<size_t>(EcuValves::NOS)],
@@ -263,6 +281,25 @@ void decodeFillingStationState(const SystemStateBase& base, uint8_t boardState) 
     updateValveData(GSDataCenter::fillValveData, base.valve_info[static_cast<size_t>(FcuValves::Fill)]);
     updateValveData(GSDataCenter::dumpValveData, base.valve_info[static_cast<size_t>(FcuValves::Dump)]);
     GSDataCenter::fillingStationAdcAverager.submit(base.adc_info.channels);
+
+    float timestamp_ms = base.creation_timestamp_ms;
+
+    int32_t ADC_Thurst_LoadCell = base.adc_info.channels[0];
+    float thrust = LoadCell::LC103B_5K::ADC_to_Pounds(ADC_Thurst_LoadCell, GSDataCenterConfig::THRUST_LOAD_CELL_V_EXPERIMENTAL, GSDataCenterConfig::THRUST_LOAD_CELL_GAIN);
+    GSDataCenter::LoadCell_FillingStation_PlotData.motor().addData(static_cast<float>(ADC_Thurst_LoadCell), thrust, timestamp_ms, Units::ForceUnit::PoundsForce);
+
+    int32_t ADC_Tank_LoadCell = base.adc_info.channels[2];
+    float tank_weight = LoadCell::LC103B_200::ADC_to_Pounds(ADC_Tank_LoadCell, GSDataCenterConfig::TANK_LOAD_CELL_V_EXPERIMENTAL, GSDataCenterConfig::TANK_LOAD_CELL_GAIN);
+    GSDataCenter::LoadCell_FillingStation_PlotData.tank().addData(static_cast<float>(ADC_Tank_LoadCell), tank_weight, timestamp_ms, Units::WeightUnit::Pounds);
+
+    int32_t ADC_Tank_Thermistor_Top = base.adc_info.channels[6];
+    float tank_top_temperature = Thermistor::ADC_to_Celcius(ADC_Tank_LoadCell);
+    GSDataCenter::Thermistor_FillingStation_PlotData.tank_top().addData(static_cast<float>(ADC_Tank_Thermistor_Top), tank_top_temperature, timestamp_ms, Units::TemperatureUnit::Celcius);
+
+    int32_t ADC_Tank_Thermistor_Bottom = base.adc_info.channels[7];
+    float tank_bottom_temperature = Thermistor::ADC_to_Celcius(ADC_Tank_Thermistor_Bottom);
+    GSDataCenter::Thermistor_FillingStation_PlotData.tank_top().addData(static_cast<float>(ADC_Tank_Thermistor_Bottom), tank_bottom_temperature, timestamp_ms, Units::TemperatureUnit::Celcius);
+
     PacketCSVLogging::logFillingStationStatus(static_cast<float>(base.creation_timestamp_ms),
                                               boardState,
                                               base.valve_info[static_cast<size_t>(FcuValves::Fill)],
@@ -274,8 +311,7 @@ void decodeFillingStationState(const SystemStateBase& base, uint8_t boardState) 
 // Decode one low-rate ECU ExtendedSystemState record (just the live control-flag
 // bitmask for now; event timestamps will land here later).
 void decodeEcuExtendedState(const EcuExtendedSystemState& rec) {
-    GSDataCenter::motorBoardControlFlags =
-        rec.base.control_flags_base | (static_cast<uint32_t>(rec.base.control_flags_board) << CONTROL_FLAG_BOARD_OFFSET);
+    GSDataCenter::motorBoardControlFlags = rec.base.control_flags_base | (static_cast<uint32_t>(rec.base.control_flags_board) << CONTROL_FLAG_BOARD_OFFSET);
 }
 
 // Decode one low-rate FCU ExtendedSystemState record: control flags + the 4
@@ -287,9 +323,11 @@ void decodeFcuExtendedState(const FcuExtendedSystemState& rec) {
     const float timestamp = static_cast<float>(rec.base.creation_timestamp_ms);
     for (size_t i = 0; i < GSDataCenterConfig::THERMOCOUPLE_AMOUNT; i++) {
         const ThermocoupleInfo& tc = rec.thermocouple_info[i];
-        const float tempC = static_cast<float>(tc.thermocouple_code) / 128.0f; // LSB = 2^-7 degC
-        GSDataCenter::Thermocouple_FillingStation_PlotData.data[i].addData(static_cast<float>(tc.thermocouple_code), tempC, timestamp);
-        GSDataCenter::fillingStationThermocouple_C[i] = tempC;
+        auto& storage = GSDataCenter::Thermocouple_FillingStation_PlotData.data[i];
+
+        const float temperatureCelcius = Thermocouple::ADC_to_Celcius(tc.thermocouple_code);
+
+        GSDataCenter::Thermocouple_FillingStation_PlotData.data[i].addData(static_cast<float>(tc.thermocouple_code), temperatureCelcius, timestamp, Units::TemperatureUnit::Celcius);
         GSDataCenter::fillingStationThermocoupleState[i] = static_cast<uint8_t>(tc.state);
     }
 }
@@ -635,14 +673,14 @@ void PacketProcessing::computePressureSensorValues(uint16_t pressureSensorAdcVal
     for (size_t i = 0; i < GSDataCenterConfig::PRESSURE_SENSOR_AMOUNT_PER_BOARD; i++) {
         float adcValue = static_cast<float>(pressureSensorAdcValues[i]);
         uint16_t sensorIndex = static_cast<uint16_t>(i + indexOffset);
-        pressureSensorValues_psi[i] = PressureTransducer::adcToPressure_psi(adcValue, sensorIndex);
+        pressureSensorValues_psi[i] = 0; // This is outdated and not used
     }
 }
 
 void PacketProcessing::computeLoadCellValues(uint16_t loadCellAdcValues[GSDataCenterConfig::LOAD_CELL_AMOUNT]) {
     for (size_t i = 0; i < GSDataCenterConfig::LOAD_CELL_AMOUNT; i++) {
         float adcValue = static_cast<float>(loadCellAdcValues[i]);
-        loadCellValues_lb[i] = LoadCell::adcToWeight_lb(adcValue, 0); // TODO: Change this index later?
+        loadCellValues_lb[i] = 0; // This is outdated and not used
     }
 }
 

@@ -16,14 +16,17 @@ TankMassWindow::TankMassWindow()
     : recentMotorPressureSensor1{GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData(),
                                  PlotStyle("Pressure Sensor 1 (Motor)", ThemedColors::PlotLine::blue),
                                  std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
-      recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData.p2().getValuePlotData(),
+      recentMotorPressureSensor2{GSDataCenter::PressureSensor_Motor_PlotData.chamber().getValuePlotData(),
                                  PlotStyle("Pressure Sensor 2 (Motor)", ThemedColors::PlotLine::red),
                                  std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
+      recentMotorPressureSensor3{GSDataCenter::PressureSensor_Motor_PlotData.NOS().getValuePlotData(),
+                                 PlotStyle("Pressure Sensor 3 (Motor)", ThemedColors::PlotLine::green),
+                                 std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentFillPressureSensor1{GSDataCenter::PressureSensor_FillingStation_PlotData.p1().getValuePlotData(),
-                                PlotStyle("Pressure Sensor 1 (Fill)", ThemedColors::PlotLine::green),
+                                PlotStyle("Pressure Sensor 1 (Fill)", ThemedColors::PlotLine::yellow),
                                 std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentFillPressureSensor2{GSDataCenter::PressureSensor_FillingStation_PlotData.p2().getValuePlotData(),
-                                PlotStyle("Pressure Sensor 2 (Fill)", ThemedColors::PlotLine::yellow),
+                                PlotStyle("Pressure Sensor 2 (Fill)", ThemedColors::PlotLine::purple),
                                 std::make_unique<RecentDataSelector>(RECENT_TIME_WINDOW_MS, Units::TimeUnit::Milliseconds)},
       recentTankTemperature{GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData(),
                             PlotStyle("Tank Thermistor", ThemedColors::PlotLine::blue),
@@ -95,6 +98,7 @@ void TankMassWindow::renderImpl() {
                 ImPlot::SetupAxes(Units::as_label(TIME_UNIT), Units::as_label(Units::DEFAULT_PRESSURE_UNIT));
                 recentMotorPressureSensor1.plot(TIME_UNIT, Units::DEFAULT_PRESSURE_UNIT, false);
                 recentMotorPressureSensor2.plot(TIME_UNIT, Units::DEFAULT_PRESSURE_UNIT, false);
+                recentMotorPressureSensor3.plot(TIME_UNIT, Units::DEFAULT_PRESSURE_UNIT, false);
                 recentFillPressureSensor1.plot(TIME_UNIT, Units::DEFAULT_PRESSURE_UNIT, false);
                 recentFillPressureSensor2.plot(TIME_UNIT, Units::DEFAULT_PRESSURE_UNIT, false);
                 ImPlot::EndPlot();

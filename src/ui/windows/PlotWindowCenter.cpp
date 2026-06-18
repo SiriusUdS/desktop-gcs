@@ -36,7 +36,8 @@ PlotWindow
                           PRESSURE_UNIT,
                           ADC_UNIT,
                           {{GSDataCenter::PressureSensor_Motor_PlotData.tank(), PlotStyle("Pressure Sensor 1 (Motor)", ThemedColors::PlotLine::blue)},
-                           {GSDataCenter::PressureSensor_Motor_PlotData.p2(), PlotStyle("Pressure Sensor 2 (Motor)", ThemedColors::PlotLine::red)}});
+                           {GSDataCenter::PressureSensor_Motor_PlotData.chamber(), PlotStyle("Pressure Sensor 2 (Motor)", ThemedColors::PlotLine::red)},
+                           {GSDataCenter::PressureSensor_Motor_PlotData.NOS(), PlotStyle("Pressure Sensor 3 (Motor)", ThemedColors::PlotLine::green)}});
 
 PlotWindow
   thermistorFillingStationPlot("Filling Station Thermistors",
@@ -45,8 +46,8 @@ PlotWindow
                                "",
                                TEMPERATURE_UNIT,
                                ADC_UNIT,
-                               {{GSDataCenter::Thermistor_FillingStation_PlotData.t1(), PlotStyle("Thermistor 1", ThemedColors::PlotLine::blue)},
-                                {GSDataCenter::Thermistor_FillingStation_PlotData.t2(), PlotStyle("Thermistor 2", ThemedColors::PlotLine::red)},
+                               {{GSDataCenter::Thermistor_FillingStation_PlotData.tank_bottom(), PlotStyle("Thermistor Tank Bottom", ThemedColors::PlotLine::blue)},
+                                {GSDataCenter::Thermistor_FillingStation_PlotData.tank_top(), PlotStyle("Thermistor Tank Top", ThemedColors::PlotLine::red)},
                                 {GSDataCenter::Thermistor_FillingStation_PlotData.t3(), PlotStyle("Thermistor 3", ThemedColors::PlotLine::green)},
                                 {GSDataCenter::Thermistor_FillingStation_PlotData.t4(), PlotStyle("Thermistor 4", ThemedColors::PlotLine::yellow)},
                                 {GSDataCenter::Thermistor_FillingStation_PlotData.t5(), PlotStyle("Thermistor 5", ThemedColors::PlotLine::orange)},

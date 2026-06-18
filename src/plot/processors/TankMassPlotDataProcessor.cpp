@@ -8,12 +8,12 @@
 #include "AppState.h"
 
 TankMassPlotDataProcessor::TankMassPlotDataProcessor()
-    : PlotDataProcessor({&GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData(),
+    : PlotDataProcessor({&GSDataCenter::Thermistor_FillingStation_PlotData.tank_bottom().getValuePlotData(),
                          &GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData()}) {
 }
 
 void TankMassPlotDataProcessor::processNewData() {
-    const PlotData* tankTempPlotData = &GSDataCenter::Thermistor_Motor_PlotData.tank().getValuePlotData();
+    const PlotData* tankTempPlotData = &GSDataCenter::Thermistor_FillingStation_PlotData.tank_bottom().getValuePlotData(); // TODO Take Top and Bottom into account
     const PlotData* tankPressurePlotData = &GSDataCenter::PressureSensor_Motor_PlotData.tank().getValuePlotData();
 
     auto tankTempPlotDataUpdateIt = plotDataUpdateMap.find(tankTempPlotData);

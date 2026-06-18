@@ -78,16 +78,4 @@ void PrefillWindow::renderImpl() {
     if (!allowConfirm && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
         ImGui::SetTooltip("All calibration values need to be saved before proceeding to the \"Fill\" window.");
     }
-
-    // TODO: THIS IS A TEST
-    SensorPlotData& tankLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.tank();
-    SensorPlotData& motorLoadCellData = GSDataCenter::LoadCell_FillingStation_PlotData.motor();
-    SensorPlotData& d1 = GSDataCenter::Thermistor_Motor_PlotData.tank();
-    SensorPlotData& d2 = GSDataCenter::PressureSensor_Motor_PlotData.tank();
-    static float t = 0.0f;
-    tankLoadCellData.addData(t, t, t);
-    motorLoadCellData.addData(t, t, t);
-    d1.addData(t, t, t);
-    d2.addData(t, t, t);
-    t += 100.0f;
 }

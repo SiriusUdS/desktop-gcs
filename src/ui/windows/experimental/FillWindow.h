@@ -47,8 +47,10 @@ private:
     PlotLine tankLoadCellADCPlotLine;
     PlotLine tankTransducerPlotLine;
     PlotLine tankTransducerADCPlotLine;
-    PlotLine tankTempPlotLine;
-    PlotLine tankTempADCPlotLine;
+    PlotLine tankTopTempPlotLine;
+    PlotLine tankTopTempADCPlotLine;
+    PlotLine tankBottomTempPlotLine;
+    PlotLine tankBottomTempADCPlotLine;
     PlotLine tankMassPlotLine;
 
     PercentageInput fillValveSlider;
