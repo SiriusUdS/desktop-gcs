@@ -1,4 +1,4 @@
-﻿#include "CommunicationWindow.h"
+#include "CommunicationWindow.h"
 #include "ComTask.h"
 #include "CommandControl.h"
 #include "CRC.h"
@@ -7,6 +7,13 @@
 #include "ITileLoader.h"
 #include "Logging.h"
 #include "UdpConfig.h"
+
+#include "LoadCell.h"
+#include "PressureTransducer.h"
+#include "TemperatureSensor.h"
+#include "VaporPressure.h"
+
+#include "ThemedColors.h"
 
 #include "command/set_control_flag.hpp"
 #include "framing/ethernet_header.hpp"
@@ -25,33 +32,64 @@
 #include "peripherals/thermocouple/thermocouple_state.hpp"
 #include "system/state.hpp"
 
+#include <imgui.h>
+
+#include <algorithm>
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <cstdarg>
+#include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <initializer_list>
 #include <map>
 #include <span>
 #include <string>
+#include <utility>
+
+// ============================================================================
+// Member helpers shared across frames (declared in CommunicationWindow.h)
+// ============================================================================
+double RateTracker::update(uint64_t currentCount) {
+    const auto now = std::chrono::steady_clock::now();
+    const double dt = std::chrono::duration<double>(now - lastTime).count();
+    if (dt >= 0.5) {
+        rateHz = static_cast<double>(currentCount - lastCount) / dt;
+        lastCount = currentCount;
+        lastTime = now;
+    }
+    return rateHz;
+}
+
+void SignalStat::push(float raw) {
+    latest = raw;
+    ring[head] = raw;
+    head = (head + 1) % WINDOW;
+    if (count < WINDOW) {
+        count++;
+    }
+    const float tared = raw - offset;
+    if (!hasPeak || tared > peak) {
+        peak = tared;
+        hasPeak = true;
+    }
+}
+
+float SignalStat::avg() const {
+    const std::size_t n = std::min(count, AVG_SAMPLES);
+    if (n == 0) {
+        return latest - offset;
+    }
+    double sum = 0.0;
+    for (std::size_t k = 0; k < n; k++) {              // walk back from the most recent sample
+        const std::size_t idx = (head + WINDOW - 1 - k) % WINDOW;
+        sum += ring[idx];
+    }
+    return static_cast<float>(sum / static_cast<double>(n)) - offset;
+}
 
 namespace {
-// Derives a Hz rate from a monotonically increasing counter, refreshed every ~0.5 s.
-struct RateTracker {
-    uint64_t lastCount = 0;
-    std::chrono::steady_clock::time_point lastTime = std::chrono::steady_clock::now();
-    double rateHz = 0.0;
-    double update(uint64_t currentCount) {
-        const auto now = std::chrono::steady_clock::now();
-        const double dt = std::chrono::duration<double>(now - lastTime).count();
-        if (dt >= 0.5) {
-            rateHz = static_cast<double>(currentCount - lastCount) / dt;
-            lastCount = currentCount;
-            lastTime = now;
-        }
-        return rateHz;
-    }
-};
-
 const char* boardStateName(uint8_t rawState) {
     using logic::control::State;
     switch (static_cast<State>(rawState)) {
@@ -137,6 +175,9 @@ const char* ethStateName(EthernetState s) {
 
 // INA3221 shunt resistor value, used to convert the shunt-voltage code into a current.
 constexpr float kPowerMonitorRshuntOhms = 0.1f;
+// shunt code LSB = 40 uV; current = (40 uV / Rshunt) per code = 0.4 mA at Rshunt = 0.1 ohm.
+constexpr float kShuntCodeToMilliAmp = 0.04f /* mV per code */ / kPowerMonitorRshuntOhms;
+constexpr float kBusCodeToVolt = 0.008f; // bus code LSB = 8 mV
 
 const char* powerMonitorStateName(PowerMonitorState s) {
     switch (s) {
@@ -343,7 +384,6 @@ void renderExtendedStateTable(const EcuExtendedSystemState& ecu, const FcuExtend
     // INA3221 power monitor — now on both boards. shunt_code LSB = 40 uV, bus_code LSB = 8 mV.
     // Current = shunt voltage / Rshunt; with Rshunt = 0.1 ohm, 1 code = 40 uV / 0.1 ohm = 0.4 mA.
     t.section("Power monitor (INA3221)");
-    constexpr float kShuntCodeToMilliAmp = 0.04f /* mV per code */ / kPowerMonitorRshuntOhms;
     const PowerMonitorInfo& epm = ecu.power_monitor;
     const PowerMonitorInfo& fpm = fcu.power_monitor;
     t.row("power_monitor.state", powerMonitorStateName(epm.state), powerMonitorStateName(fpm.state));
@@ -353,8 +393,8 @@ void renderExtendedStateTable(const EcuExtendedSystemState& ecu, const FcuExtend
         const PowerMonitorChannel& fch = fpm.channels[i];
         t.row(fmt("power_monitor.ch[%u].shunt_code", i).c_str(), fmt("%d (%.3f mA)", ech.shunt_code, ech.shunt_code * kShuntCodeToMilliAmp),
                                                                  fmt("%d (%.3f mA)", fch.shunt_code, fch.shunt_code * kShuntCodeToMilliAmp));
-        t.row(fmt("power_monitor.ch[%u].bus_code", i).c_str(), fmt("%d (%.3f V)", ech.bus_code, ech.bus_code * 0.008f),
-                                                               fmt("%d (%.3f V)", fch.bus_code, fch.bus_code * 0.008f));
+        t.row(fmt("power_monitor.ch[%u].bus_code", i).c_str(), fmt("%d (%.3f V)", ech.bus_code, ech.bus_code * kBusCodeToVolt),
+                                                               fmt("%d (%.3f V)", fch.bus_code, fch.bus_code * kBusCodeToVolt));
     }
 }
 
@@ -439,27 +479,30 @@ void sendGsSystemStateBurst(const char* ip, uint16_t port, uint8_t count) {
 // also expose the intermediate percentage positions. The per-valve "Force" checkbox
 // ORs VALVE_FORCE_FLAG into the command value, requesting a switch-bypassed actuation
 // (the board honours it for Open/Close and ignores it for the percentage positions).
-void renderValveCommandRow(const char* name, CommandType valveCmd, bool binaryOnly) {
+void renderValveCommandRow(const char* name, CommandType valveCmd, bool binaryOnly, bool showName = true) {
     static std::map<CommandType, bool> forced; // per-valve Force checkbox state, keyed by command
     bool& force = forced[valveCmd];
     const auto valveValue = [&force](uint32_t pct) { return force ? (pct | VALVE_FORCE_FLAG) : pct; };
 
     ImGui::PushID(name);
-    ImGui::Text("%-5s", name);
-    ImGui::SameLine();
-    if (ImGui::Button("Closed")) { CommandControl::sendCommand(valveCmd, valveValue(0)); }
+    if (showName) {
+        ImGui::Text("%-5s", name);
+        ImGui::SameLine();
+    }
+    // Closed (0%), then 10% increments for non-binary valves, then Open (100%), then Force.
+    if (ImGui::SmallButton("Cl")) { CommandControl::sendCommand(valveCmd, valveValue(0)); }
     if (!binaryOnly) {
-        ImGui::SameLine();
-        if (ImGui::Button("25%")) { CommandControl::sendCommand(valveCmd, valveValue(25)); }
-        ImGui::SameLine();
-        if (ImGui::Button("50%")) { CommandControl::sendCommand(valveCmd, valveValue(50)); }
-        ImGui::SameLine();
-        if (ImGui::Button("75%")) { CommandControl::sendCommand(valveCmd, valveValue(75)); }
+        for (uint32_t pct = 10; pct <= 90; pct += 10) {
+            ImGui::SameLine();
+            char lbl[4];
+            std::snprintf(lbl, sizeof(lbl), "%u", pct);
+            if (ImGui::SmallButton(lbl)) { CommandControl::sendCommand(valveCmd, valveValue(pct)); }
+        }
     }
     ImGui::SameLine();
-    if (ImGui::Button("Open")) { CommandControl::sendCommand(valveCmd, valveValue(100)); }
+    if (ImGui::SmallButton("Op")) { CommandControl::sendCommand(valveCmd, valveValue(100)); }
     ImGui::SameLine();
-    ImGui::Checkbox("Force", &force);
+    ImGui::Checkbox("F", &force);
     ImGui::PopID();
 }
 
@@ -495,6 +538,60 @@ void renderSetStateButton(const char* label, logic::control::State state) {
         CommandControl::sendCommand(CommandType::SetState, static_cast<uint32_t>(state));
     }
 }
+
+// ============================================================================
+// Dashboard helpers (the compact operational view)
+// ============================================================================
+
+// --- ⚠️ PLACEHOLDER calibration / channel map (see docs/communication-window-refactor.md).
+// The live UDP path only averages the 8 ADS131M08 channels; nothing currently maps those
+// channels to physical sensors, and the converters below assume a 12-bit ADC while the
+// ADS131M08 reports signed 24-bit counts. The mapping + scale here are a best-guess starting
+// point to be CALIBRATED on hardware in iteration 2 — edit this block, nothing else.
+constexpr float kAdcScale = 1.0f; // TODO(calibrate): ADS131M08 24-bit -> converter 12-bit scale.
+
+struct PressureSignal { const char* label; bool fcu; int adcChannel; uint16_t sensorIndex; };
+constexpr PressureSignal kPressure[] = {
+    {"Chamber", /*fcu=*/false, /*ch=*/0, /*sensorIndex=*/2}, // ECU — PressureTransducer idx 2 = Eng Chamber
+    {"Tank",    /*fcu=*/false, /*ch=*/1, /*sensorIndex=*/3}, // ECU — idx 3 = Eng Tank
+};
+struct TempSignal { const char* label; bool fcu; int adcChannel; };
+constexpr TempSignal kTemp[] = {
+    {"Top",    /*fcu=*/false, /*ch=*/2},
+    {"Throat", /*fcu=*/false, /*ch=*/3},
+    {"Tank",   /*fcu=*/false, /*ch=*/4},
+};
+struct LoadSignal { const char* label; bool fcu; int adcChannel; std::size_t loadCellIndex; };
+constexpr LoadSignal kLoad[] = {
+    {"Thrust",  /*fcu=*/true, /*ch=*/2, /*lcIdx=*/1}, // motor/chamber load cell
+    {"Tank LC", /*fcu=*/true, /*ch=*/3, /*lcIdx=*/0},
+};
+constexpr int kTankPressureSignal = 1; // index into kPressure that feeds NOS tank mass
+constexpr int kTankTempSignal = 2;     // index into kTemp that feeds NOS tank mass
+
+// A small chip whose BACKGROUND is green (on) or red (off), with the label drawn on top.
+// This is the one colouring primitive for every status indicator (rail-style): bits, valve
+// states, on/off toggles. Drawn directly (no widget id) so it never collides in a table.
+void colorChip(const char* label, bool on) {
+    const ImU32 bg = on ? static_cast<ImU32>(ThemedColors::Button::green.resolve())
+                        : static_cast<ImU32>(ThemedColors::Button::red.resolve());
+    const ImVec2 pad = ImGui::GetStyle().FramePadding;
+    const ImVec2 textSize = ImGui::CalcTextSize(label);
+    const ImVec2 p = ImGui::GetCursorScreenPos();
+    const ImVec2 size(textSize.x + pad.x * 2.0f, textSize.y + pad.y * 2.0f);
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    dl->AddRectFilled(p, ImVec2(p.x + size.x, p.y + size.y), bg, 3.0f);
+    dl->AddText(ImVec2(p.x + pad.x, p.y + pad.y), ImGui::GetColorU32(ImGuiCol_Text), label);
+    ImGui::Dummy(size);
+}
+
+// A content-width section title (unlike ImGui::SeparatorText, which spans the full content
+// region and would force a side-by-side group to the full window width).
+void sectionHeader(const char* label) {
+    ImGui::Spacing();
+    ImGui::TextColored(ThemedColors::Text::blue.resolve(), "%s", label);
+}
+
 } // namespace
 
 const char* const CommunicationWindow::name = "Communication";
@@ -505,10 +602,409 @@ const char* CommunicationWindow::getName() const {
 }
 
 void CommunicationWindow::renderImpl() {
-    static bool loggingEnabled = false;
-    static uint64_t lostPacketCount = 0;
+    if (ImGui::BeginTabBar("comm_tabs")) {
+        if (ImGui::BeginTabItem("Dashboard")) {
+            renderDashboardTab();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Raw")) {
+            renderRawTab();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Setup")) {
+            renderSetupTab();
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+    }
+}
 
-    static RateTracker ecuSsRate, ecuExtRate, fcuSsRate, fcuExtRate, gsSsRate;
+void CommunicationWindow::renderDashboardTab() {
+    const double ecuSs = ecuSsRate.update(GSDataCenter::ecuSystemStateCount.load());
+    const double ecuExt = ecuExtRate.update(GSDataCenter::ecuExtendedSystemStateCount.load());
+    const double fcuSs = fcuSsRate.update(GSDataCenter::fcuSystemStateCount.load());
+    const double fcuExt = fcuExtRate.update(GSDataCenter::fcuExtendedSystemStateCount.load());
+
+    const EcuExtendedSystemState ecuExtRec = GSDataCenter::latestEcuExtendedSystemState.load();
+    const FcuExtendedSystemState fcuExtRec = GSDataCenter::latestFcuExtendedSystemState.load();
+    const EcuSystemState ecuSsRec = GSDataCenter::latestEcuSystemState.load();
+    const FcuSystemState fcuSsRec = GSDataCenter::latestFcuSystemState.load();
+
+    const auto ecuAdc = GSDataCenter::motorAdcAverager.latestAverage();
+    const auto fcuAdc = GSDataCenter::fillingStationAdcAverager.latestAverage();
+    const auto adcOf = [&](bool fcu, int ch) -> float {
+        const auto& a = fcu ? fcuAdc : ecuAdc;
+        return (ch >= 0 && ch < static_cast<int>(a.size())) ? a[ch] * kAdcScale : 0.0f;
+    };
+
+    // --- Convert this frame's raw averages to engineering units, then sample them into the
+    // active windows at a fixed 100 Hz (decoupled from the UI frame rate). Each elapsed 10 ms
+    // tick records one sample (zero-order hold), so "current" updates 100x/s and the 2 s
+    // average / since-start max are well-defined regardless of how fast we render. ---
+    std::array<float, 2> vPressure{};
+    for (std::size_t i = 0; i < pressurePsi.size(); i++) {
+        vPressure[i] = PressureTransducer::adcToPressure_psi(adcOf(kPressure[i].fcu, kPressure[i].adcChannel), kPressure[i].sensorIndex);
+    }
+    std::array<float, 3> vTemp{};
+    for (std::size_t i = 0; i < tempC.size(); i++) {
+        vTemp[i] = TemperatureSensor::adcToTemperature_C(adcOf(kTemp[i].fcu, kTemp[i].adcChannel));
+    }
+    std::array<float, 2> vLoad{};
+    for (std::size_t i = 0; i < loadLb.size(); i++) {
+        vLoad[i] = LoadCell::adcToWeight_lb(adcOf(kLoad[i].fcu, kLoad[i].adcChannel), kLoad[i].loadCellIndex);
+    }
+    std::array<float, 2> vTc{};
+    for (std::size_t i = 0; i < thermocoupleC.size(); i++) {
+        vTc[i] = GSDataCenter::fillingStationThermocouple_C[i].load();
+    }
+    const float tankTemp_C = vTemp[kTankTempSignal];
+    const float tankPress_psi = vPressure[kTankPressureSignal];
+
+    const auto nowTp = std::chrono::steady_clock::now();
+    const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(nowTp - lastSampleTime).count();
+    std::size_t ticks = (elapsedMs > 0) ? static_cast<std::size_t>(elapsedMs / 10) : 0;
+    if (ticks > SignalStat::WINDOW) {
+        ticks = SignalStat::WINDOW; // cap catch-up after a long stall
+    }
+    lastSampleTime += std::chrono::milliseconds(static_cast<long long>(ticks) * 10);
+    for (std::size_t t = 0; t < ticks; t++) {
+        for (std::size_t i = 0; i < pressurePsi.size(); i++) {
+            pressurePsi[i].push(vPressure[i]);
+        }
+        for (std::size_t i = 0; i < tempC.size(); i++) {
+            tempC[i].push(vTemp[i]);
+        }
+        for (std::size_t i = 0; i < loadLb.size(); i++) {
+            loadLb[i].push(vLoad[i]);
+        }
+        for (std::size_t i = 0; i < thermocoupleC.size(); i++) {
+            thermocoupleC[i].push(vTc[i]);
+        }
+    }
+
+    // The whole dashboard is two side-by-side groups (control/status left, telemetry right);
+    // each group sizes to its own content so the tables stack normally instead of overlapping.
+    ImGui::BeginGroup(); // ===== LEFT: states, ping, valves, status =====
+
+    // --- States: one row per board; rails as columns (3.3V/5V/12V), each cell V over mA. ---
+    sectionHeader("States");
+    if (ImGui::BeginTable("states_bar", 7, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX)) {
+        ImGui::TableSetupColumn("Board");
+        ImGui::TableSetupColumn("State");
+        ImGui::TableSetupColumn("SS Hz");
+        ImGui::TableSetupColumn("Ext Hz");
+        ImGui::TableSetupColumn("3.3V");
+        ImGui::TableSetupColumn("5V");
+        ImGui::TableSetupColumn("12V");
+        ImGui::TableHeadersRow();
+
+        const auto boardRow = [](const char* boardName, uint8_t state, double ss, double ext, const PowerMonitorInfo& pm) {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn(); ImGui::TextUnformatted(boardName);
+            ImGui::TableNextColumn(); ImGui::TextUnformatted(boardStateName(state));
+            ImGui::TableNextColumn(); ImGui::Text("%.0f", ss);
+            ImGui::TableNextColumn(); ImGui::Text("%.1f", ext);
+            for (unsigned i = 0; i < POWER_MONITOR_CHANNEL_COUNT; i++) {
+                ImGui::TableNextColumn();
+                ImGui::Text("%.2f V\n%.1f mA", pm.channels[i].bus_code * kBusCodeToVolt,
+                            pm.channels[i].shunt_code * kShuntCodeToMilliAmp);
+            }
+        };
+        boardRow("ECU", GSDataCenter::motorBoardState.load(), ecuSs, ecuExt, ecuExtRec.power_monitor);
+        boardRow("FCU", GSDataCenter::fillingStationBoardState.load(), fcuSs, fcuExt, fcuExtRec.power_monitor);
+
+        ImGui::EndTable();
+    }
+
+    // The 1 Hz auto-ping heartbeat is always enabled (no button); we only surface how long
+    // since the last successful ping (a pong received), tracked GS-side.
+    ComTask::autoPing.store(true);
+    const uint32_t pongCount = GSDataCenter::pongReceivedCount.load();
+    if (pongCount != lastPongCountSeen) {
+        lastPongCountSeen = pongCount;
+        lastPongTime = std::chrono::steady_clock::now();
+    }
+    if (pongCount == 0) {
+        ImGui::TextUnformatted("Time since last successful Ping (s): never");
+    } else {
+        const double since = std::chrono::duration<double>(std::chrono::steady_clock::now() - lastPongTime).count();
+        ImGui::Text("Time since last successful Ping (s): %.1f", since);
+    }
+
+    // --- Valves: name in its own column (so the buttons align) | command buttons (Closed,
+    // 10% increments, Open, Force) | live bit-field-like state (current state green). ---
+    sectionHeader("Valves");
+    if (ImGui::BeginTable("valves", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX)) {
+        ImGui::TableSetupColumn("Valve");
+        ImGui::TableSetupColumn("Command");
+        ImGui::TableSetupColumn("State");
+        ImGui::TableHeadersRow();
+
+        const auto valveStateCell = [](const ValveInfo& v) {
+            ImGui::TableNextColumn();
+            const auto vs = static_cast<ValveState>(static_cast<uint8_t>(v.state));
+            const bool fault = (vs == ValveState::Faulted) || v.status.fault_both_switches;
+            colorChip(fault ? "FAULT" : "OK", !fault);
+            static constexpr std::pair<const char*, ValveState> kValveStates[] = {
+                {"Closed", ValveState::Closed}, {"Closing", ValveState::Closing}, {"Opening", ValveState::Opening},
+                {"Opened", ValveState::Opened}, {"Floating", ValveState::Floating}};
+            for (const auto& [nm, st] : kValveStates) {
+                ImGui::SameLine();
+                colorChip(nm, vs == st);
+            }
+        };
+        const auto valveRow = [&](const char* name, CommandType cmd, bool binaryOnly, const ValveInfo& v) {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn(); ImGui::TextUnformatted(name);
+            ImGui::TableNextColumn(); renderValveCommandRow(name, cmd, binaryOnly, /*showName=*/false);
+            valveStateCell(v);
+        };
+        valveRow("NOS", CommandType::NosValve, /*binaryOnly=*/true, ecuSsRec.base.valve_info[0]);
+        valveRow("IPA", CommandType::IpaValve, /*binaryOnly=*/true, ecuSsRec.base.valve_info[1]);
+        valveRow("Fill", CommandType::FillValve, /*binaryOnly=*/false, fcuSsRec.base.valve_info[0]);
+        valveRow("Dump", CommandType::DumpValve, /*binaryOnly=*/false, fcuSsRec.base.valve_info[1]);
+
+        // Solenoid (FCU) — toggle + open/closed state from the SolenoidValve control flag.
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn(); ImGui::TextUnformatted("Sol");
+        ImGui::TableNextColumn();
+        ImGui::PushID("Solenoid");
+        if (ImGui::SmallButton("Cl")) { CommandControl::sendCommand(CommandType::SolenoidValve, 0); }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Op")) { CommandControl::sendCommand(CommandType::SolenoidValve, 1); }
+        ImGui::PopID();
+        ImGui::TableNextColumn();
+        {
+            const bool open = (fcuExtRec.base.control_flags_board >> static_cast<unsigned>(FcuControlFlag::SolenoidValve)) & 1u;
+            colorChip(open ? "Open" : "Closed", open);
+        }
+
+        // Heater (FCU) — toggle + on/off state from heater_info.status.on.
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn(); ImGui::TextUnformatted("Heat");
+        ImGui::TableNextColumn();
+        ImGui::PushID("Heater");
+        if (ImGui::SmallButton("Off")) { CommandControl::sendCommand(CommandType::Heater, 0); }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("On")) { CommandControl::sendCommand(CommandType::Heater, 1); }
+        ImGui::PopID();
+        ImGui::TableNextColumn();
+        colorChip(fcuExtRec.heater_info.status.on ? "On" : "Off", fcuExtRec.heater_info.status.on);
+
+        ImGui::EndTable();
+    }
+
+    // --- Status matrix: Device | ECU state | ECU bits | FCU state | FCU bits ---
+    sectionHeader("Status");
+    if (ImGui::BeginTable("status_matrix", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX)) {
+        ImGui::TableSetupColumn("Device");
+        ImGui::TableSetupColumn("ECU state");
+        ImGui::TableSetupColumn("ECU bits");
+        ImGui::TableSetupColumn("FCU state");
+        ImGui::TableSetupColumn("FCU bits");
+        ImGui::TableHeadersRow();
+
+        const auto boardCells = [](const char* state, std::initializer_list<std::pair<const char*, unsigned>> bitList) {
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(state);
+            ImGui::TableNextColumn();
+            bool first = true;
+            for (const auto& [bitName, value] : bitList) {
+                if (!first) {
+                    ImGui::SameLine();
+                }
+                first = false;
+                colorChip(bitName, value != 0);
+            }
+        };
+        const auto absentBoard = []() {
+            ImGui::TableNextColumn(); ImGui::TextDisabled("-");
+            ImGui::TableNextColumn(); ImGui::TextDisabled("-");
+        };
+        const auto deviceName = [](const char* n) {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(n);
+        };
+
+        const auto& eAdc = ecuSsRec.base.adc_info;
+        const auto& fAdc = fcuSsRec.base.adc_info;
+        deviceName("ADC");
+        boardCells(adcStateName(eAdc.state), {{"init", eAdc.status.initialized}, {"valid", eAdc.status.data_valid}});
+        boardCells(adcStateName(fAdc.state), {{"init", fAdc.status.initialized}, {"valid", fAdc.status.data_valid}});
+
+        const auto& eSto = ecuSsRec.base.storage_info;
+        const auto& fSto = fcuSsRec.base.storage_info;
+        deviceName("Storage");
+        boardCells(storageStateName(eSto.state), {{"init", eSto.status.initialized}, {"plugged", eSto.status.plugged_in}});
+        boardCells(storageStateName(fSto.state), {{"init", fSto.status.initialized}, {"plugged", fSto.status.plugged_in}});
+
+        const auto& eCan = ecuSsRec.base.can_info;
+        const auto& fCan = fcuSsRec.base.can_info;
+        deviceName("CAN");
+        boardCells(canStateName(eCan.state), {{"init", eCan.status.initialized}, {"tx_err", eCan.status.tx_error}});
+        boardCells(canStateName(fCan.state), {{"init", fCan.status.initialized}, {"tx_err", fCan.status.tx_error}});
+
+        deviceName("Ethernet");
+        absentBoard(); // ECU has no Ethernet
+        {
+            const auto& fEth = fcuSsRec.eth_info;
+            boardCells(ethStateName(fEth.state),
+                       {{"init", fEth.status.initialized}, {"tx_busy", fEth.status.tx_busy}, {"tx_err", fEth.status.tx_error}});
+        }
+
+        const auto& ePm = ecuExtRec.power_monitor;
+        const auto& fPm = fcuExtRec.power_monitor;
+        deviceName("Power mon.");
+        boardCells(powerMonitorStateName(ePm.state), {{"valid", ePm.status.data_valid}, {"rd_err", ePm.status.read_error}});
+        boardCells(powerMonitorStateName(fPm.state), {{"valid", fPm.status.data_valid}, {"rd_err", fPm.status.read_error}});
+
+        for (unsigned i = 0; i < 2; i++) { // thermocouples (FCU) — channels 1-2 only
+            const ThermocoupleInfo& tc = fcuExtRec.thermocouple_info[i];
+            char rowName[8];
+            std::snprintf(rowName, sizeof(rowName), "TC%u", i + 1);
+            deviceName(rowName);
+            absentBoard();
+            boardCells(thermocoupleStateName(static_cast<uint8_t>(tc.state)),
+                       {{"open", tc.status.open_circuit},
+                        {"ouv", tc.status.over_under_v},
+                        {"tc_rng", tc.status.tc_out_range},
+                        {"cj_rng", tc.status.cj_out_range},
+                        {"valid", tc.status.data_valid},
+                        {"comms", tc.status.comms_ok}});
+        }
+
+        deviceName("Heater");
+        absentBoard();
+        boardCells(fcuExtRec.heater_info.status.on ? "On" : "Off", {{"on", fcuExtRec.heater_info.status.on}});
+
+        ImGui::EndTable();
+    }
+
+    ImGui::EndGroup();   // end LEFT
+    ImGui::SameLine(0.0f, 20.0f);
+    ImGui::BeginGroup(); // ===== RIGHT: telemetry, logging =====
+    sectionHeader("Telemetry");
+
+    // Pressure transducers — current (100 Hz) / 2 s average / since-start max, plus the raw
+    // averaged ADC.
+    if (ImGui::BeginTable("pt", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX)) {
+        ImGui::TableSetupColumn("PT");
+        ImGui::TableSetupColumn("cur (psi)");
+        ImGui::TableSetupColumn("avg 2s");
+        ImGui::TableSetupColumn("max");
+        ImGui::TableSetupColumn("raw");
+        ImGui::TableHeadersRow();
+        for (std::size_t i = 0; i < pressurePsi.size(); i++) {
+            const float raw = adcOf(kPressure[i].fcu, kPressure[i].adcChannel);
+            ImGui::PushID(kPressure[i].label);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn(); ImGui::TextUnformatted(kPressure[i].label);
+            ImGui::TableNextColumn(); ImGui::Text("%.2f", pressurePsi[i].now());
+            ImGui::TableNextColumn(); ImGui::Text("%.2f", pressurePsi[i].avg());
+            ImGui::TableNextColumn();
+            ImGui::Text("%.2f", pressurePsi[i].max());
+            ImGui::SameLine();
+            if (ImGui::SmallButton("rst")) {
+                pressurePsi[i].resetPeak();
+            }
+            ImGui::TableNextColumn(); ImGui::Text("%.0f", raw);
+            ImGui::PopID();
+        }
+        ImGui::EndTable();
+    }
+
+    // Load cells — current (100 Hz) / 2 s average / since-start max, raw ADC. The tank load
+    // cell also takes three calibration mass entries (Empty / IPA / NOS); the thrust LC has none.
+    if (ImGui::BeginTable("lc", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX)) {
+        ImGui::TableSetupColumn("LC");
+        ImGui::TableSetupColumn("cur (lb)");
+        ImGui::TableSetupColumn("avg 2s");
+        ImGui::TableSetupColumn("max");
+        ImGui::TableSetupColumn("raw");
+        ImGui::TableSetupColumn("cal masses (lb)");
+        ImGui::TableHeadersRow();
+        for (std::size_t i = 0; i < loadLb.size(); i++) {
+            const float raw = adcOf(kLoad[i].fcu, kLoad[i].adcChannel);
+            const bool isTank = (i == 1);
+            ImGui::PushID(kLoad[i].label);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn(); ImGui::TextUnformatted(kLoad[i].label);
+            ImGui::TableNextColumn(); ImGui::Text("%.2f", loadLb[i].now());
+            ImGui::TableNextColumn(); ImGui::Text("%.2f", loadLb[i].avg());
+            ImGui::TableNextColumn();
+            ImGui::Text("%.2f", loadLb[i].max());
+            ImGui::SameLine();
+            if (ImGui::SmallButton("rst")) {
+                loadLb[i].resetPeak();
+            }
+            ImGui::TableNextColumn(); ImGui::Text("%.0f", raw);
+            ImGui::TableNextColumn();
+            if (isTank) {
+                ImGui::SetNextItemWidth(64); ImGui::InputFloat("Empty", &tankLcMass[0]);
+                ImGui::SetNextItemWidth(64); ImGui::InputFloat("IPA", &tankLcMass[1]);
+                ImGui::SetNextItemWidth(64); ImGui::InputFloat("NOS", &tankLcMass[2]);
+            } else {
+                ImGui::TextDisabled("-");
+            }
+            ImGui::PopID();
+        }
+        ImGui::EndTable();
+    }
+
+    // Temperatures — thermistors (Top/Throat/Tank) then thermocouples TC1/TC2, with peak-hold.
+    if (ImGui::BeginTable("temps", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX)) {
+        ImGui::TableSetupColumn("Temp");
+        ImGui::TableSetupColumn("C");
+        ImGui::TableSetupColumn("max");
+        ImGui::TableHeadersRow();
+        const auto tempRow = [](const char* label, SignalStat& s) {
+            ImGui::PushID(label);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn(); ImGui::TextUnformatted(label);
+            ImGui::TableNextColumn(); ImGui::Text("%.2f", s.now());
+            ImGui::TableNextColumn();
+            ImGui::Text("%.2f", s.max());
+            ImGui::SameLine();
+            if (ImGui::SmallButton("rst")) {
+                s.resetPeak();
+            }
+            ImGui::PopID();
+        };
+        for (std::size_t i = 0; i < tempC.size(); i++) {
+            tempRow(kTemp[i].label, tempC[i]);
+        }
+        for (std::size_t i = 0; i < thermocoupleC.size(); i++) {
+            char tcLabel[8];
+            std::snprintf(tcLabel, sizeof(tcLabel), "TC%zu", i + 1);
+            tempRow(tcLabel, thermocoupleC[i]);
+        }
+        ImGui::EndTable();
+    }
+
+    // Phase — NOS liquid/gas from the tank pressure vs the saturation pressure at tank temp
+    // (VaporPressure is a pure correlation; no CoolProp / tank-mass calc).
+    if (ImGui::BeginTable("phase", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX)) {
+        ImGui::TableSetupColumn("Derived");
+        ImGui::TableSetupColumn("Value");
+        ImGui::TableHeadersRow();
+        const double vapor_psi = VaporPressure::vaporPressureNOS_psi(tankTemp_C);
+        const char* phase = (tankPress_psi > vapor_psi) ? "Liquid" : "Gas";
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn(); ImGui::TextUnformatted("NOS phase");
+        ImGui::TableNextColumn(); ImGui::TextUnformatted(phase);
+        ImGui::EndTable();
+    }
+
+    // --- Logging ---
+    sectionHeader("Logging");
+    renderBaseFlagToggle("Fast rec", ControlFlagBase::FastRecording);
+    renderBaseFlagToggle("Disable log", ControlFlagBase::DisableLogging);
+
+    ImGui::EndGroup(); // end RIGHT
+}
+
+void CommunicationWindow::renderRawTab() {
     const double ecuSs = ecuSsRate.update(GSDataCenter::ecuSystemStateCount.load());
     const double ecuExt = ecuExtRate.update(GSDataCenter::ecuExtendedSystemStateCount.load());
     const double fcuSs = fcuSsRate.update(GSDataCenter::fcuSystemStateCount.load());
@@ -575,8 +1071,11 @@ void CommunicationWindow::renderImpl() {
         ImGui::Separator();
         ImGui::TextUnformatted("SystemState log rate");
         renderBaseFlagToggle("Fast rec", ControlFlagBase::FastRecording);
+    }
+}
 
-        ImGui::Separator();
+void CommunicationWindow::renderSetupTab() {
+    if (ImGui::CollapsingHeader("Ping / GsSystemState test", ImGuiTreeNodeFlags_DefaultOpen)) {
         if (ImGui::Button("Ping")) {
             CommandControl::sendCommand(CommandType::Ping, 0);
         }
@@ -601,13 +1100,10 @@ void CommunicationWindow::renderImpl() {
     }
 
     if (ImGui::CollapsingHeader("UDP Configuration", ImGuiTreeNodeFlags_DefaultOpen)) {
-        static char ipBuf[64];
-        static int listenerPort = UdpConfig::defaultReceivePort;
-        static int destinationPort = UdpConfig::defaultDestPort;
-        static bool ipBufInitialized = false;
-        
         if (!ipBufInitialized) {
             strcpy_s(ipBuf, UdpConfig::defaultDestIp);
+            listenerPort = UdpConfig::defaultReceivePort;
+            destinationPort = UdpConfig::defaultDestPort;
             ipBufInitialized = true;
         }
 
@@ -622,14 +1118,14 @@ void CommunicationWindow::renderImpl() {
                 GCS_APP_LOG_ERROR("Failed to update connection");
             }
         }
-        
+
         if (ComTask::com->getComType() == ComType::UDP) {
             uint64_t totalReceived = ComTask::getTotalReceivedPackets();
             uint64_t lostPackets = ComTask::getLostPacketCount();
-            
+
             ImGui::Text("Amount of lost packets: %llu", lostPackets);
             ImGui::Text("Total received packets: %llu", totalReceived);
-            
+
             float percent = 100.0f;
             if (totalReceived > 0) {
                 percent = 1.0f - static_cast<float>(lostPackets)/static_cast<float>(totalReceived);
@@ -638,7 +1134,7 @@ void CommunicationWindow::renderImpl() {
             }else {
                 ImGui::Text("Percent of packets received: %.2f%%", percent);
             }
-            
+
             ImGui::Checkbox("Enable logging everytime a packet is lost", &loggingEnabled);
             if (loggingEnabled) {
                 if (lostPacketCount != ComTask::getLostPacketCount()) {
@@ -647,6 +1143,5 @@ void CommunicationWindow::renderImpl() {
                 }
             }
         }
-        
     }
 }
