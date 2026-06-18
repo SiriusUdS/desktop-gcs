@@ -11,6 +11,7 @@
 
 #include <imgui.h>
 #include <implot.h>
+#include <iostream>
 
 const char* const PrefillWindow::name = "Prefill";
 
@@ -82,6 +83,9 @@ void PrefillWindow::renderImpl() {
     ImGui::SeparatorText("Ematch Info");
     renderIndicator("Energized", GSDataCenter::latestFcuExtendedSystemState.load().ematch_info.status.energised > 0);
     renderIndicator("Detected", GSDataCenter::latestFcuExtendedSystemState.load().ematch_info.status.detected > 0);
+    if (tankLoadCellPlotLine.getData().getValues().raw().size() > 0) {
+        ImGui::Text("%f", tankLoadCellPlotLine.getData().getValues().raw().back());
+    }
 }
 
 void PrefillWindow::renderIndicator(const char* name, bool high, ImColor color_low, ImColor color_high, const char* label_low, const char* label_high) {
