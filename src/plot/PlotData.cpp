@@ -32,37 +32,44 @@ PlotData::PlotData(Units::TimeUnit time_unit, Units::Unit unit) : timeline(TARGE
  * @param value Where the data is placed on the Y axis.
  */
 void PlotData::addData(float timestamp, float value) {
-    counter++;
-    if (counter < ADD_EVERY) {
-        return;
-    } else {
-        counter = 0;
-    }
-    std::lock_guard<std::mutex> lock(mtx);
+    int current = counter.load(std::memory_order_relaxed);
+    int next;
 
-    if (timeline.raw().size() && timestamp < timeline.raw().back()) {
-        GCS_APP_LOG_WARN("PlotData: Received unordered data, clearing data.");
-        timeline.clear();
-        values.clear();
-    }
+    do {
+        if (current + 1 < ADD_EVERY) {
+            next = current + 1;
+        } else {
+            next = 0;
+        }
+    } while (!counter.compare_exchange_weak(current, next, std::memory_order_relaxed));
 
-    timeline.add(timestamp);
-    values.add(value);
+    if (next == 0) {
+        std::lock_guard<std::mutex> lock(mtx);
 
-    for (PlotDataUpdateListener* listener : listeners) {
-        listener->onAddData(this, timestamp, value);
-    }
+        if (timeline.raw().size() && timestamp < timeline.raw().back()) {
+            GCS_APP_LOG_WARN("PlotData: Received unordered data, clearing data.");
+            timeline.clear();
+            values.clear();
+        }
 
-    if (values.raw().size() > MAX_ORIGINAL_DATA_SIZE) {
-        eraseOldImpl(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
-    }
-
-    if (values.compressed().size() > MAX_COMPRESSED_DATA_SIZE) {
-        timeline.compress();
-        values.compress();
+        timeline.add(timestamp);
+        values.add(value);
 
         for (PlotDataUpdateListener* listener : listeners) {
-            listener->onCompress(this);
+            listener->onAddData(this, timestamp, value);
+        }
+
+        if (values.raw().size() > MAX_ORIGINAL_DATA_SIZE) {
+            eraseOldImpl(DATA_AMOUNT_TO_DROP_IF_MAX_REACHED);
+        }
+
+        if (values.compressed().size() > MAX_COMPRESSED_DATA_SIZE) {
+            timeline.compress();
+            values.compress();
+
+            for (PlotDataUpdateListener* listener : listeners) {
+                listener->onCompress(this);
+            }
         }
     }
 }
