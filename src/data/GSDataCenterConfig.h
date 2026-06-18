@@ -14,12 +14,12 @@ constexpr float TANK_LOAD_CELL_V_EXPERIMENTAL = 5.0f;
 constexpr float THRUST_LOAD_CELL_GAIN = 128.0f;
 constexpr float THRUST_LOAD_CELL_V_EXPERIMENTAL = 5.0f;
 
-constexpr float TANK_PRESSURE_TRANSDUCER_GAIN = 1.0f; // TODO Figure out
+constexpr float TANK_PRESSURE_TRANSDUCER_GAIN = 8.0f; // TODO Figure out
 constexpr float TANK_PRESSURE_TRANSDUCER_V_ZERO = 0.0f; // TODO Figure out
 
-constexpr float CHAMBER_PRESSURE_TRANSDUCER_GAIN = 1.0f; // TODO Figure out
+constexpr float CHAMBER_PRESSURE_TRANSDUCER_GAIN = 8.0f; // TODO Figure out
 constexpr float CHAMBER_PRESSURE_TRANSDUCER_V_ZERO = 0.0f; // TODO Figure out
 
-constexpr float NOS_PRESSURE_TRANSDUCER_GAIN = 1.0f; // TODO Figure out
+constexpr float NOS_PRESSURE_TRANSDUCER_GAIN = 8.0f; // TODO Figure out
 constexpr float NOS_PRESSURE_TRANSDUCER_V_ZERO = 0.0f; // TODO Figure out
 } // namespace GSDataCenterConfig
