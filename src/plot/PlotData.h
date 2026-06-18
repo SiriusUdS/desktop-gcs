@@ -3,6 +3,7 @@
 #include "DataSeries.h"
 
 #include <mutex>
+#include <atomic>
 #include <utility>
 
 class PlotDataUpdateListener;
@@ -47,6 +48,7 @@ private:
     static constexpr size_t DATA_AMOUNT_TO_DROP_IF_MAX_REACHED = 10'000;
     static constexpr size_t MAX_COMPRESSED_DATA_SIZE = 20'000;
     static constexpr size_t TARGET_COMPRESSED_DATA_SIZE = 10'000;
+    static constexpr size_t ADD_EVERY = 50;
 
     void clearImpl();
     void eraseOldImpl(size_t amount);
@@ -55,4 +57,5 @@ private:
     DataSeries values;
     mutable std::vector<PlotDataUpdateListener*> listeners;
     mutable std::mutex mtx;
+    std::atomic<int> counter{0};
 };

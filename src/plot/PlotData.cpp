@@ -32,6 +32,12 @@ PlotData::PlotData(Units::TimeUnit time_unit, Units::Unit unit) : timeline(TARGE
  * @param value Where the data is placed on the Y axis.
  */
 void PlotData::addData(float timestamp, float value) {
+    counter++;
+    if (counter < ADD_EVERY) {
+        return;
+    } else {
+        counter = 0;
+    }
     std::lock_guard<std::mutex> lock(mtx);
 
     if (timeline.raw().size() && timestamp < timeline.raw().back()) {
