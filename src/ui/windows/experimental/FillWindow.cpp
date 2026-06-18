@@ -51,16 +51,15 @@ void FillWindow::renderImpl() {
 
     ImGui::SeparatorText("Tank Data Plot");
 
-    ImPlot::SetNextAxesToFit();
     if (ImPlot::BeginPlot("Tank Data", {-1.0f, 400.0f}, ImPlotFlags_NoInputs)) {
         constexpr ImAxis weightAxis = ImAxis_Y1;
         constexpr ImAxis pressureAxis = ImAxis_Y2;
         constexpr ImAxis tempAxis = ImAxis_Y3;
 
-        ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT));
-        ImPlot::SetupAxis(weightAxis, Units::as_label(WEIGHT_UNIT));
-        ImPlot::SetupAxis(pressureAxis, Units::as_label(PRESSURE_UNIT));
-        ImPlot::SetupAxis(tempAxis, Units::as_label(TEMPERATURE_UNIT));
+        ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT), ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(weightAxis, Units::as_label(WEIGHT_UNIT), ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(pressureAxis, Units::as_label(PRESSURE_UNIT), ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(tempAxis, Units::as_label(TEMPERATURE_UNIT), ImPlotAxisFlags_AutoFit);
 
         ImPlot::SetAxis(weightAxis);
         tankLoadCellPlotLine.plot(TIME_UNIT, WEIGHT_UNIT, IniParams::compressPlots.currentValue);
@@ -75,12 +74,12 @@ void FillWindow::renderImpl() {
 
         ImPlot::EndPlot();
     }
-
+    
     if (ImPlot::BeginPlot("Tank Data ADC", {-1.0f, 400.0f}, ImPlotFlags_NoInputs)) {
         constexpr ImAxis adcAxis = ImAxis_Y1;
 
-        ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT));
-        ImPlot::SetupAxis(adcAxis, Units::as_label(ADC_UNIT));
+        ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT), ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(adcAxis, Units::as_label(ADC_UNIT), ImPlotAxisFlags_AutoFit);
 
         ImPlot::SetAxis(adcAxis);
         tankLoadCellADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);

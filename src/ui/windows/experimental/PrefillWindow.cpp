@@ -51,14 +51,13 @@ void PrefillWindow::renderImpl() {
     }
 
     const ImVec2 plotSize = {-1.0f, 500.0f};
-    ImPlot::SetNextAxesToFit();
     if (ImPlot::BeginPlot("Tank Load Cell", plotSize, ImPlotFlags_NoInputs)) {
         constexpr ImAxis adcValueAxis = ImAxis_Y1;
         constexpr ImAxis weightAxis = ImAxis_Y2;
 
-        ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT));
-        ImPlot::SetupAxis(adcValueAxis, Units::as_label(ADC_UNIT));
-        ImPlot::SetupAxis(weightAxis, Units::as_label(WEIGHT_UNIT));
+        ImPlot::SetupAxis(ImAxis_X1, Units::as_label(TIME_UNIT), ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(adcValueAxis, Units::as_label(ADC_UNIT), ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(weightAxis, Units::as_label(WEIGHT_UNIT), ImPlotAxisFlags_AutoFit);
 
         ImPlot::SetAxis(adcValueAxis);
         tankLoadCellADCPlotLine.plot(TIME_UNIT, ADC_UNIT, IniParams::compressPlots.currentValue, true);
