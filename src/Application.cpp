@@ -10,7 +10,7 @@
 #include "IniParams.h"
 #include "IniParamsIO.h"
 #include "Logging.h"
-#include "PlotWindowCenter.h"
+// #include "PlotWindowCenter.h" // plot windows deactivated (not compiled)
 // #include "SerialCom.h" // SERIAL PATH RETIRED (UDP-only; UdpCom is hardcoded below)
 #include "TankGasLeftPlotDataProcessor.h"
 #include "TankMassPlotDataProcessor.h"
@@ -56,9 +56,9 @@ void Application::init() {
 
     iniFile.read(iniStructure);
 
-    PlotWindowCenter::loadState(iniStructure);
+    // PlotWindowCenter::loadState(iniStructure); // plot windows deactivated (not compiled)
     IniParamsIO::loadParams(iniStructure);
-    CameraManager::get().init();
+    // CameraManager::get().init(); // camera deactivated (not compiled)
     UIWindows::init();
     UIWindows::loadState(iniStructure);
 
@@ -72,7 +72,7 @@ void Application::init() {
 
 void Application::preNewFrame() {
     UITheme::update();
-    CameraManager::get().processFrameAndUploadToGPU();
+    // CameraManager::get().processFrameAndUploadToGPU(); // camera deactivated (not compiled)
 }
 
 void Application::showMenus() {
@@ -108,7 +108,7 @@ void Application::showMenus() {
 void Application::shutdown() {
     ComTask::stop();
     IniParamsIO::saveParams(iniStructure);
-    PlotWindowCenter::saveState(iniStructure);
+    // PlotWindowCenter::saveState(iniStructure); // plot windows deactivated (not compiled)
 
     UIWindows::saveState(iniStructure);
 

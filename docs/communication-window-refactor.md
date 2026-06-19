@@ -66,6 +66,36 @@ These are wired through a single editable block at the top of the Dashboard code
 5. **Logging.** Fast-recording + Disable-logging toggles (`renderBaseFlagToggle`,
    `ControlFlagBase::FastRecording` / `DisableLogging`).
 
+### Iteration 9 — channel map file + real channel assignments
+- **New `src/config/SensorChannelMap.h`** is now the single place that maps ADC channels /
+  thermocouple indices to sensors and picks each converter's calibration. `CommunicationWindow` pulls
+  its signal definitions, array sizes, and tank indices from there (`using namespace SensorChannelMap`).
+- **Channel assignments (per hardware):**
+  - Chamber PT = ECU ch4 (calib idx 2); Tank PT = ECU ch3 (calib idx 3).
+  - Tank thermistor = **ECU** ch0 (TemperatureSensor).
+  - Thrust load cell = FCU ch0 (calib idx 1); Tank load cell = FCU ch2 (calib idx 0).
+  - Thermocouples: **Top = TC1**, **Throat = TC2** (FCU MAX31856 indices 0/1).
+- Temps table now shows Top/Throat (thermocouples) then Tank (thermistor); the generic TC1/TC2 labels
+  and the old Top/Throat thermistor channels are gone.
+- `kAdcScale` (24-bit ADS131M08 → 12-bit converter) still lives in the map as `1.0` — calibrate.
+
+### Iteration 8 — single-window build
+- **Renamed** the Communication window to **"Dashboard"** (`getName()` + `CommunicationWindow::name`).
+- **Deactivated everything except Dashboard + Logging.** The camera subsystem (`src/camera/*`) and every
+  other UI window are **excluded from compilation** via `removefiles` in `premake5.lua` (code preserved
+  on disk; re-add a path there to bring one back). Kept compiled: `CommunicationWindow`, `LoggingWindow`,
+  `UIWindows`, the layouts, `Application`.
+  - `UIWindows.{h,cpp}` reduced to `communicationWindow` + `loggingWindow` (others kept as comments).
+  - The three layouts (`AllWindowsLayout`/`MissionLayout`/`DiagnosticsLayout`) dock only those two.
+  - `Application.cpp`: commented out the camera calls (`CameraManager::get().init()` /
+    `processFrameAndUploadToGPU()`) and the `PlotWindowCenter` load/save (its `.cpp` is now excluded).
+  - **Logging kept** per hard requirement: the on-screen `LoggingWindow` stays, and the 2 kHz telemetry
+    recording (`PacketCSVLogging`, the `FastRecording` flag) lives in the com layer — untouched by any
+    of this; the Dashboard's "Fast rec" toggle still drives it.
+- After editing `premake5.lua`, regenerate with `setup/generate_vs_solution.bat` (runs
+  `tools/premake5 vs2022`). The generated `.vcxproj/.sln/.filters` are gitignored, so `premake5.lua` is
+  the source of truth.
+
 ### Iteration 7 — feedback applied
 - **Fixed the 2-column overlap.** The outer wrapping table (nested tables inside it laid out on top of
   each other) was replaced with two `BeginGroup`/`EndGroup` blocks separated by `SameLine` — each group

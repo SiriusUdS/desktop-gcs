@@ -22,6 +22,8 @@
 #include "telemetry/gs_system_state.hpp"
 #include "telemetry/telemetry_type.hpp"
 #include "devices/valve/valve_state.hpp"
+#include "devices/ematch/ematch_info.hpp"
+#include "devices/solenoid/solenoid_info.hpp"
 #include "peripherals/adc/adc_state.hpp"
 #include "peripherals/can/can_state.hpp"
 #include "peripherals/ethernet/ethernet_state.hpp"
@@ -450,7 +452,7 @@ void sendGsSystemStateBurst(const char* ip, uint16_t port, uint8_t count) {
         header.sender_id = static_cast<uint32_t>(BoardId::GsControl);
         header.target_id = static_cast<uint32_t>(BoardId::GsControl); // addressed to board id 3 (GsControl)
         header.payload_type = static_cast<uint32_t>(PayloadType::Telemetry);
-        header.payload_id = static_cast<uint32_t>(TelemetryType::GsSystemState);
+        header.payload_id = static_cast<uint32_t>(TelemetryType::SystemState);
         header.payload_size_bytes = sizeof(GSSystemState);
         header.sender_state = 0;
         header.seq = 0;                 // telemetry carries no command seq
@@ -543,31 +545,8 @@ void renderSetStateButton(const char* label, logic::control::State state) {
 // Dashboard helpers (the compact operational view)
 // ============================================================================
 
-// --- ⚠️ PLACEHOLDER calibration / channel map (see docs/communication-window-refactor.md).
-// The live UDP path only averages the 8 ADS131M08 channels; nothing currently maps those
-// channels to physical sensors, and the converters below assume a 12-bit ADC while the
-// ADS131M08 reports signed 24-bit counts. The mapping + scale here are a best-guess starting
-// point to be CALIBRATED on hardware in iteration 2 — edit this block, nothing else.
-constexpr float kAdcScale = 1.0f; // TODO(calibrate): ADS131M08 24-bit -> converter 12-bit scale.
-
-struct PressureSignal { const char* label; bool fcu; int adcChannel; uint16_t sensorIndex; };
-constexpr PressureSignal kPressure[] = {
-    {"Chamber", /*fcu=*/false, /*ch=*/0, /*sensorIndex=*/2}, // ECU — PressureTransducer idx 2 = Eng Chamber
-    {"Tank",    /*fcu=*/false, /*ch=*/1, /*sensorIndex=*/3}, // ECU — idx 3 = Eng Tank
-};
-struct TempSignal { const char* label; bool fcu; int adcChannel; };
-constexpr TempSignal kTemp[] = {
-    {"Top",    /*fcu=*/false, /*ch=*/2},
-    {"Throat", /*fcu=*/false, /*ch=*/3},
-    {"Tank",   /*fcu=*/false, /*ch=*/4},
-};
-struct LoadSignal { const char* label; bool fcu; int adcChannel; std::size_t loadCellIndex; };
-constexpr LoadSignal kLoad[] = {
-    {"Thrust",  /*fcu=*/true, /*ch=*/2, /*lcIdx=*/1}, // motor/chamber load cell
-    {"Tank LC", /*fcu=*/true, /*ch=*/3, /*lcIdx=*/0},
-};
-constexpr int kTankPressureSignal = 1; // index into kPressure that feeds NOS tank mass
-constexpr int kTankTempSignal = 2;     // index into kTemp that feeds NOS tank mass
+// The channel->sensor mapping + calibration live in SensorChannelMap.h (edit that to recalibrate).
+using namespace SensorChannelMap;
 
 // A small chip whose BACKGROUND is green (on) or red (off), with the label drawn on top.
 // This is the one colouring primitive for every status indicator (rail-style): bits, valve
@@ -594,11 +573,11 @@ void sectionHeader(const char* label) {
 
 } // namespace
 
-const char* const CommunicationWindow::name = "Communication";
+const char* const CommunicationWindow::name = "Dashboard";
 
 
 const char* CommunicationWindow::getName() const {
-    return "Communication";
+    return "Dashboard";
 }
 
 void CommunicationWindow::renderImpl() {
@@ -641,24 +620,24 @@ void CommunicationWindow::renderDashboardTab() {
     // active windows at a fixed 100 Hz (decoupled from the UI frame rate). Each elapsed 10 ms
     // tick records one sample (zero-order hold), so "current" updates 100x/s and the 2 s
     // average / since-start max are well-defined regardless of how fast we render. ---
-    std::array<float, 2> vPressure{};
+    std::array<float, kPressureCount> vPressure{};
     for (std::size_t i = 0; i < pressurePsi.size(); i++) {
         vPressure[i] = PressureTransducer::adcToPressure_psi(adcOf(kPressure[i].fcu, kPressure[i].adcChannel), kPressure[i].sensorIndex);
     }
-    std::array<float, 3> vTemp{};
+    std::array<float, kThermistorCount> vTemp{};
     for (std::size_t i = 0; i < tempC.size(); i++) {
-        vTemp[i] = TemperatureSensor::adcToTemperature_C(adcOf(kTemp[i].fcu, kTemp[i].adcChannel));
+        vTemp[i] = TemperatureSensor::adcToTemperature_C(adcOf(kThermistor[i].fcu, kThermistor[i].adcChannel));
     }
-    std::array<float, 2> vLoad{};
+    std::array<float, kLoadCount> vLoad{};
     for (std::size_t i = 0; i < loadLb.size(); i++) {
         vLoad[i] = LoadCell::adcToWeight_lb(adcOf(kLoad[i].fcu, kLoad[i].adcChannel), kLoad[i].loadCellIndex);
     }
-    std::array<float, 2> vTc{};
+    std::array<float, kThermocoupleCount> vTc{};
     for (std::size_t i = 0; i < thermocoupleC.size(); i++) {
-        vTc[i] = GSDataCenter::fillingStationThermocouple_C[i].load();
+        vTc[i] = GSDataCenter::fillingStationThermocouple_C[kThermocouple[i].index].load();
     }
-    const float tankTemp_C = vTemp[kTankTempSignal];
-    const float tankPress_psi = vPressure[kTankPressureSignal];
+    const float tankTemp_C = vTemp[kTankThermistor];
+    const float tankPress_psi = vPressure[kTankPressure];
 
     const auto nowTp = std::chrono::steady_clock::now();
     const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(nowTp - lastSampleTime).count();
@@ -859,11 +838,9 @@ void CommunicationWindow::renderDashboardTab() {
         boardCells(powerMonitorStateName(ePm.state), {{"valid", ePm.status.data_valid}, {"rd_err", ePm.status.read_error}});
         boardCells(powerMonitorStateName(fPm.state), {{"valid", fPm.status.data_valid}, {"rd_err", fPm.status.read_error}});
 
-        for (unsigned i = 0; i < 2; i++) { // thermocouples (FCU) — channels 1-2 only
-            const ThermocoupleInfo& tc = fcuExtRec.thermocouple_info[i];
-            char rowName[8];
-            std::snprintf(rowName, sizeof(rowName), "TC%u", i + 1);
-            deviceName(rowName);
+        for (std::size_t i = 0; i < kThermocoupleCount; i++) { // thermocouples (FCU): Top, Throat
+            const ThermocoupleInfo& tc = fcuExtRec.thermocouple_info[kThermocouple[i].index];
+            deviceName(kThermocouple[i].label);
             absentBoard();
             boardCells(thermocoupleStateName(static_cast<uint8_t>(tc.state)),
                        {{"open", tc.status.open_circuit},
@@ -877,6 +854,19 @@ void CommunicationWindow::renderDashboardTab() {
         deviceName("Heater");
         absentBoard();
         boardCells(fcuExtRec.heater_info.status.on ? "On" : "Off", {{"on", fcuExtRec.heater_info.status.on}});
+
+        // Ematch / Solenoid (FCU only) — no state enum; derive a short label from the status bits.
+        const EmatchStatus& es = fcuExtRec.ematch_info.status;
+        deviceName("Ematch");
+        absentBoard();
+        boardCells(es.energised ? "Energised" : (es.detected ? "Idle" : "Absent"),
+                   {{"det", es.detected}, {"energ", es.energised}});
+
+        const SolenoidStatus& ss = fcuExtRec.solenoid_info.status;
+        deviceName("Solenoid");
+        absentBoard();
+        boardCells(ss.open ? "Open" : (ss.detected ? "Closed" : "Absent"),
+                   {{"det", ss.detected}, {"open", ss.open}});
 
         ImGui::EndTable();
     }
@@ -918,22 +908,23 @@ void CommunicationWindow::renderDashboardTab() {
     // cell also takes three calibration mass entries (Empty / IPA / NOS); the thrust LC has none.
     if (ImGui::BeginTable("lc", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoHostExtendX)) {
         ImGui::TableSetupColumn("LC");
-        ImGui::TableSetupColumn("cur (lb)");
+        ImGui::TableSetupColumn("cur");
         ImGui::TableSetupColumn("avg 2s");
         ImGui::TableSetupColumn("max");
         ImGui::TableSetupColumn("raw");
-        ImGui::TableSetupColumn("cal masses (lb)");
+        ImGui::TableSetupColumn("cal masses (kg)");
         ImGui::TableHeadersRow();
         for (std::size_t i = 0; i < loadLb.size(); i++) {
             const float raw = adcOf(kLoad[i].fcu, kLoad[i].adcChannel);
-            const bool isTank = (i == 1);
+            const float scale = kLoad[i].displayScale; // converter outputs lb; show in N / kg
+            const bool isTank = (static_cast<int>(i) == kTankLoad);
             ImGui::PushID(kLoad[i].label);
             ImGui::TableNextRow();
             ImGui::TableNextColumn(); ImGui::TextUnformatted(kLoad[i].label);
-            ImGui::TableNextColumn(); ImGui::Text("%.2f", loadLb[i].now());
-            ImGui::TableNextColumn(); ImGui::Text("%.2f", loadLb[i].avg());
+            ImGui::TableNextColumn(); ImGui::Text("%.2f", loadLb[i].now() * scale);
+            ImGui::TableNextColumn(); ImGui::Text("%.2f", loadLb[i].avg() * scale);
             ImGui::TableNextColumn();
-            ImGui::Text("%.2f", loadLb[i].max());
+            ImGui::Text("%.2f", loadLb[i].max() * scale);
             ImGui::SameLine();
             if (ImGui::SmallButton("rst")) {
                 loadLb[i].resetPeak();
@@ -971,13 +962,11 @@ void CommunicationWindow::renderDashboardTab() {
             }
             ImGui::PopID();
         };
-        for (std::size_t i = 0; i < tempC.size(); i++) {
-            tempRow(kTemp[i].label, tempC[i]);
+        for (std::size_t i = 0; i < thermocoupleC.size(); i++) { // thermocouples: Top, Throat
+            tempRow(kThermocouple[i].label, thermocoupleC[i]);
         }
-        for (std::size_t i = 0; i < thermocoupleC.size(); i++) {
-            char tcLabel[8];
-            std::snprintf(tcLabel, sizeof(tcLabel), "TC%zu", i + 1);
-            tempRow(tcLabel, thermocoupleC[i]);
+        for (std::size_t i = 0; i < tempC.size(); i++) { // thermistor(s): Tank
+            tempRow(kThermistor[i].label, tempC[i]);
         }
         ImGui::EndTable();
     }

@@ -29,19 +29,8 @@ std::vector<HelloImGui::DockingSplit> MissionLayout::createDockingSplits() {
 std::vector<Layout::DockedWindow> MissionLayout::getDockedWindows() {
     std::vector<Layout::DockedWindow> dockableWindows;
 
-    dockableWindows.emplace_back(UIWindows::prefillWindow, MISSION_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::fillWindow, MISSION_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::prelaunchWindow, MISSION_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::launchWindow, MISSION_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::monitoringWindow, MISSION_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::resultsWindow, MISSION_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::cameraWindow, MISSION_DOCKSPACE);
+    // Only the Dashboard + Logging window are compiled in; the rest are deactivated.
     dockableWindows.emplace_back(UIWindows::communicationWindow, MISSION_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::deviceTrackerWindow, MISSION_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::testOverUDPWindow, MISSION_DOCKSPACE);
-
-    dockableWindows.emplace_back(UIWindows::liveFeedWindow, LIVE_FEED_DOCKSPACE);
-
     dockableWindows.emplace_back(UIWindows::loggingWindow, LOG_DOCKSPACE);
 
     return dockableWindows;

@@ -98,9 +98,6 @@ bool PacketProcessing::routePacketByTypeUdp(UdpPacketMetadata udpMetadataOpt) {
         if (udpMetadataOpt.payloadID == static_cast<uint8_t>(TelemetryType::ExtendedSystemState)) {
             return processExtendedSystemStatePacket(udpPacketBuf, udpMetadataOpt);
         }
-        if (udpMetadataOpt.payloadID == static_cast<uint8_t>(TelemetryType::GsSystemState)) {
-            return processGsSystemStatePacket(udpPacketBuf, udpMetadataOpt);
-        }
         GCS_APP_LOG_WARN("PacketProcessing: Unknown telemetry id {}, ignoring.", udpMetadataOpt.payloadID);
         return false;
     }

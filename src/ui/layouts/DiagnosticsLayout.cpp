@@ -29,18 +29,9 @@ std::vector<HelloImGui::DockingSplit> DiagnosticsLayout::createDockingSplits() {
 std::vector<Layout::DockedWindow> DiagnosticsLayout::getDockedWindows() {
     std::vector<Layout::DockedWindow> dockableWindows;
 
-    dockableWindows.emplace_back(UIWindows::boardsWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::mapWindow, MAIN_DOCKSPACE);
-    // dockableWindows.emplace_back(UIWindows::serialComWindow, MAIN_DOCKSPACE); // SERIAL PATH RETIRED
-    dockableWindows.emplace_back(UIWindows::switchesWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::valvesWindow, MAIN_DOCKSPACE);
-
-    dockableWindows.emplace_back(UIWindows::nosPhaseDiagramWindow, PLOT_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::tankMassWindow, PLOT_DOCKSPACE);
-
+    // Only the Dashboard + Logging window are compiled in; the rest are deactivated.
+    dockableWindows.emplace_back(UIWindows::communicationWindow, MAIN_DOCKSPACE);
     dockableWindows.emplace_back(UIWindows::loggingWindow, LOG_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::rocketParametersWindow, LOG_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::tankMassCalculatorWindow, LOG_DOCKSPACE);
 
     return dockableWindows;
 }

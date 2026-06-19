@@ -71,6 +71,35 @@ workspace "sirius-gcs"
         "src/ui/windows/SerialComWindow.cpp",
     }
 
+    -- DEACTIVATED UI: only the Dashboard (CommunicationWindow) and the on-screen
+    -- LoggingWindow are compiled in. The camera subsystem and every other window are
+    -- excluded from the build (code preserved on disk; re-add here to bring one back).
+    removefiles {
+        "src/camera/CameraManager.cpp",
+        "src/camera/VideoFeed.cpp",
+        "src/ui/windows/BoardsWindow.cpp",
+        "src/ui/windows/CameraWindow.cpp",
+        "src/ui/windows/ControlsWindow.cpp",
+        "src/ui/windows/DeviceTrackerWindow.cpp",
+        "src/ui/windows/MapWindow.cpp",
+        "src/ui/windows/NOSPhaseDiagramWindow.cpp",
+        "src/ui/windows/PlotWindow.cpp",
+        "src/ui/windows/PlotWindowCenter.cpp",
+        "src/ui/windows/RocketParametersWindow.cpp",
+        "src/ui/windows/SwitchesWindow.cpp",
+        "src/ui/windows/TankMassCalculatorWindow.cpp",
+        "src/ui/windows/TankMassWindow.cpp",
+        "src/ui/windows/TestOverUDPWindow.cpp",
+        "src/ui/windows/ValvesWindow.cpp",
+        "src/ui/windows/experimental/FillWindow.cpp",
+        "src/ui/windows/experimental/LaunchWindow.cpp",
+        "src/ui/windows/experimental/LiveFeedWindow.cpp",
+        "src/ui/windows/experimental/MonitoringWindow.cpp",
+        "src/ui/windows/experimental/PrefillWindow.cpp",
+        "src/ui/windows/experimental/PrelaunchWindow.cpp",
+        "src/ui/windows/experimental/ResultsWindow.cpp",
+    }
+
     pchheader "pch.h"
     pchsource "src/pch.cpp"
     forceincludes { "pch.h" }

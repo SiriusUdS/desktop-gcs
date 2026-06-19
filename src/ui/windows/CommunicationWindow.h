@@ -1,4 +1,5 @@
 #pragma once
+#include "SensorChannelMap.h"
 #include "UIWindow.h"
 
 #include <array>
@@ -52,12 +53,11 @@ private:
     // --- Telemetry rate trackers (Hz derived from the GSDataCenter record counters) ---
     RateTracker ecuSsRate, ecuExtRate, fcuSsRate, fcuExtRate, gsSsRate;
 
-    // --- Engineering-signal active windows (see kPressure/kTemp/kLoad tables in the .cpp).
-    // Indexing matches those descriptor tables. ---
-    std::array<SignalStat, 2> pressurePsi{};  // chamber, tank (ECU)
-    std::array<SignalStat, 3> tempC{};        // Top, Throat, Tank thermistors
-    std::array<SignalStat, 2> loadLb{};       // thrust (motor LC), tank load cell
-    std::array<SignalStat, 2> thermocoupleC{}; // FCU MAX31856 (channels 1-2 shown)
+    // --- Engineering-signal active windows; sizes/indexing come from SensorChannelMap. ---
+    std::array<SignalStat, SensorChannelMap::kPressureCount> pressurePsi{};
+    std::array<SignalStat, SensorChannelMap::kThermistorCount> tempC{};
+    std::array<SignalStat, SensorChannelMap::kLoadCount> loadLb{};
+    std::array<SignalStat, SensorChannelMap::kThermocoupleCount> thermocoupleC{};
 
     // --- "Time since last successful ping" (a pong received), tracked GS-side ---
     uint32_t lastPongCountSeen = 0;

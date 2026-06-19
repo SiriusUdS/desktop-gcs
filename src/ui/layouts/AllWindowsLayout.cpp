@@ -29,29 +29,9 @@ std::vector<HelloImGui::DockingSplit> AllWindowsLayout::createDockingSplits() {
 std::vector<Layout::DockedWindow> AllWindowsLayout::getDockedWindows() {
     std::vector<Layout::DockedWindow> dockableWindows;
 
-    dockableWindows.emplace_back(UIWindows::boardsWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::mapWindow, MAIN_DOCKSPACE);
-    // dockableWindows.emplace_back(UIWindows::serialComWindow, MAIN_DOCKSPACE); // SERIAL PATH RETIRED
-    dockableWindows.emplace_back(UIWindows::switchesWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::valvesWindow, MAIN_DOCKSPACE);
-
-    dockableWindows.emplace_back(UIWindows::prefillWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::fillWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::prelaunchWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::launchWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::monitoringWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::resultsWindow, MAIN_DOCKSPACE);
+    // Only the Dashboard + Logging window are compiled in; the rest are deactivated.
     dockableWindows.emplace_back(UIWindows::communicationWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::cameraWindow, MAIN_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::testOverUDPWindow, MAIN_DOCKSPACE);
-    
-    dockableWindows.emplace_back(UIWindows::nosPhaseDiagramWindow, PLOT_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::tankMassWindow, PLOT_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::liveFeedWindow, PLOT_DOCKSPACE);
-
     dockableWindows.emplace_back(UIWindows::loggingWindow, LOG_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::rocketParametersWindow, LOG_DOCKSPACE);
-    dockableWindows.emplace_back(UIWindows::tankMassCalculatorWindow, LOG_DOCKSPACE);
 
     return dockableWindows;
 }

@@ -1,53 +1,60 @@
 #pragma once
 
-#include "BoardsWindow.h"
-#include "CameraWindow.h"
+// Only the Dashboard (CommunicationWindow) and the on-screen LoggingWindow are compiled in.
+// Every other window + the camera code is excluded from the build (see removefiles in
+// premake5.lua). The deactivated entries are kept as comments so they can be re-enabled.
 #include "CommunicationWindow.h"
-#include "ControlsWindow.h"
-#include "DeviceTrackerWindow.h"
-#include "FillWindow.h"
-#include "LaunchWindow.h"
-#include "LiveFeedWindow.h"
 #include "LoggingWindow.h"
-#include "MapWindow.h"
-#include "MonitoringWindow.h"
-#include "NOSPhaseDiagramWindow.h"
-#include "PrefillWindow.h"
-#include "PrelaunchWindow.h"
-#include "ResultsWindow.h"
-#include "RocketParametersWindow.h"
+#include "UIWindow.h"
+
+// #include "BoardsWindow.h"
+// #include "CameraWindow.h"
+// #include "ControlsWindow.h"
+// #include "DeviceTrackerWindow.h"
+// #include "FillWindow.h"
+// #include "LaunchWindow.h"
+// #include "LiveFeedWindow.h"
+// #include "MapWindow.h"
+// #include "MonitoringWindow.h"
+// #include "NOSPhaseDiagramWindow.h"
+// #include "PrefillWindow.h"
+// #include "PrelaunchWindow.h"
+// #include "ResultsWindow.h"
+// #include "RocketParametersWindow.h"
 // #include "SerialComWindow.h" // SERIAL PATH RETIRED
-#include "SwitchesWindow.h"
-#include "TankMassCalculatorWindow.h"
-#include "TankMassWindow.h"
-#include "TestOverUDPWindow.h"
-#include "ValvesWindow.h"
+// #include "SwitchesWindow.h"
+// #include "TankMassCalculatorWindow.h"
+// #include "TankMassWindow.h"
+// #include "TestOverUDPWindow.h"
+// #include "ValvesWindow.h"
 
 #include <memory>
+#include <vector>
 
 namespace UIWindows {
-extern std::shared_ptr<BoardsWindow> boardsWindow;
-extern std::shared_ptr<CameraWindow> cameraWindow;
 extern std::shared_ptr<CommunicationWindow> communicationWindow;
-extern std::shared_ptr<ControlsWindow> controlsWindow;
-extern std::shared_ptr<DeviceTrackerWindow> deviceTrackerWindow;
-extern std::shared_ptr<FillWindow> fillWindow;
-extern std::shared_ptr<LaunchWindow> launchWindow;
-extern std::shared_ptr<LiveFeedWindow> liveFeedWindow;
 extern std::shared_ptr<LoggingWindow> loggingWindow;
-extern std::shared_ptr<MapWindow> mapWindow;
-extern std::shared_ptr<MonitoringWindow> monitoringWindow;
-extern std::shared_ptr<NOSPhaseDiagramWindow> nosPhaseDiagramWindow;
-extern std::shared_ptr<PrefillWindow> prefillWindow;
-extern std::shared_ptr<PrelaunchWindow> prelaunchWindow;
-extern std::shared_ptr<ResultsWindow> resultsWindow;
-extern std::shared_ptr<RocketParametersWindow> rocketParametersWindow;
-// extern std::shared_ptr<SerialComWindow> serialComWindow; // SERIAL PATH RETIRED
-extern std::shared_ptr<SwitchesWindow> switchesWindow;
-extern std::shared_ptr<TankMassCalculatorWindow> tankMassCalculatorWindow;
-extern std::shared_ptr<TankMassWindow> tankMassWindow;
-extern std::shared_ptr<TestOverUDPWindow> testOverUDPWindow;
-extern std::shared_ptr<ValvesWindow> valvesWindow;
+
+// Deactivated windows (not compiled):
+// extern std::shared_ptr<BoardsWindow> boardsWindow;
+// extern std::shared_ptr<CameraWindow> cameraWindow;
+// extern std::shared_ptr<ControlsWindow> controlsWindow;
+// extern std::shared_ptr<DeviceTrackerWindow> deviceTrackerWindow;
+// extern std::shared_ptr<FillWindow> fillWindow;
+// extern std::shared_ptr<LaunchWindow> launchWindow;
+// extern std::shared_ptr<LiveFeedWindow> liveFeedWindow;
+// extern std::shared_ptr<MapWindow> mapWindow;
+// extern std::shared_ptr<MonitoringWindow> monitoringWindow;
+// extern std::shared_ptr<NOSPhaseDiagramWindow> nosPhaseDiagramWindow;
+// extern std::shared_ptr<PrefillWindow> prefillWindow;
+// extern std::shared_ptr<PrelaunchWindow> prelaunchWindow;
+// extern std::shared_ptr<ResultsWindow> resultsWindow;
+// extern std::shared_ptr<RocketParametersWindow> rocketParametersWindow;
+// extern std::shared_ptr<SwitchesWindow> switchesWindow;
+// extern std::shared_ptr<TankMassCalculatorWindow> tankMassCalculatorWindow;
+// extern std::shared_ptr<TankMassWindow> tankMassWindow;
+// extern std::shared_ptr<TestOverUDPWindow> testOverUDPWindow;
+// extern std::shared_ptr<ValvesWindow> valvesWindow;
 
 extern std::vector<std::shared_ptr<UIWindow>> windows;
 
