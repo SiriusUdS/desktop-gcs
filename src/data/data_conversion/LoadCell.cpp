@@ -37,9 +37,9 @@ float LoadCell::adcToWeight_lb(float adcValue, size_t loadCellIndex) {
     // TODO: This is a temp hotfix for LC25
     if (loadCellIndex == 0) {
         // Tank
-        return (((((adcValue - 10) * 3.3) / 4096) / 209) * 200) / ((0.003 * 5));
+        return ((((adcValue*0.00191)/2)-53)*0.453592-25)/1.549;
     } else {
         // Combustion chamber
-        return ((((((adcValue - 10) * 3.3) / 4096) / 209) * 5000) / (0.003 * 5)) * (9.81 / 2.2);
+        return (((adcValue * 0.047749)/14.3))-159.5506;
     }
 }
