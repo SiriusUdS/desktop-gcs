@@ -16,7 +16,9 @@ float TemperatureSensor::adcToTemperature_C(float adcValue) {
     static constexpr float MIN_VALID_ADC = 10;
     static constexpr float MAX_VALID_ADC = 4090;
     static constexpr float CONTROL_RESISTANCE = 10'000;
-    static constexpr float ADDITIVE_FACTOR = 4096;
+    // ADS131M08: signed 24-bit counts. The thermistor divider swings 0..3.3 V,
+    // so the positive +3.3 V rail maps to positive full scale = 2^23.
+    static constexpr float ADDITIVE_FACTOR = 8'388'608; // 2^23
     static constexpr RT_Point RT_TABLE[] = {
       {-30, 1733200}, {-29, 1630408}, {-28, 1534477}, {-27, 1444903}, {-26, 1361220}, {-25, 1283000}, {-24, 1209327}, {-23, 1140424}, {-22, 1075949},
       {-21, 1015588}, {-20, 959050},  {-19, 906011},  {-18, 856288},  {-17, 809651},  {-16, 765886},  {-15, 724800},  {-14, 685651},  {-13, 648893},

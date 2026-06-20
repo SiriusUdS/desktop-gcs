@@ -40,7 +40,7 @@ struct TempSignal {
     int adcChannel;
 };
 inline constexpr TempSignal kThermistor[] = {
-    {"Tank", /*fcu=*/false, /*ch=*/0}, // ECU ch0
+    {"Tank", /*fcu=*/false, /*ch=*/2}, // ECU ch2
 };
 
 // Load cell: board + ADC channel, the LoadCell calibration index (0=tank, 1=chamber/motor),
