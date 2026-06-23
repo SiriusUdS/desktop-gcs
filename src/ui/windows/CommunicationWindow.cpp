@@ -291,11 +291,11 @@ void renderSystemStateTable(const EcuSystemState& ecu, uint8_t ecuBoardState,
         t.row(fmt("adc.channels[%u]", i).c_str(), fmt("%d", e.adc_info.channels[i]), fmt("%d", f.adc_info.channels[i]));
     }
 
-    // valve_info[0] = NOS (ECU) / Fill (FCU); valve_info[1] = IPA (ECU) / Dump (FCU).
+    // valve_info[0] = IPA (ECU) / Fill (FCU); valve_info[1] = NOS (ECU) / Dump (FCU).
     for (int v = 0; v < 2; v++) {
         const ValveInfo& ev = e.valve_info[v];
         const ValveInfo& fv = f.valve_info[v];
-        const char* tag = (v == 0) ? "valve[0] NOS/Fill" : "valve[1] IPA/Dump";
+        const char* tag = (v == 0) ? "valve[0] IPA/Fill" : "valve[1] NOS/Dump";
         t.row(fmt("%s.state", tag).c_str(), valveStateName(static_cast<uint8_t>(ev.state)), valveStateName(static_cast<uint8_t>(fv.state)));
         t.row(fmt("%s.status", tag).c_str(), valveStatusBits(ev.status), valveStatusBits(fv.status));
         t.row(fmt("%s.current_set_value", tag).c_str(), fmt("%u", ev.current_set_value), fmt("%u", fv.current_set_value));
@@ -738,8 +738,9 @@ void CommunicationWindow::renderDashboardTab() {
             ImGui::TableNextColumn(); renderValveCommandRow(name, cmd, binaryOnly, /*showName=*/false);
             valveStateCell(v);
         };
-        valveRow("NOS", CommandType::NosValve, /*binaryOnly=*/true, ecuSsRec.base.valve_info[0]);
-        valveRow("IPA", CommandType::IpaValve, /*binaryOnly=*/true, ecuSsRec.base.valve_info[1]);
+        // ECU valve_info is indexed by EcuValves: [0] = IPA, [1] = NOS.
+        valveRow("NOS", CommandType::NosValve, /*binaryOnly=*/false, ecuSsRec.base.valve_info[1]);
+        valveRow("IPA", CommandType::IpaValve, /*binaryOnly=*/false, ecuSsRec.base.valve_info[0]);
         valveRow("Fill", CommandType::FillValve, /*binaryOnly=*/false, fcuSsRec.base.valve_info[0]);
         valveRow("Dump", CommandType::DumpValve, /*binaryOnly=*/false, fcuSsRec.base.valve_info[1]);
 
