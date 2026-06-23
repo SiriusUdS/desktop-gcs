@@ -917,15 +917,14 @@ void CommunicationWindow::renderDashboardTab() {
         ImGui::TableHeadersRow();
         for (std::size_t i = 0; i < loadLb.size(); i++) {
             const float raw = adcOf(kLoad[i].fcu, kLoad[i].adcChannel);
-            const float scale = kLoad[i].displayScale; // converter outputs lb; show in N / kg
             const bool isTank = (static_cast<int>(i) == kTankLoad);
             ImGui::PushID(kLoad[i].label);
             ImGui::TableNextRow();
             ImGui::TableNextColumn(); ImGui::TextUnformatted(kLoad[i].label);
-            ImGui::TableNextColumn(); ImGui::Text("%.2f", loadLb[i].now() * scale);
-            ImGui::TableNextColumn(); ImGui::Text("%.2f", loadLb[i].avg() * scale);
+            ImGui::TableNextColumn(); ImGui::Text("%.2f", loadLb[i].now());
+            ImGui::TableNextColumn(); ImGui::Text("%.2f", loadLb[i].avg());
             ImGui::TableNextColumn();
-            ImGui::Text("%.2f", loadLb[i].max() * scale);
+            ImGui::Text("%.2f", loadLb[i].max());
             ImGui::SameLine();
             if (ImGui::SmallButton("rst")) {
                 loadLb[i].resetPeak();

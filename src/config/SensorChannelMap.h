@@ -43,20 +43,17 @@ inline constexpr TempSignal kThermistor[] = {
     {"Tank", /*fcu=*/false, /*ch=*/2}, // ECU ch2
 };
 
-// Load cell: board + ADC channel, the LoadCell calibration index (0=tank, 1=chamber/motor),
-// and the display unit + scale applied to the converter's pounds output (lb -> displayScale).
+// Load cell: board + ADC channel and the LoadCell calibration index (0=tank, 1=chamber/motor).
+// The converter is the single source of units — the dashboard shows its output verbatim.
 struct LoadSignal {
     const char* label;
     bool fcu;
     int adcChannel;
     std::size_t loadCellIndex;
-    float displayScale; // multiply the converter's lb value to get the displayed unit
 };
-inline constexpr float kLbToNewton = 4.4482216153f;
-inline constexpr float kLbToKg     = 0.45359237f;
 inline constexpr LoadSignal kLoad[] = {
-    {"Thrust (N)",     /*fcu=*/true, /*ch=*/0, /*calib=*/1, kLbToNewton}, // FCU ch0 -> motor/chamber LC, shown in N
-    {"Tank Mass (kg)", /*fcu=*/true, /*ch=*/2, /*calib=*/0, kLbToKg},     // FCU ch2 -> tank LC, shown in kg
+    {"Thrust",    /*fcu=*/true, /*ch=*/0, /*calib=*/1}, // FCU ch0 -> motor/chamber LC
+    {"Tank Mass", /*fcu=*/true, /*ch=*/2, /*calib=*/0}, // FCU ch2 -> tank LC
 };
 
 // Thermocouples (FCU MAX31856) shown on the dashboard: the index into
