@@ -2,6 +2,7 @@
 
 #include "Logging.h"
 #include "PlotConfig.h"
+#include "equationHandler.h"
 
 #include <algorithm>
 
@@ -31,8 +32,9 @@ float PressureTransducer::adcToPressure_psi(float adcValue, uint16_t sensorIndex
     const PressureTransducerParams& params = PRESSURE_TRANSDUCER_PARAMS_TABLE[sensorIndex];
     /* const float pressure_psi =
       static_cast<float>(params.functionRateOfChange * adcValue) - static_cast<float>(params.functionOffset - params.additiveFactor);*/
-    const float pressure_psi = -((adcValue * 0.001431)/4.5725f)+155;
-    return pressure_psi;
+    //const float pressure_psi = -((adcValue * 0.001431)/4.5725f)+155;
+    return equations::EquationHandler::getInstance().evaluate("pressure", adcValue)
+           - equations::EquationHandler::getInstance().evaluate("pressureOffset", 0);
 }
 /*float PressureTransducer::adcToPressure(float adcValue, uint16_t sensorIndex) {
     static constexpr float PRESSURE_SENSOR_VOLTAGE_RANGE_V = 3.3f;

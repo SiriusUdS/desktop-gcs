@@ -2,6 +2,7 @@
 
 #include "Logging.h"
 #include "PlotConfig.h"
+#include "equationHandler.h"
 
 /**
  * @struct RT_Point
@@ -13,6 +14,8 @@ typedef struct {
 } RT_Point;
 
 float TemperatureSensor::adcToTemperature_C(float adcValue) {
+    float tempTest = 16.4 - (((((adcValue * 1.2) / 8388607) * 1650000) /(10-adcValue*1.2/8388670))-100000)/4000;
+    return tempTest;
     static constexpr float MIN_VALID_ADC = 10;
     static constexpr float MAX_VALID_ADC = 4090;
     static constexpr float CONTROL_RESISTANCE = 10'000;
@@ -71,8 +74,10 @@ float TemperatureSensor::adcToTemperature_C(float adcValue) {
 
     static constexpr int RT_TABLE_SIZE = sizeof(RT_TABLE) / sizeof(RT_TABLE[0]);
 
-    const float voltage = (adcValue / ADDITIVE_FACTOR) * 3.3f;
-    const float resistance = (3.3f * CONTROL_RESISTANCE / voltage) - CONTROL_RESISTANCE;
+    //const float voltage = (adcValue / 1.4305)*powf(10, -7);
+    //const float resistance = (voltage*1650000)/(10-voltage);
+    const float voltage = equations::EquationHandler::getInstance().evaluate("voltage", adcValue);
+    const float resistance = equations::EquationHandler::getInstance().evaluate("resistance", voltage);
 
     for (int i = 0; i < RT_TABLE_SIZE - 1; i++) {
         if (resistance <= RT_TABLE[i].resistance && resistance >= RT_TABLE[i + 1].resistance) {

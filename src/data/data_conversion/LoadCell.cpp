@@ -3,6 +3,8 @@
 #include "Logging.h"
 #include "PlotConfig.h"
 
+#include "equationHandler.h"
+
 #include <algorithm>
 
 namespace LoadCell {
@@ -37,9 +39,15 @@ float LoadCell::adcToWeight_lb(float adcValue, size_t loadCellIndex) {
     // TODO: This is a temp hotfix for LC25
     if (loadCellIndex == 0) {
         // Tank
-        return ((((adcValue*0.00191)/2)-53)*0.453592-25)/1.549;
+        //return -((((adcValue*0.00191)/2)-53)*0.453592-25)/1.549f;
+        
+        return equations::EquationHandler::getInstance().evaluate("tank", adcValue)
+               - equations::EquationHandler::getInstance().evaluate("tankOffset", 0);
     } else {
         // Combustion chamber
-        return (((adcValue * 0.047749)/14.3))-159.5506;
+        //return ((((adcValue*0.00191)/2-53)*0.453592-25)/1.549f);
+        return equations::EquationHandler::getInstance().evaluate("thrust", adcValue)
+               - equations::EquationHandler::getInstance().evaluate("chamberOffset", 0);
+        
     }
 }
