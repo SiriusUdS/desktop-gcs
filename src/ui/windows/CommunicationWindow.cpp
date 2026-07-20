@@ -7,6 +7,7 @@
 #include "ITileLoader.h"
 #include "Logging.h"
 #include "UdpConfig.h"
+#include <string>
 
 #include "LoadCell.h"
 #include "PressureTransducer.h"
@@ -203,7 +204,7 @@ std::string fmt(const char* format, ...) {
 // Status registers are rendered as a single "bitmap by name": each named bit/field
 // shown as name=value, so the whole register reads at a glance on one row.
 std::string adcStatusBits(const AdcStatus& s) {
-    return fmt("initialized=%u data_valid=%u", s.initialized, s.data_valid);
+    return fmt("initialized=%u data_valid=%u config_successful=%u", s.initialized, s.data_valid, s.config_successful);
 }
 std::string valveStatusBits(const ValveStatus& s) {
     return fmt("initialized=%u open_limit_high=%u closed_limit_high=%u in_transition=%u fault_both_switches=%u",
@@ -369,10 +370,13 @@ void renderExtendedStateTable(const EcuExtendedSystemState& ecu, const FcuExtend
     // FCU heater — a bare on/off output (FCU-only). status.on echoes the commanded Heater
     // control flag; the timestamps are the ticks of the last on/off edges.
     t.section("Heater (FCU)");
-    const HeaterInfo& fh = fcu.heater_info;
-    t.row("heater.on", kAbsent, fmt("%u", fh.status.on));
-    t.row("heater.last_on_ms", kAbsent, fmt("%u", fh.last_on_ms));
-    t.row("heater.last_off_ms", kAbsent, fmt("%u", fh.last_off_ms));
+    for (std::size_t i = 0; i < HEATER_COUNT; i++) {
+        const HeaterInfo& fh = fcu.heater_info[i];
+        t.row(fmt("heater[%zu].on", i).c_str(), kAbsent, fmt("%u", fh.status.on));
+        t.row(fmt("heater[%zu].last_on_ms", i).c_str(), kAbsent, fmt("%u", fh.last_on_ms));
+        t.row(fmt("heater[%zu].last_off_ms", i).c_str(), kAbsent, fmt("%u", fh.last_off_ms));
+    }
+    
 
     t.section("Thermocouples (FCU)");
     for (unsigned i = 0; i < THERMOCOUPLE_COUNT; i++) {
@@ -760,17 +764,25 @@ void CommunicationWindow::renderDashboardTab() {
         }
 
         // Heater (FCU) — toggle + on/off state from heater_info.status.on.
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn(); ImGui::TextUnformatted("Heat");
-        ImGui::TableNextColumn();
-        ImGui::PushID("Heater");
-        if (ImGui::SmallButton("Off")) { CommandControl::sendCommand(CommandType::Heater, 0); }
-        ImGui::SameLine();
-        if (ImGui::SmallButton("On")) { CommandControl::sendCommand(CommandType::Heater, 1); }
-        ImGui::PopID();
-        ImGui::TableNextColumn();
-        colorChip(fcuExtRec.heater_info.status.on ? "On" : "Off", fcuExtRec.heater_info.status.on);
+        for (auto i = 0; i < HEATER_COUNT; i++) {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(("Heat #" + std::to_string(i)).c_str());
+            ImGui::TableNextColumn();
+            ImGui::PushID(("Heat_" + std::to_string(i)).c_str());
+            if (ImGui::SmallButton("Off")) {
+                CommandControl::sendCommand(CommandType::Heater, 0);
+            }
+            ImGui::SameLine();
+            if (ImGui::SmallButton("On")) {
+                CommandControl::sendCommand(CommandType::Heater, 1);
+            }
+            ImGui::PopID();
+            ImGui::TableNextColumn();
+            colorChip(fcuExtRec.heater_info[i].status.on ? "On" : "Off", fcuExtRec.heater_info[i].status.on);
 
+            
+        }
         ImGui::EndTable();
     }
 
@@ -852,9 +864,12 @@ void CommunicationWindow::renderDashboardTab() {
                         {"comms", tc.status.comms_ok}});
         }
 
-        deviceName("Heater");
-        absentBoard();
-        boardCells(fcuExtRec.heater_info.status.on ? "On" : "Off", {{"on", fcuExtRec.heater_info.status.on}});
+        for (std::size_t i = 0; i < HEATER_COUNT; i++) {
+            deviceName(("Heater_"+std::to_string(i)).c_str());
+            absentBoard();
+            boardCells(fcuExtRec.heater_info[i].status.on ? "On" : "Off", {{"on", fcuExtRec.heater_info[i].status.on}});
+        }
+        
 
         // Ematch / Solenoid (FCU only) — no state enum; derive a short label from the status bits.
         const EmatchStatus& es = fcuExtRec.ematch_info.status;
@@ -866,8 +881,8 @@ void CommunicationWindow::renderDashboardTab() {
         const SolenoidStatus& ss = fcuExtRec.solenoid_info.status;
         deviceName("Solenoid");
         absentBoard();
-        boardCells(ss.open ? "Open" : (ss.detected ? "Closed" : "Absent"),
-                   {{"det", ss.detected}, {"open", ss.open}});
+        boardCells(ss.open ? "Open" : (ss.open ? "Closed" : "Absent"),
+                   {{"det", ss.open}, {"open", ss.open}});
 
         ImGui::EndTable();
     }
