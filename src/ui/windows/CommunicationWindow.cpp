@@ -767,7 +767,7 @@ void CommunicationWindow::renderDashboardTab() {
         for (auto i = 0; i < HEATER_COUNT; i++) {
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
-            ImGui::TextUnformatted(("Heat #" + std::to_string(i)).c_str());
+            ImGui::TextUnformatted(("Heat #" + std::to_string(i) + ": " + std::string(i == 0 ? "Mother bot." : "Tank")).c_str());
             ImGui::TableNextColumn();
             ImGui::PushID(("Heat_" + std::to_string(i)).c_str());
             if (ImGui::SmallButton("Off")) {
@@ -780,6 +780,7 @@ void CommunicationWindow::renderDashboardTab() {
             ImGui::PopID();
             ImGui::TableNextColumn();
             colorChip(fcuExtRec.heater_info[i].status.on ? "On" : "Off", fcuExtRec.heater_info[i].status.on);
+            
 
             
         }
@@ -822,8 +823,10 @@ void CommunicationWindow::renderDashboardTab() {
         const auto& eAdc = ecuSsRec.base.adc_info;
         const auto& fAdc = fcuSsRec.base.adc_info;
         deviceName("ADC");
-        boardCells(adcStateName(eAdc.state), {{"init", eAdc.status.initialized}, {"valid", eAdc.status.data_valid}});
-        boardCells(adcStateName(fAdc.state), {{"init", fAdc.status.initialized}, {"valid", fAdc.status.data_valid}});
+        boardCells(adcStateName(eAdc.state),
+                   {{"init", eAdc.status.initialized}, {"valid", eAdc.status.data_valid}, {"configured", eAdc.status.config_successful}});
+        boardCells(adcStateName(fAdc.state),
+                   {{"init", fAdc.status.initialized}, {"valid", fAdc.status.data_valid}, {"configured", fAdc.status.config_successful}});
 
         const auto& eSto = ecuSsRec.base.storage_info;
         const auto& fSto = fcuSsRec.base.storage_info;

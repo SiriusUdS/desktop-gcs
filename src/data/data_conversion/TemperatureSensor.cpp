@@ -14,8 +14,8 @@ typedef struct {
 } RT_Point;
 
 float TemperatureSensor::adcToTemperature_C(float adcValue) {
-    float tempTest = 16.4 - (((((adcValue * 1.2) / 8388607) * 1650000) /(10-adcValue*1.2/8388670))-100000)/4000;
-    return tempTest;
+    //float tempTest = 16.4 - (((((adcValue * 1.2) / 8388607) * 1650000) /(10-adcValue*1.2/8388670))-100000)/4000;
+    //return tempTest;
     static constexpr float MIN_VALID_ADC = 10;
     static constexpr float MAX_VALID_ADC = 4090;
     static constexpr float CONTROL_RESISTANCE = 10'000;
@@ -79,13 +79,15 @@ float TemperatureSensor::adcToTemperature_C(float adcValue) {
     const float voltage = equations::EquationHandler::getInstance().evaluate("voltage", adcValue);
     const float resistance = equations::EquationHandler::getInstance().evaluate("resistance", voltage);
 
-    for (int i = 0; i < RT_TABLE_SIZE - 1; i++) {
+    /* for (int i = 0; i < RT_TABLE_SIZE - 1; i++) {
         if (resistance <= RT_TABLE[i].resistance && resistance >= RT_TABLE[i + 1].resistance) {
             const float slope = (RT_TABLE[i + 1].temperature - RT_TABLE[i].temperature) / (RT_TABLE[i + 1].resistance - RT_TABLE[i].resistance);
             const float temp = RT_TABLE[i].temperature + slope * (resistance - RT_TABLE[i].resistance);
             return temp;
         }
-    }
+    }*/
+
+    return equations::EquationHandler::getInstance().evaluate("temperature", resistance);
 
     return PlotConfig::INVALID_VALUE;
 }
