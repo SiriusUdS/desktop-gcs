@@ -52,8 +52,8 @@ struct LoadSignal {
     std::size_t loadCellIndex;
 };
 inline constexpr LoadSignal kLoad[] = {
-    {"Thrust",    /*fcu=*/true, /*ch=*/0, /*calib=*/1}, // FCU ch0 -> motor/chamber LC
-    {"Tank Mass", /*fcu=*/true, /*ch=*/2, /*calib=*/0}, // FCU ch2 -> tank LC
+    {"Thrust",    /*fcu=*/true, /*ch=*/3, /*calib=*/1}, // FCU ch0 -> motor/chamber LC
+    {"Tank Mass", /*fcu=*/true, /*ch=*/3, /*calib=*/0}, // FCU ch2 -> tank LC
 };
 
 // Thermocouples (FCU MAX31856) shown on the dashboard: the index into

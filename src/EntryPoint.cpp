@@ -37,7 +37,7 @@ int main(int, char*[]) {
     runnerParams.imGuiWindowParams.showMenuBar = true;
     runnerParams.imGuiWindowParams.defaultImGuiWindowType = HelloImGui::DefaultImGuiWindowType::ProvideFullScreenDockSpace;
 
-    runnerParams.fpsIdling.rememberEnableIdling = true;
+    runnerParams.fpsIdling.rememberEnableIdling = false;
 
     runnerParams.iniFilename = "hello_imgui.ini";
 
