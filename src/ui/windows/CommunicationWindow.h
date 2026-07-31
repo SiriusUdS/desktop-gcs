@@ -6,6 +6,41 @@
 #include <chrono>
 #include <cstdint>
 
+#include <vector>
+
+struct ScrollingBuffer {
+    int MaxSize;
+    int Offset;
+    std::vector<float> XData;
+    std::vector<float> YData;
+
+    ScrollingBuffer(int max_size = 2000) {
+        MaxSize = max_size;
+        Offset = 0;
+        XData.reserve(MaxSize);
+        YData.reserve(MaxSize);
+    }
+
+    void AddPoint(float x, float y) {
+        if (XData.size() < MaxSize) {
+            XData.push_back(x);
+            YData.push_back(y);
+        } else {
+            XData[Offset] = x;
+            YData[Offset] = y;
+            Offset = (Offset + 1) % MaxSize; // Loop around index
+        }
+    }
+
+    void Erase() {
+        XData.shrink_to_fit();
+        YData.shrink_to_fit();
+        XData.clear();
+        YData.clear();
+        Offset = 0;
+    }
+};
+
 // Derives a Hz rate from a monotonically increasing counter, refreshed every ~0.5 s.
 // (One per telemetry stream; lives as a window member so the rate survives across frames.)
 struct RateTracker {
@@ -28,6 +63,7 @@ struct SignalStat {
     float latest = 0.0f;    // most recent raw sample
     float offset = 0.0f;    // tare (subtracted from readings)
     float peak = 0.0f;      // peak-hold of (raw - offset)
+    double avgSum = 0.0;
     bool hasPeak = false;
 
     void push(float raw);   // record one raw sample; updates latest + peak-hold
@@ -50,6 +86,7 @@ private:
     void renderRawTab();
     void renderSetupTab();
 
+    void renderGraphTab();
     // --- Telemetry rate trackers (Hz derived from the GSDataCenter record counters) ---
     RateTracker ecuSsRate, ecuExtRate, fcuSsRate, fcuExtRate, gsSsRate;
 
@@ -76,4 +113,5 @@ private:
     bool ipBufInitialized = false;
     bool loggingEnabled = false;
     uint64_t lostPacketCount = 0;
+    bool showGraph = true;
 };

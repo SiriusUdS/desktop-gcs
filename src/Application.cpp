@@ -52,6 +52,7 @@ void Application::init() {
         GCS_APP_LOG_ERROR("WSAStartup failed.");
         return;
     }
+    ImGui::CreateContext();
 
     ImPlot::CreateContext();
 
@@ -62,6 +63,9 @@ void Application::init() {
     // CameraManager::get().init(); // camera deactivated (not compiled)
     UIWindows::init();
     UIWindows::loadState(iniStructure);
+    
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     tankGasLeftPlotDataProcessor.subscribe();
     tankMassPlotDataProcessor.subscribe();

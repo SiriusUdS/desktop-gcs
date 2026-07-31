@@ -260,7 +260,7 @@ void CommandControl::setupSolenoidValveCommand(uint8_t on) {
 // in any state, so the GS just toggles it.
 void CommandControl::setupHeaterCommand(uint8_t on) {
     SetControlFlagFrame frame{};
-    frame.flag = CONTROL_FLAG_BOARD_OFFSET + static_cast<uint16_t>(FcuControlFlag::Heater);
+    frame.flag = CONTROL_FLAG_BOARD_OFFSET + static_cast<uint16_t>(FcuControlFlag::HeaterTank);
     frame.value = on ? 1 : 0;
 
     dataSize = buildCommandFrame(data,

@@ -8,6 +8,7 @@
 #include "Logging.h"
 #include "UdpConfig.h"
 #include <string>
+#include <implot.h>
 
 #include "LoadCell.h"
 #include "PressureTransducer.h"
@@ -67,29 +68,27 @@ double RateTracker::update(uint64_t currentCount) {
 
 void SignalStat::push(float raw) {
     latest = raw;
+
+    if (count >= AVG_SAMPLES) {
+        std::size_t old = (head + WINDOW - AVG_SAMPLES) % WINDOW;
+        avgSum -= ring[old];
+    }
+
     ring[head] = raw;
+    avgSum += raw;
+
     head = (head + 1) % WINDOW;
-    if (count < WINDOW) {
-        count++;
-    }
-    const float tared = raw - offset;
-    if (!hasPeak || tared > peak) {
-        peak = tared;
-        hasPeak = true;
-    }
+
+    if (count < WINDOW)
+        ++count;
 }
 
 float SignalStat::avg() const {
-    const std::size_t n = std::min(count, AVG_SAMPLES);
-    if (n == 0) {
+    std::size_t n = std::min(count, AVG_SAMPLES);
+    if (n == 0)
         return latest - offset;
-    }
-    double sum = 0.0;
-    for (std::size_t k = 0; k < n; k++) {              // walk back from the most recent sample
-        const std::size_t idx = (head + WINDOW - 1 - k) % WINDOW;
-        sum += ring[idx];
-    }
-    return static_cast<float>(sum / static_cast<double>(n)) - offset;
+
+    return static_cast<float>(avgSum / n) - offset;
 }
 
 namespace {
@@ -588,6 +587,7 @@ void CommunicationWindow::renderImpl() {
     if (ImGui::BeginTabBar("comm_tabs")) {
         if (ImGui::BeginTabItem("Dashboard")) {
             renderDashboardTab();
+            renderGraphTab();
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Raw")) {
@@ -596,6 +596,10 @@ void CommunicationWindow::renderImpl() {
         }
         if (ImGui::BeginTabItem("Setup")) {
             renderSetupTab();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Graph")) {
+            showGraph = true;
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
@@ -764,7 +768,7 @@ void CommunicationWindow::renderDashboardTab() {
         }
 
         // Heater (FCU) — toggle + on/off state from heater_info.status.on.
-        for (auto i = 0; i < HEATER_COUNT; i++) {
+        for (auto i = 1; i < HEATER_COUNT; i++) {
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::TextUnformatted(("Heat #" + std::to_string(i) + ": " + std::string(i == 0 ? "Mother bot." : "Tank")).c_str());
@@ -1151,4 +1155,119 @@ void CommunicationWindow::renderSetupTab() {
             }
         }
     }
+}
+
+void CommunicationWindow::renderGraphTab() {
+    if (!showGraph) {
+        return;
+    }
+
+    ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+
+    if (platform_io.Monitors.Size < 2) {
+        return;
+    }
+    const ImGuiPlatformMonitor& monitor = platform_io.Monitors[1];
+
+    ImGui::SetNextWindowPos(monitor.WorkPos);
+    ImGui::SetNextWindowSize(monitor.WorkSize);
+
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+    ImGui::Begin("Graph", &showGraph, flags);
+    // Instantiate this globally or inside your persistent state framework
+    static ScrollingBuffer sdataTankPsi(2000);
+    static ScrollingBuffer sdataTankLoad(2000);
+    static ScrollingBuffer sdataTankTemp(2000);
+
+    static float graphTimer = 0.0f;
+    static float t = 0.0f;
+    float dt = ImGui::GetIO().DeltaTime;
+
+    graphTimer += dt;
+
+    if (graphTimer >= 1.0f / 60.0f) {
+        graphTimer -= 1.0f / 60.0f;
+
+        t += 1.0f / 60.0f;
+
+        sdataTankPsi.AddPoint(t, pressurePsi[1].now());
+        sdataTankLoad.AddPoint(t, loadLb[0].now());
+        sdataTankTemp.AddPoint(t, tempC[0].now());
+    }
+    // Define a visible rolling window width (e.g., look back exactly 10 seconds)
+    static float history = 10.0f;
+    ImGui::SliderFloat("History Window", &history, 1.0f, 30.0f, "%.1f s");
+
+    // Create the plot canvas
+    if (ImPlot::BeginPlot("##ScrollingPlot", ImVec2(-1, 300))) {
+        // Lock the X-Axis to scroll automatically based on time 't'
+        ImPlot::SetupAxis(ImAxis_X1, "Time (s)", ImPlotAxisFlags_None);
+        ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
+
+        // Auto-fit the Y-axis to the data height dynamically
+        ImPlot::SetupAxis(ImAxis_Y1, "Pressure (PSI)", ImPlotAxisFlags_AutoFit);
+
+        // Render the circular buffer efficiently
+        ImPlot::PlotLine("Tank",
+                         sdataTankPsi.XData.data(),
+                         sdataTankPsi.YData.data(),
+                         sdataTankPsi.XData.size(),
+                         0,              // Flags
+                         sdataTankPsi.Offset, // Crucial: Tells ImPlot where the oldest data point is
+                         sizeof(float)); // Memory stride
+
+        std::string text = std::format("AVG: {:.2f}", pressurePsi[1].avg());
+        ImPlot::PlotText(text.c_str(), t - history + 2.0f, 100.0f);
+   
+        ImPlot::EndPlot();
+        
+    }
+
+    if (ImPlot::BeginPlot("##ScrollingPlot1", ImVec2(-1, 300))) {
+        // Lock the X-Axis to scroll automatically based on time 't'
+        ImPlot::SetupAxis(ImAxis_X1, "Time (s)", ImPlotAxisFlags_None);
+        ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
+
+        // Auto-fit the Y-axis to the data height dynamically
+        ImPlot::SetupAxis(ImAxis_Y1, "Mass (KG)", ImPlotAxisFlags_AutoFit);
+
+        // Render the circular buffer efficiently
+        ImPlot::PlotLine("Tank Mass",
+                         sdataTankLoad.XData.data(),
+                         sdataTankLoad.YData.data(),
+                         sdataTankLoad.XData.size(),
+                         0,                   // Flags
+                         sdataTankLoad.Offset, // Crucial: Tells ImPlot where the oldest data point is
+                         sizeof(float));      // Memory stride
+
+        std::string text = std::format("AVG: {:.2f}", loadLb[0].avg());
+        ImPlot::PlotText(text.c_str(), t - history + 2.0f, 100.0f);
+
+        ImPlot::EndPlot();
+    }
+
+    if (ImPlot::BeginPlot("##ScrollingPlot2", ImVec2(-1, 300))) {
+        // Lock the X-Axis to scroll automatically based on time 't'
+        ImPlot::SetupAxis(ImAxis_X1, "Time (s)", ImPlotAxisFlags_None);
+        ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
+
+        // Auto-fit the Y-axis to the data height dynamically
+        ImPlot::SetupAxis(ImAxis_Y1, "Temp (C)", ImPlotAxisFlags_AutoFit);
+
+        // Render the circular buffer efficiently
+        ImPlot::PlotLine("Tank Temperature",
+                         sdataTankTemp.XData.data(),
+                         sdataTankTemp.YData.data(),
+                         sdataTankTemp.XData.size(),
+                         0,                   // Flags
+                         sdataTankTemp.Offset, // Crucial: Tells ImPlot where the oldest data point is
+                         sizeof(float));      // Memory stride
+
+        std::string text = std::format("AVG: {:.2f}", tempC[0].avg());
+        ImPlot::PlotText(text.c_str(), t - history + 2.0f, 100.0f);
+
+        ImPlot::EndPlot();
+    }
+
+    ImGui::End();
 }
